@@ -38,6 +38,12 @@ The initial `app.js` contained:
 - Metrics (`/metrics`) endpoint
 - HTTP server startup
 
+### Project Structure
+
+The initial project structure after creating the application files:
+
+![Project Structure](../screenshots/phase-01/01-project-structure.png)
+
 ---
 
 ## Initialize the Node.js Project
@@ -77,7 +83,7 @@ app/
 Start the application.
 
 ```bash
-node app.js
+node server.js
 ```
 
 Expected output:
@@ -86,6 +92,13 @@ Expected output:
 Listening on port 3000
 ```
 
+### Application Startup
+
+The application started successfully and began listening on port 3000.
+
+![Application Startup](../screenshots/phase-01/02-application-startup.png)
+
+
 Verify the following endpoints:
 
 | Endpoint | Expected Result |
@@ -93,6 +106,24 @@ Verify the following endpoints:
 | `/` | Application Home Page |
 | `/health` | `ok` |
 | `/metrics` | Prometheus metrics |
+
+### Home Page
+
+The application's home page was successfully rendered.
+
+![Home Page](../screenshots/phase-01/03-home-page.png)
+
+### Health Endpoint
+
+The health endpoint returned the expected response.
+
+![Health Endpoint](../screenshots/phase-01/04-health-endpoint.png)
+
+### Prometheus Metrics
+
+The metrics endpoint successfully exposed Prometheus application metrics.
+
+![Prometheus Metrics](../screenshots/phase-01/05-metrics-endpoint.png)
 
 ---
 
