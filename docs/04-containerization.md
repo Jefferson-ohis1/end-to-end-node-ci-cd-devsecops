@@ -4,7 +4,7 @@
 
 Package the Node.js monitoring application into a Docker container to provide a consistent, portable runtime environment that can be deployed across development, testing, and production systems.
 
-Containerization also prepares the application for automated image builds within the Jenkins CI/CD pipeline.
+Containerization also prepares the application for cloud deployment by producing a reusable Docker image that will later be integrated into the automated Jenkins CI/CD pipeline.
 
 ---
 
@@ -24,9 +24,9 @@ Benefits include:
 
 ---
 
-## Dockerfile Design
+## Dockerfile Creation
 
-A `Dockerfile` was created inside the `app/` directory.
+A `Dockerfile` was created inside the `app/` directory to define the steps required to package the Node.js monitoring application into a Docker image. The Dockerfile uses an official lightweight Node.js base image, installs only production dependencies, copies the application source code, exposes the application port, and specifies the startup command.
 
 ```dockerfile
 FROM node:18-alpine
@@ -44,7 +44,11 @@ EXPOSE 3000
 CMD ["node", "server.js"]
 ```
 
-### Design Overview
+The following screenshot shows the completed Dockerfile in Visual Studio Code.
+
+![Dockerfile for the Node.js application](../screenshots/phase-04/01-dockerfile.png)
+
+### Dockerfile Design
 
 | Instruction | Purpose |
 |-------------|---------|
@@ -56,17 +60,22 @@ CMD ["node", "server.js"]
 | `EXPOSE 3000` | Documents the application listening port |
 | `CMD ["node", "server.js"]` | Starts the Express application |
 
+
 ---
 
-## Build Process
+## Building the Docker Image
 
-From the project root, the Docker image was built using:
+From the project root, the Docker image was built using the following command:
 
 ```bash
 docker build --no-cache -t node-monitoring-app:v1 app/
 ```
 
-The build completed successfully and produced the application image.
+During the build process, Docker downloaded the Node.js 18 Alpine base image, installed the application dependencies, copied the application source code, and packaged everything into a reusable container image tagged as `node-monitoring-app:v1`.
+
+The following screenshot shows the successful Docker image build using Docker BuildKit.
+
+![Successful Docker image build](../screenshots/phase-04/02-docker-build.png)
 
 ---
 
@@ -78,17 +87,17 @@ To confirm the image was created successfully:
 docker images
 ```
 
-The output included:
+The output included the newly created image `node-monitoring-app` with the `v1` tag, confirming that the build completed successfully.
 
-```
-node-monitoring-app    v1
-```
+The following screenshot shows the Docker image available in the local image repository.
+
+![Docker images](../screenshots/phase-04/03-docker-images.png)
 
 ---
 
 ## Run the Container
 
-The container was started using:
+After verifying that the image had been created successfully, a container was started from the image using the following command:
 
 ```bash
 docker run -d \
@@ -96,6 +105,8 @@ docker run -d \
   -p 3000:3000 \
   node-monitoring-app:v1
 ```
+
+The `-p 3000:3000` option maps port **3000** on the host machine to port **3000** inside the container, making the application accessible through a web browser.
 
 ---
 
@@ -109,35 +120,51 @@ docker ps
 
 The output showed the container in the **Up** state with port **3000** mapped to the host.
 
+The following screenshot confirms that the container is running successfully.
+
+![Running Docker container](../screenshots/phase-04/04-docker-ps.png)
+
 ---
 
 ## Verify the Application
 
-The application was successfully accessed through the browser:
+After starting the container, the application was accessed through a web browser to verify that it was functioning correctly.
 
-- http://localhost:3000
-- http://localhost:3000/health
-- http://localhost:3000/metrics
+### Home Page
 
-Verification confirmed:
+The root endpoint loaded successfully, confirming that the Express application was running inside the Docker container.
 
-- Home page loads successfully
-- Health endpoint returns `ok`
-- Prometheus metrics endpoint exposes application metrics
+![Application home page](../screenshots/phase-04/05-home-page.png)
 
-The application behaved exactly as it did when running directly on the local machine.
+### Health Endpoint
+
+The `/health` endpoint returned an `ok` response, confirming that the application's health check endpoint was operational.
+
+![Health endpoint](../screenshots/phase-04/06-health-endpoint.png)
+
+### Metrics Endpoint
+
+The `/metrics` endpoint exposed Prometheus metrics, confirming that application monitoring remained functional after containerization.
+
+![Metrics endpoint](../screenshots/phase-04/07-metrics-endpoint.png)
 
 ---
 
 ## Stop and Remove the Container
 
-After validation, the container was stopped and removed.
+After validation, the running container was stopped and removed to clean up the local Docker environment.
 
 ```bash
 docker stop node-monitoring-container
 
 docker rm node-monitoring-container
 ```
+
+The `docker ps` command returned no running containers, confirming that the application container had been successfully stopped and removed.
+
+The following screenshot shows the successful cleanup of the Docker container.
+
+![Container stopped and removed](../screenshots/phase-04/08-container-stop-remove.png)
 
 ---
 
@@ -170,20 +197,20 @@ npm install
 npm test
 ```
 
-After regenerating the lock file and confirming that all unit tests passed, the Docker image built successfully.
+After regenerating the dependency lock file, reinstalling the project dependencies, and confirming that all unit tests passed successfully, the Docker image built without errors.
 
 ---
 
 ## Commands Used
 
-| Step | Command |
-|------|---------|
-| Build image | `docker build --no-cache -t node-monitoring-app:v1 app/` |
-| List images | `docker images` |
-| Run container | `docker run -d --name node-monitoring-container -p 3000:3000 node-monitoring-app:v1` |
-| Verify container | `docker ps` |
-| Stop container | `docker stop node-monitoring-container` |
-| Remove container | `docker rm node-monitoring-container` |
+| Step             | Command                                                                       |
+|------------------|-------------------------------------------------------------------------------|
+| Build image      | `docker build --no-cache -t node-monitoring-app:v1 app/`                      |
+| List images      | `docker images`                                                               |
+| Run container    | `docker run -d --name node-monitoring-container -p 3000:3000 node-monitoring-app:v1` |
+| Verify container | `docker ps`                                                                   |
+| Stop container   | `docker stop node-monitoring-container`                                       |
+| Remove container | `docker rm node-monitoring-container`                                         |
 
 ---
 
@@ -210,14 +237,35 @@ app/
 
 This phase successfully achieved the following:
 
-- Dockerized the Node.js monitoring application
-- Created a production-ready Dockerfile
-- Built the Docker image successfully
-- Verified the containerized application locally
-- Confirmed all application endpoints function correctly inside the container
+- Created a production-ready Dockerfile for the Node.js monitoring application
+- Built a reusable Docker image using Docker BuildKit
+- Verified that the Docker image was created successfully
+- Started the application inside a Docker container
+- Confirmed the container was running correctly
+- Validated the home, health, and metrics endpoints
+- Verified that the application behaved identically in both the local and containerized environments
 
 ---
 
 ## Key Takeaway
 
-Containerizing the application provides a consistent and reproducible runtime environment, eliminating dependency differences between development and deployment environments. This establishes a reliable foundation for the next phase, where Docker image creation will be automated within the Jenkins CI/CD pipeline before publishing the image to Amazon Elastic Container Registry (ECR).
+Containerizing the application provides a consistent and reproducible runtime environment, eliminating dependency differences between development and deployment environments. The resulting Docker image serves as the deployment artifact for the remainder of the project and establishes a solid foundation for provisioning the required AWS infrastructure using Terraform before implementing the Jenkins CI/CD pipeline.
+
+---
+
+## Next Phase
+
+With the application successfully containerized, the next phase focuses on provisioning the cloud infrastructure required to support an automated CI/CD pipeline and Kubernetes deployment.
+
+Using Terraform, the infrastructure will be defined as code and deployed to AWS, including the resources required for image storage, continuous integration, and container orchestration.
+
+The infrastructure provisioning phase will include:
+
+- Configuring the AWS provider
+- Creating an Amazon Elastic Container Registry (ECR) repository
+- Provisioning the networking resources required for deployment
+- Creating an Amazon EKS cluster and managed worker nodes
+- Configuring IAM roles and permissions
+- Producing reusable Infrastructure as Code (IaC) for future deployments
+
+Once the infrastructure has been provisioned successfully, the following phase will integrate the Dockerized application into a Jenkins CI/CD pipeline that automates code quality analysis, security validation, container image publishing, and deployment to Amazon EKS.
