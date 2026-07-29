@@ -62,6 +62,12 @@ npm install --save-dev jest supertest
 
 **Supertest** enables HTTP endpoint testing directly against the Express application without starting an actual web server.
 
+### Installation Output
+
+The following screenshot shows the successful installation of Jest and Supertest.
+
+![Jest and Supertest installation](../screenshots/phase-03/01-jest-installation.png)
+
 ---
 
 ### 3. Update package.json
@@ -95,6 +101,12 @@ Verify that the development dependencies now include:
 ```
 
 > **Note:** Version numbers may vary depending on when the dependencies are installed.
+
+### Updated package.json
+
+After installing the testing dependencies and updating the test script, the `package.json` file reflects the new configuration.
+
+![Updated package.json](../screenshots/phase-03/02-package-json.png)
 
 ---
 
@@ -138,6 +150,12 @@ Test Suites: 1 passed, 1 total
 Tests:       3 passed, 3 total
 Snapshots:   0 total
 ```
+
+### Test Execution
+
+The following screenshot shows the successful execution of the automated unit tests.
+
+![Successful Jest test execution](../screenshots/phase-03/03-test-results.png)
 
 ---
 
