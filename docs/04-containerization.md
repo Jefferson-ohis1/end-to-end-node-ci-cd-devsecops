@@ -46,7 +46,7 @@ CMD ["node", "server.js"]
 
 The following screenshot shows the completed Dockerfile in Visual Studio Code.
 
-![Dockerfile for the Node.js application](../screenshots/phase-04/01-dockerfile.png)
+![Dockerfile for the Node.js application](../screenshots/04-containerization/01-dockerfile.png)
 
 ### Dockerfile Design
 
@@ -75,7 +75,7 @@ During the build process, Docker downloaded the Node.js 18 Alpine base image, in
 
 The following screenshot shows the successful Docker image build using Docker BuildKit.
 
-![Successful Docker image build](../screenshots/phase-04/02-docker-build.png)
+![Successful Docker image build](../screenshots/04-containerization/02-docker-build.png)
 
 ---
 
@@ -91,7 +91,7 @@ The output included the newly created image `node-monitoring-app` with the `v1` 
 
 The following screenshot shows the Docker image available in the local image repository.
 
-![Docker images](../screenshots/phase-04/03-docker-images.png)
+![Docker images](../screenshots/04-containerization/03-docker-images.png)
 
 ---
 
@@ -122,7 +122,7 @@ The output showed the container in the **Up** state with port **3000** mapped to
 
 The following screenshot confirms that the container is running successfully.
 
-![Running Docker container](../screenshots/phase-04/04-docker-ps.png)
+![Running Docker container](../screenshots/04-containerization/04-docker-ps.png)
 
 ---
 
@@ -134,19 +134,19 @@ After starting the container, the application was accessed through a web browser
 
 The root endpoint loaded successfully, confirming that the Express application was running inside the Docker container.
 
-![Application home page](../screenshots/phase-04/05-home-page.png)
+![Application home page](../screenshots/04-containerization/05-home-page.png)
 
 ### Health Endpoint
 
 The `/health` endpoint returned an `ok` response, confirming that the application's health check endpoint was operational.
 
-![Health endpoint](../screenshots/phase-04/06-health-endpoint.png)
+![Health endpoint](../screenshots/04-containerization/06-health-endpoint.png)
 
 ### Metrics Endpoint
 
 The `/metrics` endpoint exposed Prometheus metrics, confirming that application monitoring remained functional after containerization.
 
-![Metrics endpoint](../screenshots/phase-04/07-metrics-endpoint.png)
+![Metrics endpoint](../screenshots/04-containerization/07-metrics-endpoint.png)
 
 ---
 
@@ -164,7 +164,7 @@ The `docker ps` command returned no running containers, confirming that the appl
 
 The following screenshot shows the successful cleanup of the Docker container.
 
-![Container stopped and removed](../screenshots/phase-04/08-container-stop-remove.png)
+![Container stopped and removed](../screenshots/04-containerization/08-container-stop-remove.png)
 
 ---
 

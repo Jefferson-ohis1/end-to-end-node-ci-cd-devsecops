@@ -120,7 +120,7 @@ Listening on port 3000
 
 The refactored application starts successfully using `node server.js`.
 
-![Server Startup](../screenshots/phase-02/01-server-startup.png)
+![Server Startup](../screenshots/02-application-refactoring/01-server-startup.png)
 
 Verify the application endpoints:
 
@@ -140,7 +140,7 @@ The refactored application was verified by accessing the available endpoints.
 - `http://localhost:3000/health`
 - `http://localhost:3000/metrics`
 
-![Browser Verification](../screenshots/phase-02/02-browser-verification.png)
+![Browser Verification](../screenshots/02-application-refactoring/02-browser-verification.png)
 ---
 
 ## Second Commit

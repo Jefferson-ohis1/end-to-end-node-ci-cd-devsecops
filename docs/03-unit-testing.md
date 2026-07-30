@@ -66,7 +66,7 @@ npm install --save-dev jest supertest
 
 The following screenshot shows the successful installation of Jest and Supertest.
 
-![Jest and Supertest installation](../screenshots/phase-03/01-jest-installation.png)
+![Jest and Supertest installation](../screenshots/03-unit-testing/01-jest-installation.png)
 
 ---
 
@@ -106,7 +106,7 @@ Verify that the development dependencies now include:
 
 After installing the testing dependencies and updating the test script, the `package.json` file reflects the new configuration.
 
-![Updated package.json](../screenshots/phase-03/02-package-json.png)
+![Updated package.json](../screenshots/03-unit-testing/02-package-json.png)
 
 ---
 
@@ -155,7 +155,7 @@ Snapshots:   0 total
 
 The following screenshot shows the successful execution of the automated unit tests.
 
-![Successful Jest test execution](../screenshots/phase-03/03-test-results.png)
+![Successful Jest test execution](../screenshots/03-unit-testing/03-test-results.png)
 
 ---
 

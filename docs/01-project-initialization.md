@@ -42,7 +42,7 @@ The initial `app.js` contained:
 
 The initial project structure after creating the application files:
 
-![Project Structure](../screenshots/phase-01/01-project-structure.png)
+![Project Structure](../screenshots/01-project-initialization/01-project-structure.png)
 
 ---
 
@@ -96,7 +96,7 @@ Listening on port 3000
 
 The application started successfully and began listening on port 3000.
 
-![Application Startup](../screenshots/phase-01/02-application-startup.png)
+![Application Startup](../screenshots/01-project-initialization/02-application-startup.png)
 
 
 Verify the following endpoints:
@@ -111,19 +111,19 @@ Verify the following endpoints:
 
 The application's home page was successfully rendered.
 
-![Home Page](../screenshots/phase-01/03-home-page.png)
+![Home Page](../screenshots/01-project-initialization/03-home-page.png)
 
 ### Health Endpoint
 
 The health endpoint returned the expected response.
 
-![Health Endpoint](../screenshots/phase-01/04-health-endpoint.png)
+![Health Endpoint](../screenshots/01-project-initialization/04-health-endpoint.png)
 
 ### Prometheus Metrics
 
 The metrics endpoint successfully exposed Prometheus application metrics.
 
-![Prometheus Metrics](../screenshots/phase-01/05-metrics-endpoint.png)
+![Prometheus Metrics](../screenshots/01-project-initialization/05-metrics-endpoint.png)
 
 ---
 
