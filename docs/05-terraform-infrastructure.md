@@ -551,6 +551,93 @@ Once these associations are created, both public subnets inherit the routing con
 
 ---
 
+## Private Route Table
+
+The private route table controls network traffic for resources deployed within the private subnets of the Virtual Private Cloud (VPC).
+
+Unlike the public route table, the private route table is not connected directly to the Internet Gateway. Instead, it routes outbound internet traffic through the NAT Gateway, allowing private resources to initiate outbound connections while remaining inaccessible from the public internet.
+
+This approach follows AWS networking best practices for production workloads by ensuring that application servers and Amazon EKS worker nodes remain isolated within private subnets.
+
+The private route table is defined in Terraform as:
+
+```hcl
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.node_vpc.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.node_nat.id
+  }
+
+  tags = {
+    Name = "${var.project_name}-private-route-table"
+  }
+}
+```
+
+---
+
+## Default Route to the NAT Gateway
+
+Similar to the public route table, the private route table contains a default route that matches all IPv4 addresses using the destination CIDR block:
+
+```text
+0.0.0.0/0
+```
+
+However, instead of forwarding traffic to the Internet Gateway, the private route table directs all outbound internet traffic to the NAT Gateway.
+
+```hcl
+route {
+  cidr_block     = "0.0.0.0/0"
+  nat_gateway_id = aws_nat_gateway.node_nat.id
+}
+```
+
+The NAT Gateway then forwards outbound traffic to the Internet Gateway using its associated Elastic IP address. Response traffic is automatically returned to the originating resources within the private subnets.
+
+This architecture enables Amazon EKS worker nodes and other private workloads to:
+
+- Download operating system updates
+- Pull container images from Amazon Elastic Container Registry (ECR)
+- Communicate with AWS services
+- Access external package repositories
+
+while remaining protected from unsolicited inbound internet traffic.
+
+---
+
+## Private Route Table Associations
+
+After creating the private route table, it must be associated with each private subnet so that the routing configuration is applied.
+
+The first association connects Private Subnet 1 to the private route table:
+
+```hcl
+resource "aws_route_table_association" "private_subnet_1_assoc" {
+  subnet_id      = aws_subnet.private_subnet_1.id
+  route_table_id = aws_route_table.private_rt.id
+}
+```
+The second association connects Private Subnet 2:
+
+```hcl
+resource "aws_route_table_association" "private_subnet_2_assoc" {
+  subnet_id      = aws_subnet.private_subnet_2.id
+  route_table_id = aws_route_table.private_rt.id
+}
+```
+
+Once these associations are created, both private subnets inherit the routing configuration defined in the private route table.
+
+Resources launched within these private subnets are unable to receive inbound internet traffic directly. Instead, outbound connections are securely routed through the NAT Gateway, providing internet access while preserving the isolation of the private network.
+
+This networking model aligns with AWS best practices for Amazon EKS, where worker nodes are typically deployed in private subnets to improve the overall security posture of the Kubernetes cluster.
+
+---
+
+
 ### Current VPC Networking Architecture
 
 At this stage of the implementation, the networking architecture consists of:
@@ -562,9 +649,11 @@ At this stage of the implementation, the networking architecture consists of:
 - Elastic IP
 - NAT Gateway
 - Public Route Table
+- Private Route Table
 - Public Route Table Associations
+- Private Route Table Associations
 
-The remaining networking configuration will introduce a private route table and private route table associations, allowing workloads deployed within the private subnets to securely access the internet through the NAT Gateway while remaining inaccessible from direct inbound internet traffic.
+The VPC networking layer is now fully configured. Public subnets provide internet connectivity through the Internet Gateway, while private subnets securely access external resources through the NAT Gateway. This architecture follows AWS networking best practices and provides the secure foundation required for deploying an Amazon EKS cluster.
 
 ---
 
@@ -612,14 +701,18 @@ Designing the AWS architecture before writing Terraform configuration establishe
 
 ## Next Step
 
-With the public routing configuration now complete, the next step is to configure private network routing by provisioning:
+With the VPC networking layer now fully configured, the next step is to define the security boundaries for the infrastructure by creating AWS Security Groups.
 
-- Private Route Table
-- Default Route to the NAT Gateway
-- Private Route Table Associations
+The security groups will control inbound and outbound traffic for the Amazon EKS control plane, worker nodes, and supporting AWS resources. Properly configured security groups ensure that only authorized network traffic is permitted while maintaining the principle of least privilege.
 
-These resources will allow workloads running in the private subnets, including Amazon EKS worker nodes, to securely access the internet for software updates, container image downloads, and communication with AWS services without exposing them directly to inbound internet traffic.
+The next implementation will introduce:
 
-Completing the private routing configuration finalizes the networking foundation required for the Amazon EKS cluster.
+- EKS Cluster Security Group
+- Worker Node Security Group
+- Ingress Rules
+- Egress Rules
+- Security Group Associations
+
+These resources complete the network security foundation required before provisioning the Amazon EKS cluster.
 
 ---
