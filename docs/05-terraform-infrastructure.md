@@ -343,7 +343,7 @@ Without an Internet Gateway, resources inside the VPC would remain completely is
 
 The Internet Gateway is defined as follows:
 
-```
+```hcl
 resource "aws_internet_gateway" "node_igw" {
   vpc_id = aws_vpc.node_vpc.id
 
@@ -433,7 +433,7 @@ while remaining inaccessible from the public internet.
 The Elastic IP is defined in Terraform as:
 
 
-```
+```hcl
 resource "aws_eip" "nat_eip" {
   domain = "vpc"
 
@@ -453,7 +453,7 @@ In this project, the NAT Gateway is deployed into the first public subnet and is
 
 The NAT Gateway is defined in Terraform as:
 
-```
+```hcl
 resource "aws_nat_gateway" "node_nat" {
   allocation_id = aws_eip.nat_eip.id
   subnet_id     = aws_subnet.public_subnet_1.id
@@ -473,6 +473,100 @@ Placing the NAT Gateway in a public subnet allows it to communicate with the Int
 
 ---
 
+## Public Route Table
+
+A route table determines how network traffic is directed within a Virtual Private Cloud (VPC). In this project, a dedicated public route table is created to provide internet connectivity for resources deployed inside the public subnets.
+
+The public route table is associated with the Internet Gateway attached to the VPC. This allows publicly accessible resources, such as the NAT Gateway and internet-facing load balancers, to send and receive traffic from the internet.
+
+The route table is defined in Terraform as:
+
+```hcl
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.node_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.node_igw.id
+  }
+
+  tags = {
+    Name = "${var.project_name}-public-route-table"
+  }
+}
+```
+
+---
+
+## Default Internet Route
+
+The public route table contains a default route with the destination CIDR block:
+
+```text
+0.0.0.0/0
+```
+
+This route represents all IPv4 addresses outside the VPC.
+
+Rather than routing traffic internally, the default route forwards all outbound internet traffic through the Internet Gateway.
+
+Without this route, resources located in the public subnets would be unable to communicate with external networks even if an Internet Gateway were attached to the VPC.
+
+The default route is configured as:
+
+```hcl
+route {
+  cidr_block = "0.0.0.0/0"
+  gateway_id = aws_internet_gateway.node_igw.id
+}
+```
+
+---
+
+## Public Route Table Associations
+
+Creating a route table alone does not affect any subnet. Each subnet must be explicitly associated with the appropriate route table.
+
+Both public subnets are associated with the public route table, ensuring that resources launched within those subnets inherit the internet routing configuration.
+
+The first association connects Public Subnet 1:
+
+```hcl
+resource "aws_route_table_association" "public_subnet_1_assoc" {
+  subnet_id      = aws_subnet.public_subnet_1.id
+  route_table_id = aws_route_table.public_rt.id
+}
+```
+
+The second association connects Public Subnet 2:
+
+```hcl
+resource "aws_route_table_association" "public_subnet_2_assoc" {
+  subnet_id      = aws_subnet.public_subnet_2.id
+  route_table_id = aws_route_table.public_rt.id
+}
+```
+
+Once these associations are created, both public subnets inherit the routing configuration defined in the public route table. Resources deployed into these subnets can communicate with the internet through the Internet Gateway, provided they have public IP addresses and appropriate security group rules.
+
+---
+
+### Current VPC Networking Architecture
+
+At this stage of the implementation, the networking architecture consists of:
+
+- Amazon VPC
+- Internet Gateway
+- Two public subnets
+- Two private subnets
+- Elastic IP
+- NAT Gateway
+- Public Route Table
+- Public Route Table Associations
+
+The remaining networking configuration will introduce a private route table and private route table associations, allowing workloads deployed within the private subnets to securely access the internet through the NAT Gateway while remaining inaccessible from direct inbound internet traffic.
+
+---
 
 ## IAM
 
@@ -518,13 +612,14 @@ Designing the AWS architecture before writing Terraform configuration establishe
 
 ## Next Step
 
-With the VPC, subnets, Internet Gateway, Elastic IP, and NAT Gateway now provisioned, the next step is to configure network routing by creating:
+With the public routing configuration now complete, the next step is to configure private network routing by provisioning:
 
-- Public Route Table
 - Private Route Table
-- Public Route Table Association
+- Default Route to the NAT Gateway
 - Private Route Table Associations
 
-These routing resources will direct internet traffic from the public subnets through the Internet Gateway while allowing workloads in the private subnets to securely access the internet through the NAT Gateway. Completing the routing configuration finalizes the networking foundation required for Amazon EKS.
+These resources will allow workloads running in the private subnets, including Amazon EKS worker nodes, to securely access the internet for software updates, container image downloads, and communication with AWS services without exposing them directly to inbound internet traffic.
+
+Completing the private routing configuration finalizes the networking foundation required for the Amazon EKS cluster.
 
 ---
