@@ -343,7 +343,7 @@ Without an Internet Gateway, resources inside the VPC would remain completely is
 
 The Internet Gateway is defined as follows:
 
-```hcl
+```
 resource "aws_internet_gateway" "node_igw" {
   vpc_id = aws_vpc.node_vpc.id
 
@@ -413,8 +413,66 @@ This tag enables Amazon EKS to provision internal Elastic Load Balancers for Kub
 
 Private subnets will later access the internet securely through a NAT Gateway, allowing the worker nodes to download container images, retrieve software updates, and communicate with AWS services without exposing them to inbound internet traffic.
 
+---
+
+## Elastic IP
+
+An Elastic IP (EIP) is a static public IPv4 address allocated by AWS.
+
+In this project, the Elastic IP is reserved specifically for the NAT Gateway. Rather than assigning public IP addresses directly to resources running in private subnets, the NAT Gateway uses the Elastic IP to provide outbound internet connectivity on their behalf.
+
+This architecture allows Amazon EKS worker nodes to:
+
+- Pull container images from Amazon Elastic Container Registry (ECR)
+- Download operating system updates
+- Communicate with AWS services
+- Access external package repositories
+
+while remaining inaccessible from the public internet.
+
+The Elastic IP is defined in Terraform as:
+
+
+```
+resource "aws_eip" "nat_eip" {
+  domain = "vpc"
+
+  tags = {
+    Name = "${var.project_name}-nat-eip"
+  }
+}
+```
 
 ---
+
+## NAT Gateway
+
+A Network Address Translation (NAT) Gateway enables resources within private subnets to access the internet without exposing them to inbound internet traffic.
+
+In this project, the NAT Gateway is deployed into the first public subnet and is associated with the Elastic IP created earlier. The private subnets will later use this NAT Gateway through their route table, allowing Amazon EKS worker nodes to communicate with external services while remaining isolated from direct internet access.
+
+The NAT Gateway is defined in Terraform as:
+
+```
+resource "aws_nat_gateway" "node_nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.public_subnet_1.id
+
+  depends_on = [
+    aws_internet_gateway.node_igw
+  ]
+
+  tags = {
+    Name = "${var.project_name}-nat-gateway"
+  }
+}
+```
+
+Placing the NAT Gateway in a public subnet allows it to communicate with the Internet Gateway, while private subnets route outbound traffic through it. This design follows AWS networking best practices for production Amazon EKS deployments.
+
+
+---
+
 
 ## IAM
 
@@ -460,10 +518,13 @@ Designing the AWS architecture before writing Terraform configuration establishe
 
 ## Next Step
 
-With the Terraform project structure now defined, the next step is to configure the AWS provider.
+With the VPC, subnets, Internet Gateway, Elastic IP, and NAT Gateway now provisioned, the next step is to configure network routing by creating:
 
-This involves specifying the Terraform and AWS provider versions, selecting the AWS region where infrastructure will be provisioned, and establishing the provider configuration that all subsequent Terraform resources will use.
+- Public Route Table
+- Private Route Table
+- Public Route Table Association
+- Private Route Table Associations
 
-Once the provider configuration is complete, Terraform will be ready to begin provisioning AWS resources, starting with the Amazon Elastic Container Registry (ECR).
+These routing resources will direct internet traffic from the public subnets through the Internet Gateway while allowing workloads in the private subnets to securely access the internet through the NAT Gateway. Completing the routing configuration finalizes the networking foundation required for Amazon EKS.
 
 ---
