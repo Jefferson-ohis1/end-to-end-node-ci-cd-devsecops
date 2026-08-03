@@ -73,6 +73,22 @@ The final architecture will include:
 
 ---
 
+## AWS Infrastructure Provisioned
+
+The infrastructure for this project has been provisioned using Terraform and includes:
+
+- Amazon VPC
+- Public and Private Subnets
+- Internet Gateway
+- Route Tables
+- NAT Gateway
+- Security Groups
+- IAM Roles and Policies
+- Amazon Elastic Container Registry (ECR)
+- Amazon Elastic Kubernetes Service (EKS)
+
+---
+
 ## Technology Stack
 
 | Category | Technologies |
@@ -82,10 +98,10 @@ The final architecture will include:
 | Monitoring Library | Prometheus Client |
 | Unit Testing | Jest, Supertest |
 | Containerization | Docker |
-| Infrastructure as Code | Terraform *(Upcoming)* |
+| Infrastructure as Code | Terraform |
 | Cloud Provider | Amazon Web Services (AWS) |
-| Container Registry | Amazon Elastic Container Registry *(Upcoming)* |
-| Container Orchestration | Amazon Elastic Kubernetes Service *(Upcoming)* |
+| Container Registry | Amazon Elastic Container Registry (Amazon ECR) |
+| Container Orchestration | Amazon Elastic Kubernetes Service (Amazon EKS) |
 | Continuous Integration | Jenkins *(Upcoming)* |
 | Static Code Analysis | SonarCloud *(Upcoming)* |
 | Dependency Scanning | Snyk *(Upcoming)* |
@@ -107,7 +123,7 @@ The project consists of four major components:
 - Project documentation
 - Supporting screenshots
 
-As additional phases are completed, the project will expand to include Terraform configurations, Kubernetes manifests, Jenkins pipeline definitions, and monitoring resources.
+As additional phases are completed, the project will continue to expand with Kubernetes manifests, Jenkins pipeline definitions, monitoring resources, and DevSecOps automation.
 
 ---
 
@@ -115,9 +131,9 @@ As additional phases are completed, the project will expand to include Terraform
 
 ```text
 end-to-end-node-ci-cd-devsecops/
-│
 ├── app/
 │   ├── app.js
+│   ├── app.test.js
 │   ├── server.js
 │   ├── Dockerfile
 │   ├── package.json
@@ -127,15 +143,27 @@ end-to-end-node-ci-cd-devsecops/
 │   ├── 01-project-initialization.md
 │   ├── 02-application-refactoring.md
 │   ├── 03-unit-testing.md
-│   └── 04-containerization.md
+│   ├── 04-containerization.md
+│   └── 05-terraform-infrastructure.md
 │
 ├── infra/
+│   ├── provider.tf
+│   ├── variables.tf
+│   ├── terraform.tfvars
+│   ├── versions.tf
+│   ├── vpc.tf
+│   ├── security-groups.tf
+│   ├── iam.tf
+│   ├── ecr.tf
+│   ├── eks.tf
+│   └── outputs.tf
 │
 ├── screenshots/
-│   ├── phase-01/
-│   ├── phase-02/
-│   ├── phase-03/
-│   └── phase-04/
+│   ├── 01-project-initialization/
+│   ├── 02-application-refactoring/
+│   ├── 03-unit-testing/
+│   ├── 04-containerization/
+│   └── 05-terraform-infrastructure/
 │
 ├── .gitignore
 └── README.md
@@ -160,7 +188,7 @@ Unit Testing
 Docker Containerization
             │
             ▼
-Terraform Infrastructure (Upcoming)
+Terraform Infrastructure
             │
             ▼
 Jenkins CI/CD Pipeline (Upcoming)
@@ -188,7 +216,7 @@ Grafana Dashboards (Upcoming)
 | Phase 2 – Application Refactoring | ✅ Completed |
 | Phase 3 – Unit Testing | ✅ Completed |
 | Phase 4 – Docker Containerization | ✅ Completed |
-| Phase 5 – AWS Infrastructure with Terraform | 🚧 Planned |
+| Phase 5 – AWS Infrastructure with Terraform | ✅ Completed |
 | Phase 6 – Jenkins CI/CD & DevSecOps Pipeline | 🚧 Planned |
 | Phase 7 – Amazon EKS Deployment | 🚧 Planned |
 | Phase 8 – Prometheus & Grafana Monitoring | 🚧 Planned |
@@ -197,7 +225,7 @@ Grafana Dashboards (Upcoming)
 
 ## Documentation
 
-Detailed documentation for each completed phase is available in the `docs/` directory.
+Detailed documentation for each implementation phase is available in the `docs/` directory.
 
 | Document | Description |
 |----------|-------------|
@@ -205,6 +233,7 @@ Detailed documentation for each completed phase is available in the `docs/` dire
 | `02-application-refactoring.md` | Application restructuring and improvements |
 | `03-unit-testing.md` | Unit testing using Jest and Supertest |
 | `04-containerization.md` | Docker containerization and local verification |
+| `05-terraform-infrastructure.md` | AWS architecture design and Terraform infrastructure provisioning |
 
 Additional documentation will be added as new phases are completed.
 
@@ -216,13 +245,14 @@ Project screenshots are organized by implementation phase.
 
 ```text
 screenshots/
-├── phase-01/
-├── phase-02/
-├── phase-03/
-└── phase-04/
+├── 01-project-initialization/
+├── 02-application-refactoring
+├── 03-unit-testing/
+└── 04-containerization/
+└── 05-terraform-infrastructure/
 ```
 
-Additional screenshots will be included for Terraform, Jenkins, Kubernetes, Prometheus, and Grafana as the project progresses.
+Additional screenshots for Jenkins, Amazon EKS deployment, DevSecOps security scanning, Prometheus, and Grafana will be added as subsequent phases are completed.
 
 ---
 
@@ -235,9 +265,9 @@ To build and run this project locally, ensure the following tools are installed:
 - npm
 - Docker Desktop
 - Visual Studio Code
-- AWS CLI *(Upcoming)*
-- Terraform *(Upcoming)*
-- kubectl *(Upcoming)*
+- AWS CLI
+- Terraform
+- kubectl
 - Minikube *(Optional for local Kubernetes testing)*
 - Jenkins *(Upcoming)*
 
@@ -295,13 +325,13 @@ The completed pipeline will automate the following stages:
 
 - Source Code Checkout
 - Unit Testing
-- SonarCloud Static Code Analysis
-- Snyk Dependency Scanning
-- Docker Image Build
-- Trivy Container Vulnerability Scanning
+- SonarCloud Scan
+- Snyk Scan
+- Docker Build
+- Trivy Scan
+- Push Docker Image to Amazon ECR
+- Deploy to Amazon EKS
 - OWASP ZAP Dynamic Security Testing
-- Push Docker Image to Amazon Elastic Container Registry (ECR)
-- Deploy to Amazon Elastic Kubernetes Service (EKS)
 - Monitor Application Health
 - Verify Kubernetes Rollout
 
@@ -311,7 +341,6 @@ The completed pipeline will automate the following stages:
 
 The following enhancements will be implemented as the project progresses:
 
-- Provision AWS infrastructure using Terraform
 - Build a Jenkins CI/CD pipeline
 - Integrate SonarCloud
 - Integrate Snyk
@@ -330,9 +359,9 @@ The following enhancements will be implemented as the project progresses:
 
 **Jefferson Ohis**
 
-AWS Certified Cloud Practitioner
+DevOps & Cloud Engineer | AWS Certified Cloud Practitioner
 
-Aspiring DevOps & Cloud Engineer
+Passionate about building secure, automated, and scalable cloud infrastructure using DevOps and DevSecOps best practices.
 
 GitHub: https://github.com/Jefferson-ohis1
 
