@@ -1,5 +1,13 @@
 # End-to-End Node.js CI/CD DevSecOps Pipeline on AWS
 
+![AWS](https://img.shields.io/badge/AWS-Cloud-orange?logo=amazonaws)
+![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?logo=terraform)
+![Docker](https://img.shields.io/badge/Docker-Containerization-2496ED?logo=docker)
+![Jenkins](https://img.shields.io/badge/Jenkins-CI%2FCD-D24939?logo=jenkins)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS-326CE5?logo=kubernetes)
+![Node.js](https://img.shields.io/badge/Node.js-Application-339933?logo=node.js)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 > A comprehensive portfolio project demonstrating modern DevOps and DevSecOps practices using Node.js, Docker, Terraform, Jenkins, AWS, Kubernetes, Prometheus, and Grafana.
 
 
@@ -7,21 +15,23 @@
 ## Table of Contents
 
 1. [Project Overview](#project-overview)
-2. [Project Objectives](#project-objectives)
-3. [Solution Architecture](#solution-architecture)
-4. [Technology Stack](#technology-stack)
-5. [Project Structure](#project-structure)
-6. [Repository Structure](#repository-structure)
-7. [Project Workflow](#project-workflow)
-8. [Project Phases](#project-phases)
-9. [Documentation](#documentation)
-10. [Screenshots](#screenshots)
-11. [Prerequisites](#prerequisites)
-12. [Running the Project Locally](#running-the-project-locally)
-13. [Future CI/CD Pipeline](#future-cicd-pipeline)
-14. [Future Enhancements](#future-enhancements)
-15. [Author](#author)
-
+2. [Current Progress](#current-progress)
+3. [Project Objectives](#project-objectives)
+4. [Solution Architecture](#solution-architecture)
+5. [AWS Infrastructure Provisioned](#aws-infrastructure-provisioned)
+6. [Technology Stack](#technology-stack)
+7. [Project Structure](#project-structure)
+8. [Repository Structure](#repository-structure)
+9. [Project Workflow](#project-workflow)
+10. [Project Phases](#project-phases)
+11. [Latest Milestone](#latest-milestone)
+12. [Documentation](#documentation)
+13. [Screenshots](#screenshots)
+14. [Prerequisites](#prerequisites)
+15. [Running the Project Locally](#running-the-project-locally)
+16. [Future CI/CD Pipeline](#future-cicd-pipeline)
+17. [Future Enhancements](#future-enhancements)
+18. [Author](#author)
 ---
 
 
@@ -31,9 +41,24 @@ This repository demonstrates the design, implementation, and deployment of a com
 
 The project combines modern DevOps and DevSecOps practices by integrating Infrastructure as Code (Terraform), containerization (Docker), continuous integration and continuous deployment (Jenkins), automated security scanning (SonarCloud, Snyk, Trivy, and OWASP ZAP), container orchestration (Amazon Elastic Kubernetes Service), and application monitoring (Prometheus and Grafana).
 
-Rather than focusing on a single technology, this project demonstrates how multiple industry-standard tools work together to automate the complete software delivery lifecycle—from application development to deployment and monitoring.
+Rather than focusing on a single technology, this project demonstrates how industry-standard DevOps and DevSecOps tools integrate to automate the complete software delivery lifecycle—from application development and infrastructure provisioning to deployment, security validation, and monitoring.
 
-This repository is being developed incrementally, with each phase documented in detail to demonstrate both the implementation process and the underlying engineering concepts.
+The repository is being developed incrementally using a phased implementation approach. Each phase is independently designed, implemented, tested, and documented to demonstrate both the engineering process and the practical application of modern cloud-native DevOps and DevSecOps practices.
+
+
+---
+
+## Key Features
+
+- Infrastructure provisioned using Terraform (IaC)
+- Dedicated Jenkins automation server on Amazon EC2
+- Dockerized Node.js monitoring application
+- Amazon Elastic Kubernetes Service (EKS) deployment platform
+- Amazon Elastic Container Registry (ECR)
+- Automated unit testing with Jest and Supertest
+- Production-ready Jenkins automation server
+- DevSecOps pipeline with SonarCloud, Snyk, Trivy, and OWASP ZAP (upcoming)
+- Monitoring with Prometheus and Grafana (upcoming)
 
 ---
 
@@ -53,22 +78,53 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Jenkins EC2 Infrastructure
 - ✔ IAM Roles & Instance Profiles
 - ✔ Elastic IP Configuration
+- ✔ Jenkins Installation & Configuration
+- ✔ Docker Installation on Jenkins Server
+- ✔ AWS CLI Installation
+- ✔ kubectl Installation
+- ✔ Helm Installation
+- ✔ Trivy Installation
+- ✔ Jenkins Initial Configuration
 
 ### 🚧 In Progress
 
-- Jenkins Installation
-- Jenkins Plugin Configuration
 - Jenkins CI/CD Pipeline
+
 
 ### 📌 Planned
 
 - SonarCloud Integration
 - Snyk Integration
-- Trivy Integration
 - OWASP ZAP Integration
 - Amazon EKS Deployment
 - Prometheus Monitoring
 - Grafana Dashboards
+
+---
+
+## Project Roadmap
+
+The project is being implemented in incremental phases, with each milestone building toward a complete end-to-end DevSecOps platform.
+
+| Phase | Status |
+|--------|:------:|
+| Project Initialization | ✅ |
+| Application Refactoring | ✅ |
+| Unit Testing | ✅ |
+| Docker Containerization | ✅ |
+| Terraform Infrastructure | ✅ |
+| Jenkins Server Setup | ✅ |
+| Jenkins Installation & Configuration | ✅ |
+| Jenkins CI/CD Pipeline | 🚧 |
+| DevSecOps Integration | ⏳ |
+| Amazon EKS Deployment | ⏳ |
+| Prometheus & Grafana | ⏳ |
+
+**Legend**
+
+- ✅ Completed
+- 🚧 In Progress
+- ⏳ Planned
 
 ---
 
@@ -89,22 +145,25 @@ The objectives of this project are to:
 
 ## Solution Architecture (Planned)
 
-The complete solution architecture will be added as the infrastructure and deployment phases are completed.
+The final solution architecture will illustrate the complete DevSecOps workflow, demonstrating how application code progresses from source control through automated testing, security validation, containerization, deployment, and monitoring.
 
-The final architecture will include:
+The architecture will include the following components:
 
 - GitHub
 - Jenkins
-- SonarCloud (Static Application Security Testing - SAST)
-- Snyk (Software Composition Analysis - SCA)
+- SonarCloud (SAST)
+- Snyk (SCA)
 - Docker
-- Trivy (Container Vulnerability Scanning)
-- OWASP ZAP (Dynamic Application Security Testing - DAST)
+- Trivy
 - Amazon Elastic Container Registry (ECR)
 - Amazon Elastic Kubernetes Service (EKS)
+- OWASP ZAP (DAST)
 - Prometheus
 - Grafana
-- AWS Infrastructure provisioned using Terraform
+- AWS Infrastructure provisioned with Terraform
+
+> **Architecture Diagram:** A comprehensive architecture diagram illustrating the end-to-end DevSecOps workflow will be added after the CI/CD pipeline has been fully implemented.
+
 
 ---
 
@@ -129,7 +188,7 @@ The AWS infrastructure for this project has been fully provisioned using Terrafo
 
 ## Technology Stack
 
-| Category | Technologies |
+| Layer | Technology |
 |-----------|--------------|
 | Programming Language | Node.js |
 | Backend Framework | Express.js |
@@ -143,7 +202,7 @@ The AWS infrastructure for this project has been fully provisioned using Terrafo
 | Continuous Integration | Jenkins |
 | Static Code Analysis | SonarCloud *(Upcoming)* |
 | Dependency Scanning | Snyk *(Upcoming)* |
-| Container Security | Trivy *(Upcoming)* |
+| Container Security | Trivy |
 | Dynamic Security Testing | OWASP ZAP *(Upcoming)* |
 | Monitoring | Prometheus *(Upcoming)* |
 | Visualization | Grafana *(Upcoming)* |
@@ -183,7 +242,8 @@ end-to-end-node-ci-cd-devsecops/
 │   ├── 03-unit-testing.md
 │   ├── 04-containerization.md
 │   ├── 05-terraform-infrastructure.md
-│   └── 06-jenkins-server-setup.md
+│   ├── 06-jenkins-server-setup.md
+│   └── 07-jenkins-installation.md
 │
 ├── infra/
 │   ├── provider.tf
@@ -205,7 +265,8 @@ end-to-end-node-ci-cd-devsecops/
 │   ├── 03-unit-testing/
 │   ├── 04-containerization/
 │   ├── 05-terraform-infrastructure/
-│   └── 06-jenkins-server-setup/
+│   ├── 06-jenkins-server-setup/
+│   └── 07-jenkins-installation/
 │
 ├── .gitignore
 ├── Jenkinsfile          (Upcoming)
@@ -242,19 +303,34 @@ Jenkins Server Provisioning
 Jenkins Installation & Configuration
             │
             ▼
-CI/CD Pipeline
+Jenkins CI Pipeline
             │
             ▼
-DevSecOps Security Scanning
+SonarCloud (SAST)
             │
             ▼
-Amazon EKS Deployment
+Snyk (SCA)
             │
             ▼
-Prometheus Monitoring
+Docker Build
             │
             ▼
-Grafana Dashboards
+Trivy Scan
+            │
+            ▼
+Amazon ECR
+            │
+            ▼
+Amazon EKS
+            │
+            ▼
+OWASP ZAP (DAST)
+            │
+            ▼
+Prometheus
+            │
+            ▼
+Grafana
 ```
 
 ### Implementation Phases
@@ -290,7 +366,7 @@ The project is being implemented incrementally, with each phase building upon th
 | **Phase 4 – Docker Containerization** | Containerized the application using Docker for consistent and portable deployments. | ✅ Completed |
 | **Phase 5 – AWS Infrastructure with Terraform** | Provisioned AWS infrastructure using Terraform, including networking, IAM, Amazon ECR, Amazon EKS, and the supporting cloud resources. | ✅ Completed |
 | **Phase 6 – Jenkins Server Setup** | Provisioned the Jenkins automation server on Amazon EC2 with secure networking, IAM integration, and Elastic IP configuration. | ✅ Completed |
-| **Phase 7 – Jenkins Installation & Configuration** | Install and configure Jenkins, Docker, AWS CLI, `kubectl`, and the required plugins for CI/CD automation. | 🚧 In Progress |
+| **Phase 7 – Jenkins Installation & Configuration** | Installed and configured Jenkins, Docker, AWS CLI, kubectl, Helm, Trivy, completed the initial Jenkins setup, and verified the Jenkins dashboard. | ✅ Completed |
 | **Phase 8 – DevSecOps Pipeline** | Build an end-to-end CI/CD pipeline integrating SonarCloud, Snyk, Trivy, and OWASP ZAP security scanning. | 🚧 Planned |
 | **Phase 9 – Amazon EKS Deployment** | Deploy the containerized application to Amazon Elastic Kubernetes Service (EKS) using Kubernetes manifests. | 🚧 Planned |
 | **Phase 10 – Prometheus & Grafana Monitoring** | Implement monitoring, metrics collection, and visualization using Prometheus and Grafana. | 🚧 Planned |
@@ -304,6 +380,29 @@ The project is being implemented incrementally, with each phase building upon th
 
 The project follows a phased implementation strategy to ensure that each component is designed, tested, and documented before progressing to the next stage. This incremental approach improves maintainability, simplifies troubleshooting, and demonstrates the complete lifecycle of building a production-ready DevSecOps platform on AWS.
 
+
+---
+
+## Latest Milestone
+
+Phase 7 has been successfully completed. A production-ready Jenkins automation server has been installed and configured on an Amazon EC2 instance.
+
+The Jenkins environment now includes:
+
+- Jenkins LTS
+- Docker Engine
+- AWS CLI
+- kubectl
+- Helm
+- Trivy
+- Administrator account configuration
+- Jenkins Dashboard verification
+- Docker permissions for the Jenkins user
+- Port 8080 accessibility verification
+
+This environment provides the complete toolchain required to automate application builds, containerization, security scanning, and Kubernetes deployments.
+
+**With the Jenkins environment fully operational, the platform is now ready for the implementation of a production-grade CI/CD and DevSecOps pipeline in Phase 8.**
 ---
 
 ## Documentation
@@ -316,10 +415,11 @@ Detailed documentation for each implementation phase is available in the `docs/`
 | `02-application-refactoring.md` | Application restructuring |
 | `03-unit-testing.md` | Unit testing with Jest |
 | `04-containerization.md` | Docker image creation |
-| `05-terraform-infrastructure.md` | AWS networking, EKS, ECR and IAM provisioning |
+| `05-terraform-infrastructure.md` | AWS networking, EKS, ECR, and IAM provisioning |
 | `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform, including IAM roles, instance profile, networking, Elastic IP, Terraform validation, verification, and SSH connectivity |
+| `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy, along with service configuration, Docker permissions, port 8080 verification, initial Jenkins setup, administrator account creation, instance configuration, and dashboard verification. |
 
-Additional documentation will be added as new phases are completed.
+> **Additional documentation will be added as new phases are completed.**
 
 ---
 
@@ -334,10 +434,11 @@ screenshots/
 ├── 03-unit-testing/
 ├── 04-containerization/
 ├── 05-terraform-infrastructure/
-└── 06-jenkins-server-setup/
+├── 06-jenkins-server-setup/
+└── 07-jenkins-installation/
 ```
 
-Additional screenshots for Jenkins, Amazon EKS deployment, DevSecOps security scanning, Prometheus, and Grafana will be added as subsequent phases are completed.
+> **Additional screenshots for Jenkins, Amazon EKS deployment, DevSecOps security scanning, Prometheus, and Grafana will be added as subsequent phases are completed.**
 
 ---
 
@@ -354,7 +455,7 @@ To build and run this project locally, ensure the following tools are installed:
 - Terraform
 - kubectl
 - Minikube *(Optional for local Kubernetes testing)*
-- Jenkins *(Upcoming)*
+- Jenkins
 
 ---
 
@@ -402,23 +503,55 @@ Run the Docker container:
 docker run -d --name node-monitoring-container -p 3000:3000 node-monitoring-app:v1
 ```
 
+Open your browser:
+
+http://localhost:3000
+
 ---
 
 ## Future CI/CD Pipeline
 
 The completed pipeline will automate the following stages:
 
-- Source Code Checkout
-- Unit Testing
-- SonarCloud Scan
-- Snyk Scan
-- Docker Build
-- Trivy Scan
-- Push Docker Image to Amazon ECR
-- Deploy to Amazon EKS
-- OWASP ZAP Dynamic Security Testing
-- Monitor Application Health
-- Verify Kubernetes Rollout
+```text
+GitHub
+   │
+   ▼
+Checkout Source Code
+   │
+   ▼
+Install Dependencies
+   │
+   ▼
+Unit Testing
+   │
+   ▼
+SonarCloud Scan
+   │
+   ▼
+Quality Gate
+   │
+   ▼
+Snyk Scan
+   │
+   ▼
+Docker Build
+   │
+   ▼
+Trivy Scan
+   │
+   ▼
+Push Image to Amazon ECR
+   │
+   ▼
+Deploy to Amazon EKS
+   │
+   ▼
+Verify Rollout
+   │
+   ▼
+OWASP ZAP Scan
+```
 
 ---
 
@@ -426,16 +559,15 @@ The completed pipeline will automate the following stages:
 
 The following enhancements will be implemented as the project progresses:
 
-- Configure Jenkins and required plugins
-- Integrate SonarCloud
-- Integrate Snyk
-- Integrate Trivy
-- Integrate OWASP ZAP
-- Deploy to Amazon EKS
-- Configure Prometheus
-- Configure Grafana
-- Add AWS architecture diagrams
-- Add DevSecOps workflow diagrams
+- Build a complete Jenkins CI/CD pipeline
+- Integrate SonarCloud (SAST)
+- Integrate Snyk (Software Composition Analysis)
+- Integrate OWASP ZAP (DAST)
+- Deploy automatically to Amazon EKS
+- Configure Prometheus monitoring
+- Configure Grafana dashboards
+- Add architecture diagrams
+- Add pipeline workflow diagrams
 - Implement GitHub Actions (Optional)
 
 ---
@@ -448,8 +580,9 @@ DevOps & Cloud Engineer | AWS Certified Cloud Practitioner
 
 Passionate about building secure, automated, and scalable cloud infrastructure using DevOps and DevSecOps best practices.
 
-GitHub: https://github.com/Jefferson-ohis1
+- **GitHub:** https://github.com/Jefferson-ohis1
+- **LinkedIn:** https://www.linkedin.com/in/jefferson-ohis-oviosu-5a982a168
 
 ---
 
-> **Project Status:** This repository is actively being developed as a comprehensive end-to-end DevSecOps portfolio project. New phases, documentation, infrastructure, and automation features will be added as development progresses.
+> **Current Status (August 2026):** Phase 7 (Jenkins Installation & Configuration) has been successfully completed. The project is now moving into Phase 8, where a complete Jenkins CI/CD and DevSecOps pipeline will be implemented with SonarCloud, Snyk, Trivy, Docker, Amazon ECR, Amazon EKS, and OWASP ZAP.
