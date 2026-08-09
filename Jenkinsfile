@@ -2,6 +2,10 @@ pipeline {
 
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     tools {
         jdk 'jdk21'
         nodejs 'node18'
