@@ -18,7 +18,16 @@ pipeline {
                 checkout scm
             }
         }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('app') {
+                    sh 'npm ci'
+                }
+            }
+        }
     }
+
 
     post {
         always {
