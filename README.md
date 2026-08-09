@@ -56,7 +56,7 @@ The repository is being developed incrementally using a phased implementation ap
 - Amazon Elastic Kubernetes Service (EKS) deployment platform
 - Amazon Elastic Container Registry (ECR)
 - Automated unit testing with Jest and Supertest
-- Production-ready Jenkins automation server
+- Jenkins CI/CD pipeline with automated source-code checkout
 - DevSecOps pipeline with SonarCloud, Snyk, Trivy, and OWASP ZAP (upcoming)
 - Monitoring with Prometheus and Grafana (upcoming)
 
@@ -85,10 +85,21 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Helm Installation
 - ✔ Trivy Installation
 - ✔ Jenkins Initial Configuration
+- ✔ Jenkins Pipeline Job Configuration
+- ✔ Jenkinsfile Configuration
+- ✔ Jenkins Pipeline Agent Initialization
+- ✔ JDK 21 Tool Resolution
+- ✔ Node.js 18.20.8 Tool Resolution
+- ✔ Explicit Source Code Checkout
+- ✔ Default Jenkins SCM Checkout Disabled
+- ✔ Successful Initial Pipeline Execution
 
 ### 🚧 In Progress
 
-- Jenkins CI/CD Pipeline
+- Jenkins CI/CD & DevSecOps Pipeline
+- Jenkins Pipeline Source Code Checkout
+- Jenkins Pipeline Tool Resolution
+- Jenkins workspace successfully populated with source code
 
 
 ### 📌 Planned
@@ -115,8 +126,7 @@ The project is being implemented in incremental phases, with each milestone buil
 | Terraform Infrastructure | ✅ |
 | Jenkins Server Setup | ✅ |
 | Jenkins Installation & Configuration | ✅ |
-| Jenkins CI/CD Pipeline | 🚧 |
-| DevSecOps Integration | ⏳ |
+| Jenkins CI/CD & DevSecOps Pipeline | 🚧 |
 | Amazon EKS Deployment | ⏳ |
 | Prometheus & Grafana | ⏳ |
 
@@ -243,7 +253,8 @@ end-to-end-node-ci-cd-devsecops/
 │   ├── 04-containerization.md
 │   ├── 05-terraform-infrastructure.md
 │   ├── 06-jenkins-server-setup.md
-│   └── 07-jenkins-installation.md
+│   ├── 07-jenkins-installation.md
+│   └── 08-jenkins-ci-cd-devsecops-pipeline.md
 │
 ├── infra/
 │   ├── provider.tf
@@ -266,13 +277,16 @@ end-to-end-node-ci-cd-devsecops/
 │   ├── 04-containerization/
 │   ├── 05-terraform-infrastructure/
 │   ├── 06-jenkins-server-setup/
-│   └── 07-jenkins-installation/
+│   ├── 07-jenkins-installation/
+│   └── 08-jenkins-ci-cd-devsecops-pipeline/
 │
 ├── .gitignore
-├── Jenkinsfile          (Upcoming)
+├── Jenkinsfile
 └── README.md
 ```
+The Phase 8 screenshot directory currently documents the initial Jenkins Pipeline implementation, including Jenkinsfile configuration, pipeline execution, source-code checkout, console output, and Jenkins workspace verification.
 
+> **Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented.**
 ---
 
 ## Project Workflow
@@ -303,7 +317,7 @@ Jenkins Server Provisioning
 Jenkins Installation & Configuration
             │
             ▼
-Jenkins CI Pipeline
+Jenkins CI/CD Pipeline
             │
             ▼
 SonarCloud (SAST)
@@ -367,7 +381,7 @@ The project is being implemented incrementally, with each phase building upon th
 | **Phase 5 – AWS Infrastructure with Terraform** | Provisioned AWS infrastructure using Terraform, including networking, IAM, Amazon ECR, Amazon EKS, and the supporting cloud resources. | ✅ Completed |
 | **Phase 6 – Jenkins Server Setup** | Provisioned the Jenkins automation server on Amazon EC2 with secure networking, IAM integration, and Elastic IP configuration. | ✅ Completed |
 | **Phase 7 – Jenkins Installation & Configuration** | Installed and configured Jenkins, Docker, AWS CLI, kubectl, Helm, Trivy, completed the initial Jenkins setup, and verified the Jenkins dashboard. | ✅ Completed |
-| **Phase 8 – DevSecOps Pipeline** | Build an end-to-end CI/CD pipeline integrating SonarCloud, Snyk, Trivy, and OWASP ZAP security scanning. | 🚧 Planned |
+| **Phase 8 – Jenkins CI/CD & DevSecOps Pipeline** | Build an end-to-end Jenkins CI/CD pipeline integrating automated testing, SonarCloud, Snyk, Trivy, Docker image creation, Amazon ECR, Amazon EKS deployment, and OWASP ZAP security scanning. | 🚧 In Progress |
 | **Phase 9 – Amazon EKS Deployment** | Deploy the containerized application to Amazon Elastic Kubernetes Service (EKS) using Kubernetes manifests. | 🚧 Planned |
 | **Phase 10 – Prometheus & Grafana Monitoring** | Implement monitoring, metrics collection, and visualization using Prometheus and Grafana. | 🚧 Planned |
 
@@ -385,24 +399,54 @@ The project follows a phased implementation strategy to ensure that each compone
 
 ## Latest Milestone
 
-Phase 7 has been successfully completed. A production-ready Jenkins automation server has been installed and configured on an Amazon EC2 instance.
+### Phase 8 – Jenkins CI/CD & DevSecOps Pipeline
 
-The Jenkins environment now includes:
+Phase 8 is currently **in progress**.
 
-- Jenkins LTS
-- Docker Engine
-- AWS CLI
-- kubectl
-- Helm
-- Trivy
-- Administrator account configuration
-- Jenkins Dashboard verification
-- Docker permissions for the Jenkins user
-- Port 8080 accessibility verification
+The initial Jenkins CI/CD pipeline implementation has been successfully completed and verified. Jenkins can now retrieve and execute the version-controlled Jenkinsfile from GitHub.
 
-This environment provides the complete toolchain required to automate application builds, containerization, security scanning, and Kubernetes deployments.
+The initial pipeline currently includes:
 
-**With the Jenkins environment fully operational, the platform is now ready for the implementation of a production-grade CI/CD and DevSecOps pipeline in Phase 8.**
+- Jenkins Pipeline as Code
+- Jenkins agent allocation
+- JDK 21 tool resolution
+- Node.js 18.20.8 tool resolution
+- Explicit source-code checkout
+- `skipDefaultCheckout(true)` configuration
+- GitHub `main` branch checkout
+- Jenkins workspace initialization
+- Pipeline post-build action
+- Successful pipeline execution
+
+The initial pipeline flow is:
+
+```text
+GitHub
+   │
+   ▼
+Jenkinsfile
+   │
+   ▼
+Jenkins Agent
+   │
+   ▼
+Tool Initialization
+   │
+   ├── JDK 21
+   └── Node.js 18.20.8
+   │
+   ▼
+Checkout Source Code
+   │
+   ▼
+Post Actions
+   │
+   ▼
+SUCCESS
+```
+
+> The next implementation milestone is Section 9.4 — Install Dependencies, where Jenkins will install the Node.js application's dependencies using npm.
+
 ---
 
 ## Documentation
@@ -417,9 +461,10 @@ Detailed documentation for each implementation phase is available in the `docs/`
 | `04-containerization.md` | Docker image creation |
 | `05-terraform-infrastructure.md` | AWS networking, EKS, ECR, and IAM provisioning |
 | `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform, including IAM roles, instance profile, networking, Elastic IP, Terraform validation, verification, and SSH connectivity |
-| `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy, along with service configuration, Docker permissions, port 8080 verification, initial Jenkins setup, administrator account creation, instance configuration, and dashboard verification. |
+| `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy |
+| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, source-code checkout, tool resolution, pipeline execution, and verification |
 
-> **Additional documentation will be added as new phases are completed.**
+> **Additional documentation will be added as new pipeline stages and phases are completed.**
 
 ---
 
@@ -585,4 +630,12 @@ Passionate about building secure, automated, and scalable cloud infrastructure u
 
 ---
 
-> **Current Status (August 2026):** Phase 7 (Jenkins Installation & Configuration) has been successfully completed. The project is now moving into Phase 8, where a complete Jenkins CI/CD and DevSecOps pipeline will be implemented with SonarCloud, Snyk, Trivy, Docker, Amazon ECR, Amazon EKS, and OWASP ZAP.
+> **Current Status (August 2026):**
+>
+> **Phase 7 – Jenkins Installation & Configuration** has been successfully completed.
+>
+> **Phase 8 – Jenkins CI/CD & DevSecOps Pipeline** is currently **in progress**.
+>
+> The initial Jenkins Pipeline implementation has been successfully validated, including Jenkinsfile retrieval from GitHub, Jenkins agent initialization, JDK 21 and Node.js 18.20.8 tool resolution, explicit source-code checkout, and successful pipeline execution.
+>
+> The next milestone is **Section 9.4 – Install Dependencies**, followed by automated testing, SonarCloud, Snyk, Docker, Trivy, Amazon ECR, Amazon EKS, and OWASP ZAP integration.
