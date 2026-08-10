@@ -2334,3 +2334,536 @@ The Jenkins workspace now contains the application source code required by subse
 The next stage will implement **Section 9.4 — Install Dependencies**, where Jenkins will use npm to install the Node.js application's dependencies before executing automated unit tests.
 
 ---
+
+## Section 9.4 — Install Dependencies
+
+### Overview
+
+After successfully implementing and validating the **Checkout Source Code** stage, the next step was to prepare the Node.js application for subsequent CI/CD operations by installing its project dependencies.
+
+The **Install Dependencies** stage is responsible for installing the exact dependency versions defined in the application's `package-lock.json` file.
+
+The stage operates within the application's `app/` directory and uses the Node Package Manager (`npm`) command:
+
+```bash
+npm ci
+```
+
+The `npm ci` command provides a clean and reproducible dependency installation process that is well suited for automated CI/CD environments.
+
+This stage establishes the dependency environment required by subsequent pipeline stages, including:
+
+- Automated unit testing
+- SonarCloud analysis
+- Snyk dependency scanning
+- Docker image creation
+- Application validation
+
+The implementation was tested through an **actual Jenkins Pipeline execution** rather than being documented solely as an expected configuration.
+
+---
+
+### Objective
+
+The primary objectives of this stage are to:
+
+- Execute dependency installation automatically within Jenkins.
+- Navigate to the Node.js application's `app/` directory.
+- Install dependencies using `npm ci`.
+- Use the repository's `package-lock.json` to ensure reproducible dependency installation.
+- Verify that the required Node.js packages can be installed successfully.
+- Prepare the Jenkins workspace for subsequent CI/CD stages.
+- Confirm that the dependency installation process completes successfully within the Jenkins environment.
+
+Successful completion of this stage confirms that Jenkins can automatically prepare the Node.js application's dependency environment.
+
+---
+
+### Why Install Dependencies?
+
+The Node.js application depends on external packages defined in its `package.json` and `package-lock.json` files.
+
+These dependencies are required before Jenkins can perform operations such as:
+
+- Running automated tests
+- Performing source-code analysis
+- Performing Software Composition Analysis (SCA)
+- Building the application
+- Building the Docker image
+
+Without installing the required dependencies, subsequent pipeline stages may fail because the required Node.js modules would not be available in the Jenkins workspace.
+
+The dependency installation stage therefore establishes the application environment required by the remaining application-focused CI/CD stages.
+
+---
+
+### Jenkinsfile Implementation
+
+The Jenkinsfile was extended to include the **Install Dependencies** stage immediately after the **Checkout Source Code** stage.
+
+```groovy
+stage('Install Dependencies') {
+    steps {
+        dir('app') {
+            sh 'npm ci'
+        }
+    }
+}
+```
+
+The relevant Pipeline structure is:
+
+```groovy
+stages {
+
+    stage('Checkout Source Code') {
+        steps {
+            checkout scm
+        }
+    }
+
+    stage('Install Dependencies') {
+        steps {
+            dir('app') {
+                sh 'npm ci'
+            }
+        }
+    }
+}
+```
+
+The implementation intentionally keeps dependency installation as a separate Pipeline stage so that its execution, output, and result can be clearly identified in Jenkins.
+
+---
+
+### Why Use `dir('app')`?
+
+The Node.js application is located within the repository's `app/` directory.
+
+The Jenkins workspace has the following general structure:
+
+```text
+nodejs-devsecops-pipeline/
+│
+├── app/
+│   ├── app.js
+│   ├── app.test.js
+│   ├── server.js
+│   ├── Dockerfile
+│   ├── package.json
+│   └── package-lock.json
+│
+├── docs/
+├── infra/
+├── screenshots/
+├── Jenkinsfile
+└── README.md
+```
+
+The `dir('app')` step changes the current working directory for the commands executed inside the block:
+
+```groovy
+dir('app') {
+    sh 'npm ci'
+}
+```
+
+This ensures that `npm ci` is executed from the application's directory, where the required `package.json` and `package-lock.json` files are located.
+
+For example, the Jenkins workspace may resolve to:
+
+```text
+/var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app
+```
+
+Using `dir('app')` also avoids hardcoding the complete Jenkins workspace path inside the Jenkinsfile.
+
+### Benefits of `dir('app')`
+
+| Benefit | Description |
+|---------|-------------|
+| **Correct Application Directory** | Ensures npm operates inside the Node.js application's directory where `package.json` and `package-lock.json` are located. |
+| **Cleaner Jenkinsfile** | Avoids hardcoding the complete Jenkins workspace path and keeps the Pipeline configuration concise. |
+| **Pipeline Portability** | Allows the Pipeline to operate consistently across Jenkins agents with different workspace paths. |
+| **Clear Pipeline Structure** | Makes it explicit that dependency installation belongs to the Node.js application. |
+| **Workspace Isolation** | Limits npm operations to the application's directory without affecting unrelated files or directories in the Jenkins workspace. |
+
+---
+
+### Why Use `npm ci`?
+
+The Pipeline uses:
+
+```bash
+npm ci
+```
+
+instead of:
+
+```bash
+npm install
+```
+
+`npm ci` is specifically designed for automated and reproducible environments such as CI/CD pipelines.
+
+It installs dependencies according to the project's existing lock file, ensuring that Jenkins uses the dependency versions recorded in `package-lock.json`.
+
+#### `npm ci` vs `npm install`
+
+| Feature | `npm ci` | `npm install` |
+|---------|:--------:|:-------------:|
+| **Designed for CI environments** | ✅ | ⚠️ |
+| **Uses `package-lock.json`** | ✅ | ✅ |
+| **Reproducible installation** | ✅ | Less strict |
+| **Automatically removes existing `node_modules`** | ✅ | ❌ |
+| **Modifies the dependency lock file** | ❌ | May modify |
+| **Suitable for automated builds** | ✅ | ✅ |
+| **Clean installation** | ✅ | Not necessarily |
+
+Using `npm ci` therefore provides a predictable and reproducible dependency installation process for Jenkins builds.
+
+---
+
+### Dependency Installation Process
+
+The dependency installation stage follows this sequence:
+
+```text
+Checkout Source Code
+        │
+        ▼
+Jenkins Workspace
+        │
+        ▼
+Enter app/ Directory
+        │
+        ▼
+Read package.json
+        │
+        ▼
+Read package-lock.json
+        │
+        ▼
+Execute npm ci
+        │
+        ▼
+Install Node.js Dependencies
+        │
+        ▼
+Audit Installed Packages
+        │
+        ▼
+Dependency Installation Complete
+```
+
+The dependency installation occurs only after the source code has been successfully checked out.
+
+---
+
+### Jenkins Pipeline Execution
+
+After adding the **Install Dependencies** stage to the Jenkinsfile, the updated Jenkinsfile was committed and pushed to the GitHub `main` branch.
+
+The commit was created using:
+
+```bash
+git add Jenkinsfile
+git commit -m "Add dependency installation stage"
+```
+
+The commit was then pushed using:
+
+```bash
+git push origin main
+```
+
+The Jenkins Pipeline was subsequently executed from the Jenkins dashboard.
+
+Jenkins retrieved the updated Jenkinsfile from GitHub and executed the Pipeline.
+
+### Pipeline Operations
+
+The Pipeline successfully performed the following operations:
+
+1. Retrieved the updated Jenkinsfile.
+2. Initialized the Jenkins agent.
+3. Resolved the configured JDK.
+4. Resolved Node.js 18.20.8.
+5. Checked out the `main` branch.
+6. Entered the `app/` directory.
+7. Executed `npm ci`.
+8. Installed the Node.js dependencies.
+9. Audited the installed packages.
+10. Executed the post-build action.
+11. Completed successfully.
+
+---
+
+### Actual Pipeline Result
+
+The Jenkins Pipeline successfully completed the new **Install Dependencies** stage.
+
+The relevant Jenkins execution sequence was:
+
+```text
+[Pipeline] stage
+[Pipeline] { (Install Dependencies)
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] dir
+Running in /var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app
+[Pipeline] {
+[Pipeline] sh
++ npm ci
+...
+[Pipeline] }
+[Pipeline] // dir
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+```
+
+The stage completed without an installation failure.
+
+The complete Jenkins build finished with:
+
+```text
+Finished: SUCCESS
+```
+
+---
+
+### Dependency Installation Output
+
+The Jenkins build reported the following result from `npm ci`:
+
+```text
+added 381 packages, and audited 382 packages in 3s
+
+74 packages are looking for funding
+run `npm fund` for details
+
+2 high severity vulnerabilities
+```
+
+The dependency installation therefore completed successfully.
+
+#### Installation Results
+
+| Result | Value |
+|--------|-------|
+| **Packages added** | **381** |
+| **Packages audited** | **382** |
+| **Installation time** | **3 seconds** |
+| **Funding notices** | **74 packages** |
+| **Reported vulnerabilities** | **2 high severity** |
+| **Pipeline result** | **SUCCESS** |
+
+---
+
+### Dependency Security Observation
+
+The `npm ci` execution reported:
+
+```text
+2 high severity vulnerabilities
+```
+
+This is an important observation from the actual Pipeline execution.
+
+At this stage, the Pipeline does **not** yet contain a dedicated dependency security gate.
+
+The `npm ci` command confirms that dependencies can be installed and reports npm audit findings, but it is not being used as the project's formal Software Composition Analysis (SCA) stage.
+
+The project will subsequently introduce **Snyk** as the dedicated dependency security scanning solution.
+
+The DevSecOps workflow will therefore separate dependency installation from dependency security analysis:
+
+```text
+Install Dependencies
+        │
+        ▼
+Snyk Dependency Scan
+        │
+        ▼
+Security Evaluation
+```
+
+The two high-severity findings observed during this stage should therefore be documented as an actual security observation rather than ignored or removed from the Pipeline evidence.
+
+#### Security Observation
+
+> `npm ci` successfully installed the application dependencies, but npm reported **2 high-severity vulnerabilities** during the package audit. Formal dependency vulnerability analysis will be handled by the dedicated **Snyk SCA stage** later in the DevSecOps Pipeline.
+
+---
+
+### Jenkins Workspace Verification
+
+After dependency installation completed, the Jenkins workspace was verified.
+
+The application directory is located at:
+
+```text
+/var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app
+```
+
+The relevant workspace structure is:
+
+```text
+app/
+├── app.js
+├── app.test.js
+├── server.js
+├── Dockerfile
+├── package.json
+├── package-lock.json
+└── node_modules/
+```
+
+The presence of the installed dependencies confirms that the `npm ci` operation successfully prepared the application workspace for subsequent Pipeline stages.
+
+The Jenkins workspace will subsequently be reused by stages such as:
+
+- Unit Testing
+- SonarCloud Analysis
+- Snyk Scanning
+- Docker Image Creation
+
+---
+
+## Screenshots
+
+The following screenshots provide evidence of the implementation and successful execution of the **Install Dependencies** stage.
+
+### Jenkinsfile — Install Dependencies Stage
+
+![Jenkinsfile Install Dependencies Stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/26-jenkinsfile-install-dependencies-stage.png)
+
+The Jenkinsfile was updated to include the new `Install Dependencies` stage using `dir('app')` and `npm ci`.
+
+---
+
+### Jenkins Pipeline — Install Dependencies Build
+
+![Jenkinsfile Pipeline — Install Dependencies Build](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/27-jenkins-pipeline-install-dependencies-build.png)
+
+The Jenkins Pipeline was executed after the updated Jenkinsfile was committed and pushed to GitHub.
+
+---
+
+### Install Dependencies Stage — Successful Execution
+
+![Install Dependencies Stage — Successful Execution](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/28-install-dependencies-stage-success.png)
+
+The Jenkins Pipeline successfully completed the `Install Dependencies` stage.
+
+---
+
+### Jenkins Workspace — Installed Dependencies
+
+![Jenkins Workspace — Installed Dependencies](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/29-jenkins-workspace-dependencies.png)
+
+The Jenkins workspace was verified after dependency installation to confirm that the application dependencies were available within the `app/` directory.
+
+---
+
+## Verification
+
+The implementation was verified through an actual Jenkins Pipeline execution.
+
+| Verification Item | Status |
+|--------------------|:------:|
+| **Updated Jenkinsfile retrieved from GitHub** | ✅ Verified |
+| **Jenkins agent initialized successfully** | ✅ Verified |
+| **JDK 21 resolved successfully** | ✅ Verified |
+| **Node.js 18.20.8 resolved successfully** | ✅ Verified |
+| **`Checkout Source Code` stage completed** | ✅ Verified |
+| **`Install Dependencies` stage executed** | ✅ Verified |
+| **Jenkins entered the `app/` directory** | ✅ Verified |
+| **`npm ci` executed successfully** | ✅ Verified |
+| **381 packages installed** | ✅ Verified |
+| **382 packages audited** | ✅ Verified |
+| **Jenkins workspace populated with dependencies** | ✅ Verified |
+| **Post-build action executed** | ✅ Verified |
+| **Pipeline completed successfully** | ✅ Verified |
+| **Final build status: `SUCCESS`** | ✅ Verified |
+
+> **Verification Result**
+>
+> The **Install Dependencies** stage was successfully implemented and validated through an actual Jenkins Pipeline execution. Jenkins entered the application's `app/` directory, executed `npm ci`, installed **381 packages**, audited **382 packages**, and completed the Pipeline successfully with a `SUCCESS` build result.
+
+---
+
+## Expected Outcome
+
+After successful completion of the **Install Dependencies** stage, the Jenkins workspace contains the Node.js application's required dependencies.
+
+The Pipeline has now progressed from:
+
+```text
+GitHub
+   │
+   ▼
+Jenkinsfile
+   │
+   ▼
+Jenkins Agent
+   │
+   ▼
+Tool Initialization
+   │
+   ├── JDK 21
+   └── Node.js 18.20.8
+   │
+   ▼
+Checkout Source Code
+   │
+   ▼
+Install Dependencies
+   │
+   ├── Enter app/
+   ├── Execute npm ci
+   └── Install Node.js Dependencies
+   │
+   ▼
+Post Actions
+   │
+   ▼
+SUCCESS
+```
+
+The application is now prepared for the next CI/CD stage.
+
+---
+
+## Section Summary
+
+The **Install Dependencies** stage was successfully implemented and validated as the second executable stage of the Jenkins CI/CD Pipeline.
+
+The Pipeline now:
+
+- Retrieves the Jenkinsfile from GitHub.
+- Initializes the Jenkins agent.
+- Resolves JDK 21.
+- Resolves Node.js 18.20.8.
+- Checks out the application's source code.
+- Enters the application's `app/` directory.
+- Executes `npm ci`.
+- Installs the application's Node.js dependencies.
+- Audits the installed packages.
+- Makes the dependencies available within the Jenkins workspace.
+- Executes the Pipeline post-build action.
+- Completes successfully with a `SUCCESS` build result.
+
+The actual Jenkins execution installed **381 packages** and audited **382 packages** in approximately **3 seconds**.
+
+The build also reported **2 high-severity vulnerabilities**, providing an important security observation for the next DevSecOps stages. Formal dependency vulnerability analysis will be handled by the planned **Snyk Software Composition Analysis (SCA)** stage.
+
+With dependency installation now validated, the Jenkins workspace is prepared for the next stage of the CI/CD Pipeline: **Section 9.5 — Unit Testing**
+
+---
