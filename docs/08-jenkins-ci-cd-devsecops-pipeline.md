@@ -2867,3 +2867,680 @@ The build also reported **2 high-severity vulnerabilities**, providing an import
 With dependency installation now validated, the Jenkins workspace is prepared for the next stage of the CI/CD Pipeline: **Section 9.5 — Unit Testing**
 
 ---
+
+## Section 9.5 — Unit Testing
+
+### Overview
+
+After successfully implementing and validating the **Install Dependencies** stage, the next step was to introduce automated **Unit Testing** into the Jenkins CI/CD pipeline.
+
+The **Unit Testing** stage validates the functionality of the Node.js monitoring application by executing the automated tests defined in the application's Jest test suite.
+
+The stage operates within the application's `app/` directory and executes:
+
+```bash
+npm test
+```
+
+The `npm test` command invokes the test script defined in package.json, which executes the Jest test runner.
+
+The Unit Testing stage provides an automated quality validation point before the application proceeds to subsequent CI/CD and DevSecOps stages.
+
+The current pipeline progression is:
+
+Checkout Source Code
+        │
+        ▼
+Install Dependencies
+        │
+        ▼
+Unit Testing
+        │
+        ▼
+Post Actions
+        │
+        ▼
+SUCCESS
+
+The implementation was validated through an actual Jenkins Pipeline execution rather than being documented solely as an expected configuration.
+
+---
+
+### Objective
+
+The primary objectives of the **Unit Testing** stage are:
+
+| Objective | Description |
+|-----------|-------------|
+| **Automate Testing** | Execute the application's automated test suite as part of the Jenkins Pipeline. |
+| **Validate Application Functionality** | Verify that the application's primary HTTP endpoints behave as expected. |
+| **Detect Regressions** | Identify application changes that introduce functional failures. |
+| **Integrate Testing into CI/CD** | Ensure tests are automatically executed during every applicable Pipeline build. |
+| **Validate Before Security Scanning** | Establish functional validation before subsequent SonarCloud and Snyk stages. |
+| **Provide Build Evidence** | Make test execution results visible through the Jenkins console output. |
+| **Prevent Invalid Progression** | Ensure that test failures can prevent the Pipeline from progressing to later stages. |
+
+Successful completion of this stage confirms that the application's automated test suite can execute successfully within the Jenkins environment.
+
+---
+
+### Why Unit Testing?
+
+Automated testing is an important component of a CI/CD Pipeline because it provides rapid feedback about application functionality.
+
+Without automated testing, code changes could progress through the delivery pipeline without verifying whether existing functionality remains operational.
+
+For this project, the Node.js monitoring application exposes several HTTP endpoints that require automated validation.
+
+The **Unit Testing** stage currently verifies the following endpoints:
+
+| Endpoint | Expected Behavior |
+|----------|-------------------|
+| `GET /` | Returns HTTP status `200`. |
+| `GET /health` | Returns HTTP status `200` and the expected health response. |
+| `GET /metrics` | Returns Prometheus-compatible application metrics. |
+
+These tests provide an automated validation layer between **dependency installation** and the subsequent **CI/CD and DevSecOps stages**.
+
+The resulting Pipeline flow is:
+
+```text
+Checkout Source Code
+        │
+        ▼
+Install Dependencies
+        │
+        ▼
+Unit Testing
+        │
+        ▼
+SonarCloud Analysis
+        │
+        ▼
+Snyk Dependency Scanning
+        │
+        ▼
+Docker Build
+```
+
+> Successful unit tests provide confidence that the application's core functionality remains operational before the code progresses to subsequent quality, security, and deployment stages.
+
+---
+
+### Jenkinsfile Implementation
+
+The Jenkinsfile was extended to include the Unit Testing stage immediately after the Install Dependencies stage.
+
+```groovy
+stage('Unit Testing') {
+    steps {
+        dir('app') {
+            sh 'npm test'
+        }
+    }
+}
+
+
+
+The relevant Pipeline structure is:
+
+```groovy
+stages {
+
+    stage('Checkout Source Code') {
+        steps {
+            checkout scm
+        }
+    }
+
+    stage('Install Dependencies') {
+        steps {
+            dir('app') {
+                sh 'npm ci'
+            }
+        }
+    }
+
+    stage('Unit Testing') {
+        steps {
+            dir('app') {
+                sh 'npm test'
+            }
+        }
+    }
+}
+
+
+> The Unit Testing stage is intentionally separated from dependency installation so that Jenkins provides a clear and independently identifiable Pipeline stage for application testing.
+
+---
+
+### Why Use dir('app')?
+
+The Node.js application is located within the repository's app/ directory.
+
+The Jenkins workspace has the following general structure:
+
+```text
+nodejs-devsecops-pipeline/
+│
+├── app/
+│   ├── app.js
+│   ├── app.test.js
+│   ├── server.js
+│   ├── Dockerfile
+│   ├── package.json
+│   └── package-lock.json
+│
+├── docs/
+├── infra/
+├── screenshots/
+├── Jenkinsfile
+└── README.md
+
+The Jenkinsfile uses:
+
+``bash
+dir('app') {
+    sh 'npm test'
+}
+
+The dir('app') step changes the working directory for the commands executed inside the block.
+
+During the actual Jenkins execution, the Pipeline reported:
+
+```text
+Running in /var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app
+```
+
+This confirms that the Jest test suite was executed from the application's directory.
+
+---
+
+### Benefits of `dir('app')`
+
+| Benefit | Description |
+|---------|-------------|
+| **Correct Application Directory** | Ensures `npm test` executes within the directory containing `package.json` and the application's test files. |
+| **Cleaner Jenkinsfile** | Avoids hardcoding the complete Jenkins workspace path within the Pipeline configuration. |
+| **Pipeline Portability** | Allows the Pipeline to operate consistently across Jenkins agents with different workspace paths. |
+| **Clear Pipeline Structure** | Makes it explicit that the automated tests belong to the Node.js application. |
+| **Workspace Isolation** | Limits test-related commands and operations to the application's `app/` directory. |
+
+---
+
+### Why Use npm test?
+
+The Pipeline executes:
+
+```bash
+npm test
+```
+
+rather than invoking Jest directly.
+
+The reason is that the project's package.json defines the test command:
+
+"scripts": {
+    "test": "jest"
+}
+
+Therefore, executing:
+
+```bash
+npm test
+```
+
+allows npm to invoke the project's configured Jest test runner.
+
+This approach keeps the Jenkinsfile simple and allows the project's test command to remain defined within the application configuration.
+
+---
+
+### Benefits of `npm test`
+
+| Benefit | Description |
+|---------|-------------|
+| Uses Project Configuration | Executes the test command defined in the application's package.json. |
+| Simple Jenkinsfile | Avoids hardcoding the Jest executable path within the Jenkins Pipeline. |
+| Standard npm Workflow | Uses the standard Node.js package lifecycle command for executing tests. |
+| Consistent Local and CI Execution| Allows the same npm test command to be executed both locally and within Jenkins. |
+| Easy Maintenance | Allows changes to the underlying test runner or test configuration to be managed through package.json without modifying the Jenkinsfile. |
+
+---
+
+### Unit Testing Process
+
+The Unit Testing stage follows the dependency installation stage.
+
+
+Checkout Source Code
+        │
+        ▼
+Install Dependencies
+        │
+        ▼
+Enter app/ Directory
+        │
+        ▼
+Execute npm test
+        │
+        ▼
+Invoke Jest
+        │
+        ▼
+Discover Test Suite
+        │
+        ▼
+Execute Application Tests
+        │
+        ▼
+Validate Test Results
+        │
+        ▼
+Unit Testing Complete
+
+> The process ensures that the application dependencies are installed before the test suite is executed.
+
+---
+
+### Jenkins Pipeline Execution
+
+After adding the Unit Testing stage to the Jenkinsfile, the updated Jenkinsfile was committed and pushed to the GitHub main branch.
+
+The change was committed using:
+
+git add Jenkinsfile
+git commit -m "Add unit testing stage"
+git push origin main
+
+The resulting commit was:
+
+c28d6ed
+
+> Jenkins subsequently retrieved the updated Jenkinsfile from GitHub and executed the Pipeline.
+
+The Jenkins console confirmed that the correct revision was checked out:
+
+Checking out Revision c28d6ed16a80b7f4069b1efb53df1377ee58818f
+(refs/remotes/origin/main)
+
+Commit message: "Add unit testing stage"
+
+---
+
+### Pipeline Operations
+
+| # | Pipeline Operation | Result |
+|---:|--------------------|:------:|
+| 1 | Retrieve Jenkinsfile from GitHub | ✅ Successful |
+| 2 | Initialize Jenkins agent | ✅ Successful |
+| 3 | Resolve JDK 21 | ✅ Successful |
+| 4 | Resolve Node.js 18.20.8 | ✅ Successful |
+| 5 | Checkout source code | ✅ Successful |
+| 6 | Install dependencies with `npm ci` | ✅ Successful |
+| 7 | Enter the `app/` directory | ✅ Successful |
+| 8 | Execute `npm test` | ✅ Successful |
+| 9 | Execute Jest test suite | ✅ Successful |
+| 10 | Complete post-build action | ✅ Successful |
+| 11 | Complete Jenkins Pipeline | ✅ Successful |
+
+---
+
+### Actual Pipeline Result
+
+The Jenkins Pipeline successfully executed the new Unit Testing stage.
+
+The relevant Jenkins execution sequence was:
+
+[Pipeline] stage
+[Pipeline] { (Unit Testing)
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] dir
+Running in /var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app
+[Pipeline] {
+[Pipeline] sh
++ npm test
+
+Jenkins successfully entered the application directory and executed the configured npm test command.
+
+The test runner then reported:
+
+PASS ./app.test.js
+
+The Pipeline completed with:
+
+Finished: SUCCESS
+
+---
+
+### Unit Test Execution Output
+
+The actual Jenkins console output reported the following test results:
+
+PASS ./app.test.js
+Node.js Monitoring App
+✓ GET / should return HTTP 200 (15 ms)
+✓ GET /health should return 200 and "ok" (3 ms)
+✓ GET /metrics should return Prometheus metrics (5 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        0.379 s
+Ran all test suites.
+
+---
+
+## Test Execution Results
+
+| Test Metric | Actual Result |
+|-------------|---------------|
+| **Test Suites** | **1 passed / 1 total** |
+| **Tests** | **3 passed / 3 total** |
+| **Snapshots** | **0 total** |
+| **Execution Time** | **0.379 seconds** |
+| **Test Runner** | **Jest** |
+| **Pipeline Result** | **SUCCESS** |
+
+---
+
+### Test Results
+
+The Jenkins execution validated all three currently implemented application tests.
+
+| Test | Purpose | Result |
+|------|---------|:------:|
+| `GET / should return HTTP 200` | Verifies that the application's root endpoint is accessible and returns HTTP `200`. | ✅ Passed |
+| `GET /health should return 200 and "ok"` | Verifies that the application's health endpoint responds successfully with the expected health status. | ✅ Passed |
+| `GET /metrics should return Prometheus metrics` | Verifies that the metrics endpoint exposes the application's Prometheus metrics. | ✅ Passed |
+
+---
+
+### Test Suite Summary
+
+| Category | Result |
+|----------|--------|
+| **Test suites executed** | **1** |
+| **Test suites passed** | **1** |
+| **Test suites failed** | **0** |
+| **Tests executed** | **3** |
+| **Tests passed** | **3** |
+| **Tests failed** | **0** |
+| **Snapshots** | **0** |
+
+> **Test Result:**  
+> All currently implemented automated tests passed successfully during the Jenkins Pipeline execution.
+
+---
+
+### Test Coverage Scope
+
+The current **Unit Testing** stage focuses on validating the application's externally observable HTTP behavior.
+
+| Application Component | Validation |
+|-----------------------|------------|
+| **Root Endpoint** | Verifies that the application returns an HTTP `200` response. |
+| **Health Endpoint** | Verifies that the application returns an HTTP `200` response and the expected `"ok"` health status. |
+| **Metrics Endpoint** | Verifies that the application exposes Prometheus-compatible metrics. |
+| **Application Availability** | Validates application availability through automated HTTP endpoint requests. |
+| **Application Monitoring Interface** | Validates the application's metrics endpoint and its monitoring interface. |
+
+These tests establish the initial automated functional validation layer for the application.
+
+Additional automated tests can be introduced as the application evolves and new functionality is added.
+
+---
+
+### Dependency Installation and Unit Testing Relationship
+
+The Unit Testing stage depends on the successful completion of the Install Dependencies stage.
+
+The Pipeline therefore follows this dependency chain:
+
+Checkout Source Code
+        │
+        ▼
+Install Dependencies
+        │
+        ├── npm ci
+        │
+        ▼
+node_modules/
+        │
+        ▼
+Unit Testing
+        │
+        └── npm test
+                │
+                ▼
+              Jest
+                │
+                ▼
+          Test Results
+
+
+> This ensures that the required testing dependencies, including Jest and Supertest, are available before the test suite is executed.
+
+---
+
+### Unit Testing Failure Behavior
+
+The Jenkins Pipeline uses the exit status of the npm test command to determine whether the Unit Testing stage succeeds.
+
+A successful test execution returns a successful shell exit status, allowing the Pipeline to continue.
+
+If the test command fails, Jenkins can mark the stage and build as failed, preventing the Pipeline from treating unsuccessful tests as a successful validation.
+
+This creates an important CI quality gate before later stages are introduced.
+
+npm test
+   │
+   ├── Tests Pass ───────► Continue Pipeline
+   │
+   └── Tests Fail ───────► Pipeline Failure
+
+---
+
+### Jenkins Workspace Verification
+
+The Unit Testing stage was executed from:
+
+/var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app
+
+The workspace contains the application source code, dependency configuration, test files, and installed Node.js dependencies.
+
+The relevant application structure is:
+
+app/
+├── app.js
+├── app.test.js
+├── server.js
+├── Dockerfile
+├── package.json
+├── package-lock.json
+└── node_modules/
+
+> The successful Jest execution confirms that Jenkins had access to the required application files and installed dependencies.
+
+---
+
+### Screenshots
+
+The following screenshots provide evidence of the implementation and successful execution of the Unit Testing stage.
+
+#### Jenkinsfile — Unit Testing Stage
+
+![Jenkinsfile — Unit Testing Stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/30-jenkinsfile-unit-testing-stage.png)
+
+The Jenkinsfile was updated to include the new Unit Testing stage using dir('app') and npm test.
+
+---
+
+#### Jenkins Pipeline — Unit Testing Build
+
+![Jenkins Pipeline — Unit Testing Build](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/31-jenkins-pipeline-unit-testing-build.png)
+
+The Jenkins Pipeline was executed after the updated Jenkinsfile was committed and pushed to GitHub.
+
+---
+
+#### Unit Testing Stage — Successful Execution
+
+![Unit Testing Stage — Successful Execution](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/32-unit-testing-stage-success.png)
+
+The Jenkins Pipeline successfully completed the Unit Testing stage.
+
+---
+
+#### Unit Testing — Jenkins Console Output
+
+![Unit Testing — Jenkins Console Output](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/33-unit-testing-console-output.png)
+
+The Jenkins console output provides evidence that the Jest test suite executed successfully and that all three tests passed.
+
+---
+
+### Verification
+
+The **Unit Testing** implementation was verified through an actual Jenkins Pipeline execution.
+
+| Verification Item | Status |
+|--------------------|:------:|
+| **Updated Jenkinsfile retrieved from GitHub** | ✅ Verified |
+| **Commit `c28d6ed` checked out by Jenkins** | ✅ Verified |
+| **Jenkins agent initialized successfully** | ✅ Verified |
+| **JDK 21 resolved successfully** | ✅ Verified |
+| **Node.js 18.20.8 resolved successfully** | ✅ Verified |
+| **Checkout Source Code stage completed** | ✅ Verified |
+| **Install Dependencies stage completed** | ✅ Verified |
+| **Jenkins entered the `app/` directory** | ✅ Verified |
+| **`npm test` executed successfully** | ✅ Verified |
+| **Jest test suite executed** | ✅ Verified |
+| **1 test suite passed** | ✅ Verified |
+| **3 tests passed** | ✅ Verified |
+| **0 tests failed** | ✅ Verified |
+| **Post-build action executed** | ✅ Verified |
+| **Pipeline completed successfully** | ✅ Verified |
+| **Final build status: `SUCCESS`** | ✅ Verified |
+
+> **Verification Result**
+>
+> The **Unit Testing** stage was successfully implemented and validated through an actual Jenkins Pipeline execution. Jenkins entered the application's `app/` directory, executed `npm test`, ran the Jest test suite, and successfully passed all **3 tests** across **1 test suite**.
+
+---
+
+### Expected Outcome
+
+After successful completion of the Unit Testing stage, the Jenkins Pipeline has validated the current functional behavior of the Node.js application.
+
+The Pipeline has now progressed from:
+
+GitHub
+   │
+   ▼
+Jenkinsfile
+   │
+   ▼
+Jenkins Agent
+   │
+   ▼
+Tool Initialization
+   │
+   ├── JDK 21
+   └── Node.js 18.20.8
+   │
+   ▼
+Checkout Source Code
+   │
+   ▼
+Install Dependencies
+   │
+   ├── Enter app/
+   ├── Execute npm ci
+   └── Install Node.js Dependencies
+   │
+   ▼
+Unit Testing
+   │
+   ├── Enter app/
+   ├── Execute npm test
+   ├── Invoke Jest
+   └── Validate Application Tests
+   │
+   ▼
+Post Actions
+   │
+   ▼
+SUCCESS
+
+
+> The application has therefore passed the current automated functional validation stage.
+
+> The next stages will introduce additional code-quality and security validation mechanisms.
+
+---
+
+### Section Summary
+
+The **Unit Testing** stage was successfully implemented and validated as the third executable stage of the Jenkins CI/CD Pipeline.
+
+The Pipeline now provides the following capabilities:
+
+| Capability | Status |
+|------------|:------:|
+| **Retrieve Jenkinsfile from GitHub** | ✅ |
+| **Initialize Jenkins agent** | ✅ |
+| **Resolve JDK 21** | ✅ |
+| **Resolve Node.js 18.20.8** | ✅ |
+| **Checkout source code** | ✅ |
+| **Install dependencies using `npm ci`** | ✅ |
+| **Enter the application `app/` directory** | ✅ |
+| **Execute automated tests using `npm test`** | ✅ |
+| **Execute Jest test suite** | ✅ |
+| **Validate root endpoint** | ✅ |
+| **Validate health endpoint** | ✅ |
+| **Validate Prometheus metrics endpoint** | ✅ |
+| **Pass all 3 automated tests** | ✅ |
+| **Complete Jenkins post-build action** | ✅ |
+| **Complete Pipeline successfully** | ✅ |
+
+### The actual Jenkins execution produced the following results:
+
+| Metric | Result |
+|--------|--------|
+| **Test Suites** | **1 passed / 1 total** |
+| **Tests** | **3 passed / 3 total** |
+| **Failures** | **0** |
+| **Snapshots** | **0** |
+| **Execution Time** | **0.379 seconds** |
+| **Final Pipeline Status** | **SUCCESS** |
+
+> **Result:**  
+> The Unit Testing stage successfully executed within Jenkins, with **1 test suite and all 3 automated tests passing**. The Pipeline completed with a final status of **`SUCCESS`**, confirming that the application's current HTTP functionality passed automated validation before progressing to subsequent CI/CD and DevSecOps stages.
+
+> The Unit Testing stage therefore establishes an automated functional validation point within the CI/CD workflow.
+
+
+The Jenkins pipeline has now progressed through:
+
+Checkout Source Code
+        │
+        ▼
+Install Dependencies
+        │
+        ▼
+Unit Testing
+        │
+        ▼
+Next: Static Code Analysis
+
+> With source-code retrieval, dependency installation, and automated unit testing successfully implemented and validated, the pipeline is now ready for the next DevSecOps quality stage: SonarCloud Static Application Security Testing (SAST).
+
+---
+

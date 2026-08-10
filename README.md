@@ -31,7 +31,9 @@
 15. [Running the Project Locally](#running-the-project-locally)
 16. [Future CI/CD Pipeline](#future-cicd-pipeline)
 17. [Future Enhancements](#future-enhancements)
-18. [Author](#author)
+18. [Current Status](#current-status)
+19. [Author](#author)
+
 ---
 
 
@@ -92,23 +94,24 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Node.js 18.20.8 Tool Resolution
 - ✔ Explicit Source Code Checkout
 - ✔ Default Jenkins SCM Checkout Disabled
+- ✔ Install Dependencies Stage
+- ✔ Jenkins Workspace Dependency Preparation
+- ✔ Unit Testing Stage
+- ✔ Jest Test Suite Execution
+- ✔ 3 Automated Tests Passed
+- ✔ Successful Unit Testing Pipeline Execution
 - ✔ Successful Initial Pipeline Execution
+
 
 ### 🚧 In Progress
 
 - Jenkins CI/CD & DevSecOps Pipeline
-- Jenkins Pipeline Source Code Checkout
-- Jenkins Pipeline Tool Resolution
-- Jenkins Dependency Installation
-- Jenkins Workspace Dependency Preparation
-- Automated Unit Testing
 - SonarCloud Integration
 - Snyk Integration
 - Docker Build and Container Security Scanning
 - Amazon ECR Image Publishing
 - Amazon EKS Deployment
 - OWASP ZAP Dynamic Application Security Testing
-
 
 ### 📌 Planned
 
@@ -411,11 +414,13 @@ The project follows a phased implementation strategy to ensure that each compone
 
 Phase 8 is currently **in progress**.
 
-The Jenkins CI/CD pipeline has now progressed beyond source-code checkout and successfully implemented the **Install Dependencies** stage.
+The Jenkins CI/CD pipeline has successfully progressed through **source-code checkout, dependency installation, and automated unit testing**.
 
-The pipeline has been validated through an actual Jenkins build using the version-controlled Jenkinsfile retrieved from GitHub.
+The latest implementation was validated through an actual Jenkins Pipeline execution using the version-controlled Jenkinsfile retrieved from GitHub.
 
-The implemented pipeline stages currently include:
+### Implemented Pipeline Capabilities
+
+The Jenkins Pipeline currently provides:
 
 - Jenkins Pipeline as Code
 - Jenkins agent allocation
@@ -429,12 +434,16 @@ The implemented pipeline stages currently include:
 - `dir('app')` workspace targeting
 - `npm ci` dependency installation
 - Jenkins workspace dependency verification
-- Pipeline post-build action
-- Successful pipeline execution
+- Unit Testing stage
+- `npm test` execution
+- Jest test suite execution
+- Automated validation of application HTTP endpoints
+- Successful unit test execution
+- Pipeline post-build processing
+- Successful Jenkins Pipeline execution
 
 ### Current Pipeline Flow
 
-```text
 GitHub
    │
    ▼
@@ -460,49 +469,70 @@ Install Dependencies
    └── Install Node.js Dependencies
    │
    ▼
+Unit Testing
+   │
+   ├── Enter app/
+   ├── Execute npm test
+   ├── Invoke Jest
+   └── Validate Application Tests
+   │
+   ▼
 Post Actions
    │
    ▼
 SUCCESS
-```
 
-### Dependency Installation Result
 
-The Install Dependencies stage was successfully executed by Jenkins.
+### Unit Testing Result
 
-The actual build installed:
+The **Unit Testing** stage was successfully executed within Jenkins.
 
-381 packages
-Audited 382 packages
-Completed dependency installation in approximately 3 seconds
-Reported 2 high-severity vulnerabilities
-Completed the overall Pipeline with SUCCESS
+The actual Jenkins execution produced the following results:
 
-The two high-severity vulnerabilities reported by npm are documented as a security observation. Formal Software Composition Analysis (SCA) will be performed by the dedicated Snyk stage later in the DevSecOps pipeline.
+| Test Metric | Result |
+|-------------|--------|
+| **Test Suites** | **1 passed / 1 total** |
+| **Tests** | **3 passed / 3 total** |
+| **Tests Failed** | **0** |
+| **Snapshots** | **0** |
+| **Execution Time** | **0.379 seconds** |
+| **Test Runner** | **Jest** |
+| **Final Pipeline Status** | **SUCCESS** |
 
+The three automated tests validated the following application endpoints:
+
+| Test | Result |
+|------|:------:|
+| `GET /` returns HTTP `200` | ✅ Passed |
+| `GET /health` returns HTTP `200` and `"ok"` | ✅ Passed |
+| `GET /metrics` returns Prometheus metrics | ✅ Passed |
+
+The successful execution confirms that Jenkins can enter the application's `app/` directory, execute the configured `npm test` command, invoke Jest, and validate the application's current HTTP functionality.
+
+> **Result:** All **3 automated tests** passed successfully across **1 test suite**, and the Jenkins Pipeline completed with a final status of **`SUCCESS`**.
 
 ### Current Phase 8 Status
 
-The following stages have now been implemented and verified:
+| Pipeline Stage | Status |
+|----------------|:------:|
+| **Jenkinsfile Configuration** | ✅ |
+| **Tool Initialization** | ✅ |
+| **Checkout Source Code** | ✅ |
+| **Install Dependencies** | ✅ |
+| **Unit Testing** | ✅ |
+| **SonarCloud Analysis** | ⏳ |
+| **Quality Gate** | ⏳ |
+| **Snyk SCA** | ⏳ |
+| **Docker Build** | ⏳ |
+| **Trivy Container Scan** | ⏳ |
+| **Amazon ECR Push** | ⏳ |
+| **Amazon EKS Deployment** | ⏳ |
+| **Rollout Verification** | ⏳ |
+| **OWASP ZAP DAST** | ⏳ |
 
-| Pipeline Stage                | Status |
-| ----------------------------- | :----: |
-| **Jenkinsfile Configuration** |    ✅   |
-| **Tool Initialization**       |    ✅   |
-| **Checkout Source Code**      |    ✅   |
-| **Install Dependencies**      |    ✅   |
-| **Unit Testing**              |    ⏳   |
-| **SonarCloud Analysis**       |    ⏳   |
-| **Quality Gate**              |    ⏳   |
-| **Snyk SCA**                  |    ⏳   |
-| **Docker Build**              |    ⏳   |
-| **Trivy Container Scan**      |    ⏳   |
-| **Amazon ECR Push**           |    ⏳   |
-| **Amazon EKS Deployment**     |    ⏳   |
-| **Rollout Verification**      |    ⏳   |
-| **OWASP ZAP DAST**            |    ⏳   |
+> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated the **Unit Testing** stage, with **1 test suite and all 3 automated tests passing**.
 
-**The next implementation milestone is Section 9.5 — Unit Testing.**
+> The next implementation milestone is SonarCloud Static Application Security Testing (SAST).
 
 ---
 
@@ -519,7 +549,7 @@ Detailed documentation for each implementation phase is available in the `docs/`
 | `05-terraform-infrastructure.md` | AWS networking, EKS, ECR, and IAM provisioning |
 | `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform, including IAM roles, instance profile, networking, Elastic IP, Terraform validation, verification, and SSH connectivity |
 | `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy |
-| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, Jenkins workspace preparation, pipeline execution, security observations, and verification |
+| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, Jenkins workspace preparation, pipeline execution, security observations, and verification |
 
 > **Additional documentation will be added as new pipeline stages and phases are completed.**
 
@@ -553,10 +583,43 @@ The Phase 8 screenshot directory currently contains evidence for:
 - Source-code checkout
 - Jenkins Pipeline execution
 - Install Dependencies stage
-- npm ci execution
+- `npm ci` execution
 - Jenkins workspace dependency verification
+- Unit Testing stage configuration
+- Jenkins Unit Testing Pipeline build
+- Successful Unit Testing stage execution
+- Jest test execution and console output
 
-Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented.
+### Unit Testing Evidence
+
+The latest Unit Testing implementation is documented through the following screenshots:
+
+| Screenshot | Evidence |
+| ---------- | -------- |
+| `30-jenkinsfile-unit-testing-stage.png` | Jenkinsfile containing the Unit Testing stage using `dir('app')` and `npm test`. |
+| `31-jenkins-pipeline-unit-testing-build.png` | Jenkins Pipeline build showing execution of the Unit Testing stage. |
+| `32-unit-testing-stage-success.png` | Successful completion of the Jenkins Unit Testing stage. |
+| `33-unit-testing-console-output.png` | Jenkins console output showing the Jest test suite and all 3 tests passing. |
+
+> Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented.
+
+
+#### Jenkinsfile — Unit Testing Stage
+
+![Jenkinsfile Unit Testing Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/30-jenkinsfile-unit-testing-stage.png)
+
+
+#### Jenkins Pipeline — Unit Testing Build
+
+![Jenkins Pipeline Unit Testing Build](screenshots/08-jenkins-ci-cd-devsecops-pipeline/31-jenkins-pipeline-unit-testing-build.png)
+
+#### Unit Testing Stage — Successful Execution
+
+![Unit Testing Stage Success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/32-unit-testing-stage-success.png)
+
+#### Unit Testing — Jenkins Console Output
+
+![Jenkins Unit Testing Console Output](screenshots/08-jenkins-ci-cd-devsecops-pipeline/33-unit-testing-console-output.png)
 
 ---
 
@@ -629,9 +692,10 @@ http://localhost:3000
 
 ## CI/CD Pipeline Roadmap
 
-The Jenkins CI/CD and DevSecOps pipeline is being implemented incrementally. The first stages have already been successfully validated through actual Jenkins executions.
+The Jenkins CI/CD and DevSecOps pipeline is being implemented incrementally. Each pipeline stage is implemented, executed, verified, and documented using actual Jenkins Pipeline builds.
 
-The current implementation has successfully completed:
+The following stages have currently been successfully implemented and validated:
+
 
 ```text
 GitHub
@@ -684,7 +748,7 @@ Checkout Source Code        ✅
 Install Dependencies        ✅
    │
    ▼
-Unit Testing                ⏳
+Unit Testing                ✅
    │
    ▼
 SonarCloud Scan             ⏳
@@ -712,6 +776,9 @@ Verify Rollout              ⏳
    │
    ▼
 OWASP ZAP Scan              ⏳
+
+
+> The pipeline will continue to expand through the subsequent quality, security, containerization, registry, deployment, and dynamic security testing stages.
 
 ---
 
@@ -744,29 +811,3 @@ Passionate about building secure, automated, and scalable cloud infrastructure u
 - **LinkedIn:** https://www.linkedin.com/in/jefferson-ohis-oviosu-5a982a168
 
 ---
-
-> **Current Status (August 2026):**
->
-> **Phase 7 – Jenkins Installation & Configuration** has been successfully completed.
->
-> **Phase 8 – Jenkins CI/CD & DevSecOps Pipeline** is currently **in progress**.
->
-> The Jenkins CI/CD pipeline has successfully implemented and validated:
->
-> - Jenkinsfile retrieval from GitHub
-> - Jenkins agent initialization
-> - JDK 21 tool resolution
-> - Node.js 18.20.8 tool resolution
-> - Explicit source-code checkout
-> - `skipDefaultCheckout(true)`
-> - Install Dependencies stage
-> - `dir('app')` workspace targeting
-> - `npm ci` dependency installation
-> - Jenkins workspace dependency verification
-> - Successful pipeline execution
->
-> The latest validated Jenkins execution installed **381 packages**, audited **382 packages**, and completed successfully with a `SUCCESS` build result.
->
-> npm also reported **2 high-severity vulnerabilities** during the dependency audit. These findings are documented as a security observation and will be formally evaluated through the dedicated **Snyk Software Composition Analysis (SCA)** stage.
->
-> The next implementation milestone is **Section 9.5 – Unit Testing**, followed by SonarCloud, Snyk, Docker, Trivy, Amazon ECR, Amazon EKS, rollout verification, and OWASP ZAP integration.
