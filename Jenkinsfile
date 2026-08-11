@@ -37,15 +37,19 @@ pipeline {
 
         stage('SonarCloud Analysis') {
             steps {
-                dir('app') {
-                    withSonarQubeEnv('SonarCloud') {
-                        sh '''
-                            sonar-scanner \
-                              -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
-                              -Dsonar.organization=jefferson-ohis1 \
-                              -Dsonar.sources=. \
-                              -Dsonar.host.url=https://sonarcloud.io
-                        '''
+                script {
+                    def scannerHome = tool 'sonar-scanner'
+
+                    dir('app') {
+                        withSonarQubeEnv('SonarCloud') {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                 -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
+                                 -Dsonar.organization=jefferson-ohis1 \
+                                 -Dsonar.sources=. \
+                                 -Dsonar.host.url=https://sonarcloud.io
+                            """
+                        }
                     }
                 }
             }
