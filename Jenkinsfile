@@ -47,7 +47,8 @@ pipeline {
                                  -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
                                  -Dsonar.organization=jefferson-ohis1 \
                                  -Dsonar.sources=. \
-                                 -Dsonar.host.url=https://sonarcloud.io
+                                 -Dsonar.host.url=https://sonarcloud.io \
+                                 -Dsonar.qualitygate.wait=true
                             """
                         }
                     }

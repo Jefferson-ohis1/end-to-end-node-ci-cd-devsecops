@@ -101,12 +101,22 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ 3 Automated Tests Passed
 - ✔ Successful Unit Testing Pipeline Execution
 - ✔ Successful Initial Pipeline Execution
+- ✔ SonarCloud Project Configuration
+- ✔ Jenkins SonarCloud Server Configuration
+- ✔ Jenkins SonarScanner Configuration
+- ✔ SonarCloud Authentication Credential Configuration
+- ✔ SonarCloud SAST Analysis Stage
+- ✔ Jenkins-Managed SonarScanner Integration
+- ✔ Successful SonarCloud Source-Code Analysis
+- ✔ Successful SonarCloud Report Upload
+- ✔ SonarCloud Project Dashboard Verification
+- ✔ SonarCloud Project Analysis Results Verification
 
 
 ### 🚧 In Progress
 
 - Jenkins CI/CD & DevSecOps Pipeline
-- SonarCloud Integration
+- SonarCloud Quality Gate
 - Snyk Integration
 - Docker Build and Container Security Scanning
 - Amazon ECR Image Publishing
@@ -115,10 +125,12 @@ The project is being developed incrementally, with each phase documented in deta
 
 ### 📌 Planned
 
-- SonarCloud Integration
-- Snyk Integration
-- OWASP ZAP Integration
-- Amazon EKS Deployment
+- SonarCloud Quality Gate enforcement
+- Snyk Software Composition Analysis
+- Docker image security scanning with Trivy
+- Amazon ECR image publishing
+- Amazon EKS deployment
+- OWASP ZAP Dynamic Application Security Testing
 - Prometheus Monitoring
 - Grafana Dashboards
 
@@ -210,25 +222,25 @@ The AWS infrastructure for this project has been fully provisioned using Terrafo
 ## Technology Stack
 
 | Layer | Technology |
-|-----------|--------------|
-| Programming Language | Node.js |
-| Backend Framework | Express.js |
-| Monitoring Library | Prometheus Client |
-| Unit Testing | Jest, Supertest |
-| Containerization | Docker |
-| Infrastructure as Code | Terraform |
-| Cloud Provider | Amazon Web Services (AWS) |
-| Container Registry | Amazon Elastic Container Registry (Amazon ECR) |
-| Container Orchestration | Amazon Elastic Kubernetes Service (Amazon EKS) |
-| Continuous Integration | Jenkins |
-| Static Code Analysis | SonarCloud *(Upcoming)* |
-| Dependency Scanning | Snyk *(Upcoming)* |
-| Container Security | Trivy |
-| Dynamic Security Testing | OWASP ZAP *(Upcoming)* |
-| Monitoring | Prometheus *(Upcoming)* |
-| Visualization | Grafana *(Upcoming)* |
-| Version Control | Git |
-| Repository Hosting | GitHub |
+|---|---|
+| **Programming Language** | Node.js |
+| **Backend Framework** | Express.js |
+| **Monitoring Library** | Prometheus Client |
+| **Unit Testing** | Jest, Supertest |
+| **Containerization** | Docker |
+| **Infrastructure as Code** | Terraform |
+| **Cloud Provider** | Amazon Web Services (AWS) |
+| **Container Registry** | Amazon Elastic Container Registry (Amazon ECR) |
+| **Container Orchestration** | Amazon Elastic Kubernetes Service (Amazon EKS) |
+| **Continuous Integration** | Jenkins |
+| **Static Application Security Testing (SAST)** | SonarCloud |
+| **Dependency Scanning / SCA** | Snyk *(Upcoming)* |
+| **Container Security** | Trivy |
+| **Dynamic Application Security Testing (DAST)** | OWASP ZAP *(Upcoming)* |
+| **Monitoring** | Prometheus *(Upcoming)* |
+| **Visualization** | Grafana *(Upcoming)* |
+| **Version Control** | Git |
+| **Repository Hosting** | GitHub |
 
 ---
 
@@ -414,33 +426,46 @@ The project follows a phased implementation strategy to ensure that each compone
 
 Phase 8 is currently **in progress**.
 
-The Jenkins CI/CD pipeline has successfully progressed through **source-code checkout, dependency installation, and automated unit testing**.
+The Jenkins CI/CD pipeline has successfully progressed through:
 
-The latest implementation was validated through an actual Jenkins Pipeline execution using the version-controlled Jenkinsfile retrieved from GitHub.
+**Source Code Checkout → Dependency Installation → Unit Testing → SonarCloud SAST Analysis**
+
+The latest implementation was validated through an actual Jenkins Pipeline execution using the version-controlled `Jenkinsfile` retrieved from GitHub.
+
 
 ### Implemented Pipeline Capabilities
 
-The Jenkins Pipeline currently provides:
+The Jenkins Pipeline currently provides the following capabilities:
 
-- Jenkins Pipeline as Code
-- Jenkins agent allocation
-- JDK 21 tool resolution
-- Node.js 18.20.8 tool resolution
-- Explicit source-code checkout
-- `skipDefaultCheckout(true)` configuration
-- GitHub `main` branch checkout
-- Jenkins workspace initialization
-- Install Dependencies stage
-- `dir('app')` workspace targeting
-- `npm ci` dependency installation
-- Jenkins workspace dependency verification
-- Unit Testing stage
-- `npm test` execution
-- Jest test suite execution
-- Automated validation of application HTTP endpoints
-- Successful unit test execution
-- Pipeline post-build processing
-- Successful Jenkins Pipeline execution
+| Category | Implemented Capability |
+|---|---|
+| **Pipeline Architecture** | Jenkins Pipeline as Code |
+| **Jenkins Execution** | Jenkins agent allocation |
+| **Java Runtime** | JDK 21 tool resolution |
+| **Node.js Runtime** | Node.js 18.20.8 tool resolution |
+| **Source Control** | Explicit source-code checkout |
+| **Checkout Configuration** | `skipDefaultCheckout(true)` |
+| **Git Branch** | GitHub `main` branch checkout |
+| **Workspace** | Jenkins workspace initialization |
+| **Dependency Management** | `Install Dependencies` stage |
+| **Workspace Targeting** | `dir('app')` workspace targeting |
+| **Dependency Installation** | `npm ci` |
+| **Dependency Verification** | Jenkins workspace dependency verification |
+| **Testing** | `Unit Testing` stage |
+| **Test Execution** | `npm test` |
+| **Testing Framework** | Jest test suite execution |
+| **Application Validation** | Automated application endpoint validation |
+| **SAST** | SonarCloud SAST integration |
+| **Code Analysis** | Jenkins-managed SonarScanner |
+| **SonarCloud Integration** | `withSonarQubeEnv('SonarCloud')` |
+| **SonarCloud Configuration** | SonarCloud project and organization configuration |
+| **Source Analysis** | Automated source-code analysis |
+| **Report Processing** | SonarCloud analysis report upload |
+| **Dashboard Verification** | SonarCloud project dashboard verification |
+| **Results Verification** | SonarCloud analysis results verification |
+| **Pipeline Validation** | Successful Jenkins Pipeline execution |
+
+---
 
 ### Current Pipeline Flow
 
@@ -477,62 +502,62 @@ Unit Testing
    └── Validate Application Tests
    │
    ▼
+SonarCloud SAST Analysis
+   │
+   ├── Initialize Jenkins-managed SonarScanner
+   ├── Load SonarCloud Environment
+   ├── Analyze Application Source Code
+   └── Upload Analysis Report
+   │
+   ▼
 Post Actions
    │
    ▼
 SUCCESS
 
 
-### Unit Testing Result
+### SonarCloud SAST Result
 
-The **Unit Testing** stage was successfully executed within Jenkins.
+The SonarCloud integration was successfully executed within Jenkins.
 
-The actual Jenkins execution produced the following results:
+| Verification Item                            | Result |
+| -------------------------------------------- | :----: |
+| **SonarCloud environment loaded**            |    ✅   |
+| **Jenkins-managed SonarScanner initialized** |    ✅   |
+| **SonarCloud connection established**        |    ✅   |
+| **Project identified correctly**             |    ✅   |
+| **Organization identified correctly**        |    ✅   |
+| **Application source code analyzed**         |    ✅   |
+| **Analysis report generated**                |    ✅   |
+| **Analysis report uploaded**                 |    ✅   |
+| **SonarCloud dashboard verified**            |    ✅   |
+| **SonarCloud analysis results verified**     |    ✅   |
+| **Jenkins Pipeline completed successfully**  |    ✅   |
 
-| Test Metric | Result |
-|-------------|--------|
-| **Test Suites** | **1 passed / 1 total** |
-| **Tests** | **3 passed / 3 total** |
-| **Tests Failed** | **0** |
-| **Snapshots** | **0** |
-| **Execution Time** | **0.379 seconds** |
-| **Test Runner** | **Jest** |
-| **Final Pipeline Status** | **SUCCESS** |
-
-The three automated tests validated the following application endpoints:
-
-| Test | Result |
-|------|:------:|
-| `GET /` returns HTTP `200` | ✅ Passed |
-| `GET /health` returns HTTP `200` and `"ok"` | ✅ Passed |
-| `GET /metrics` returns Prometheus metrics | ✅ Passed |
-
-The successful execution confirms that Jenkins can enter the application's `app/` directory, execute the configured `npm test` command, invoke Jest, and validate the application's current HTTP functionality.
-
-> **Result:** All **3 automated tests** passed successfully across **1 test suite**, and the Jenkins Pipeline completed with a final status of **`SUCCESS`**.
 
 ### Current Phase 8 Status
 
-| Pipeline Stage | Status |
-|----------------|:------:|
-| **Jenkinsfile Configuration** | ✅ |
-| **Tool Initialization** | ✅ |
-| **Checkout Source Code** | ✅ |
-| **Install Dependencies** | ✅ |
-| **Unit Testing** | ✅ |
-| **SonarCloud Analysis** | ⏳ |
-| **Quality Gate** | ⏳ |
-| **Snyk SCA** | ⏳ |
-| **Docker Build** | ⏳ |
-| **Trivy Container Scan** | ⏳ |
-| **Amazon ECR Push** | ⏳ |
-| **Amazon EKS Deployment** | ⏳ |
-| **Rollout Verification** | ⏳ |
-| **OWASP ZAP DAST** | ⏳ |
+| Pipeline Stage                | Status |
+| ----------------------------- | :----: |
+| **Jenkinsfile Configuration** |    ✅   |
+| **Tool Initialization**       |    ✅   |
+| **Checkout Source Code**      |    ✅   |
+| **Install Dependencies**      |    ✅   |
+| **Unit Testing**              |    ✅   |
+| **SonarCloud SAST Analysis**  |    ✅   |
+| **SonarCloud Quality Gate**   |    ⏳   |
+| **Snyk SCA**                  |    ⏳   |
+| **Docker Build**              |    ⏳   |
+| **Trivy Container Scan**      |    ⏳   |
+| **Amazon ECR Push**           |    ⏳   |
+| **Amazon EKS Deployment**     |    ⏳   |
+| **Rollout Verification**      |    ⏳   |
+| **OWASP ZAP DAST**            |    ⏳   |
 
-> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated the **Unit Testing** stage, with **1 test suite and all 3 automated tests passing**.
 
-> The next implementation milestone is SonarCloud Static Application Security Testing (SAST).
+> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated SonarCloud Static Application Security Testing (SAST). The application source code was analyzed successfully, the analysis report was uploaded to SonarCloud, and the Jenkins Pipeline completed with a final status of SUCCESS.
+
+> **Next Milestone:** Implement the SonarCloud Quality Gate to evaluate the analysis results and enforce automated quality and security criteria before the pipeline proceeds to subsequent security and deployment stages.
 
 ---
 
@@ -549,7 +574,7 @@ Detailed documentation for each implementation phase is available in the `docs/`
 | `05-terraform-infrastructure.md` | AWS networking, EKS, ECR, and IAM provisioning |
 | `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform, including IAM roles, instance profile, networking, Elastic IP, Terraform validation, verification, and SSH connectivity |
 | `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy |
-| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, Jenkins workspace preparation, pipeline execution, security observations, and verification |
+| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, SonarCloud SAST integration, Jenkins-managed SonarScanner configuration, SonarCloud analysis execution, report upload, dashboard verification, pipeline execution, security observations, validation, and documented implementation evidence. |
 
 > **Additional documentation will be added as new pipeline stages and phases are completed.**
 
@@ -590,18 +615,38 @@ The Phase 8 screenshot directory currently contains evidence for:
 - Successful Unit Testing stage execution
 - Jest test execution and console output
 
-### Unit Testing Evidence
+### CI/CD and DevSecOps Evidence
 
-The latest Unit Testing implementation is documented through the following screenshots:
+The latest Jenkins CI/CD and DevSecOps implementations are documented through the following screenshots.
+
+#### Unit Testing Evidence
+
+The Unit Testing implementation is documented through the following screenshots:
 
 | Screenshot | Evidence |
-| ---------- | -------- |
-| `30-jenkinsfile-unit-testing-stage.png` | Jenkinsfile containing the Unit Testing stage using `dir('app')` and `npm test`. |
-| `31-jenkins-pipeline-unit-testing-build.png` | Jenkins Pipeline build showing execution of the Unit Testing stage. |
-| `32-unit-testing-stage-success.png` | Successful completion of the Jenkins Unit Testing stage. |
-| `33-unit-testing-console-output.png` | Jenkins console output showing the Jest test suite and all 3 tests passing. |
+|---|---|
+| `30-jenkinsfile-unit-testing-stage.png` | Jenkinsfile containing the **Unit Testing** stage using `dir('app')` and `npm test`. |
+| `31-jenkins-pipeline-unit-testing-build.png` | Jenkins Pipeline build showing execution of the **Unit Testing** stage. |
+| `32-unit-testing-stage-success.png` | Successful completion of the Jenkins **Unit Testing** stage. |
+| `33-unit-testing-console-output.png` | Jenkins console output showing the **Jest test suite** and all **3 tests passing**. |
 
-> Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented.
+
+#### SonarCloud SAST Evidence
+
+The SonarCloud Static Application Security Testing (SAST) implementation is documented through the following screenshots:
+
+| Screenshot | Evidence |
+|---|---|
+| `34-jenkinsfile-showing-sonarcloud-analysis-stage.png` | Jenkinsfile containing the **SonarCloud Analysis** stage and Jenkins-managed SonarScanner configuration. |
+| `35-jenkins-pipeline-showing-sonarcloud-analysis-stage.png` | Jenkins Pipeline showing the **SonarCloud Analysis** stage as part of the CI/CD workflow. |
+| `36-sonarcloud-analysis-success-in-jenkins-console.png` | Jenkins console output confirming successful SonarCloud analysis and report processing. |
+| `37-sonarcloud-project-dashboard.png` | SonarCloud project dashboard confirming that the Jenkins analysis reached the configured project. |
+| `38-sonarcloud-project-overview-results.png` | SonarCloud project overview displaying the results generated by the static analysis. |
+| `39-jenkins-pipeline-stages-overview.png` | Jenkins Pipeline stages overview showing the completed stages through **SonarCloud Analysis**. |
+
+> **Evidence Status:** Screenshots 30–39 provide documented evidence of the successfully implemented Unit Testing and SonarCloud SAST stages within the Jenkins CI/CD and DevSecOps Pipeline.
+
+> Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented and validated.
 
 
 #### Jenkinsfile — Unit Testing Stage
@@ -620,6 +665,37 @@ The latest Unit Testing implementation is documented through the following scree
 #### Unit Testing — Jenkins Console Output
 
 ![Jenkins Unit Testing Console Output](screenshots/08-jenkins-ci-cd-devsecops-pipeline/33-unit-testing-console-output.png)
+
+
+#### Jenkinsfile showing SonarCloud Analysis stage
+
+![Jenkinsfile showing SonarCloud Analysis stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/34-jenkinsfile-showing-sonarcloud-analysis-stage.png)
+
+
+#### Jenkins Pipeline showing SonarCloud Analysis stage
+
+![Jenkins Pipeline showing SonarCloud Analysis stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/35-jenkins-pipeline-showing-sonarcloud-analysis-stage.png)
+
+
+
+#### Jenkins Console — Successful SonarCloud Analysis
+
+![Successful SonarCloud analysis in Jenkins console](screenshots/08-jenkins-ci-cd-devsecops-pipeline/36-sonarcloud-analysis-success-in-jenkins-console.png)
+
+
+#### SonarCloud project Dashboard
+
+![SonarCloud project dashboard](screenshots/08-jenkins-ci-cd-devsecops-pipeline/37-sonarcloud-project-dashboard.png)
+
+
+#### SonarCloud Project Overview and Results
+
+![SonarCloud project overview and results](screenshots/08-jenkins-ci-cd-devsecops-pipeline/38-sonarcloud-project-overview-results.png)
+
+
+##### Jenkins Pipeline stages overview
+
+![Jenkins Pipeline stages overview](screenshots/08-jenkins-ci-cd-devsecops-pipeline/39-jenkins-pipeline-stages-overview.png)
 
 ---
 
@@ -694,48 +770,46 @@ http://localhost:3000
 
 The Jenkins CI/CD and DevSecOps pipeline is being implemented incrementally. Each pipeline stage is implemented, executed, verified, and documented using actual Jenkins Pipeline builds.
 
-The following stages have currently been successfully implemented and validated:
+The following pipeline stages have currently been successfully implemented and validated:
 
 
-```text
 GitHub
    │
    ▼
-Checkout Source Code
+Checkout Source Code        ✅
    │
    ▼
-Install Dependencies
+Install Dependencies        ✅
    │
    ▼
-Unit Testing
+Unit Testing                ✅
    │
    ▼
-SonarCloud Scan
+SonarCloud SAST Scan        ✅
    │
    ▼
-Quality Gate
+Quality Gate                ⏳
    │
    ▼
-Snyk Scan
+Snyk Scan                   ⏳
    │
    ▼
-Docker Build
+Docker Build                ⏳
    │
    ▼
-Trivy Scan
+Trivy Scan                  ⏳
    │
    ▼
-Push Image to Amazon ECR
+Push Image to Amazon ECR    ⏳
    │
    ▼
-Deploy to Amazon EKS
+Deploy to Amazon EKS        ⏳
    │
    ▼
-Verify Rollout
+Verify Rollout              ⏳
    │
    ▼
-OWASP ZAP Scan
-```
+OWASP ZAP Scan              ⏳
 
 The remaining pipeline stages will be implemented and validated incrementally:
 
@@ -751,7 +825,7 @@ Install Dependencies        ✅
 Unit Testing                ✅
    │
    ▼
-SonarCloud Scan             ⏳
+SonarCloud SAST Scan        ✅
    │
    ▼
 Quality Gate                ⏳
@@ -786,11 +860,13 @@ OWASP ZAP Scan              ⏳
 
 The following enhancements will be implemented as the project progresses:
 
-- Complete the Jenkins CI/CD and DevSecOps pipeline
-- Integrate SonarCloud (SAST)
-- Integrate Snyk (Software Composition Analysis)
-- Integrate OWASP ZAP (DAST)
+- Complete SonarCloud Quality Gate integration
+- Integrate Snyk Software Composition Analysis (SCA)
+- Integrate Docker image security scanning with Trivy
+- Publish container images to Amazon ECR
 - Deploy automatically to Amazon EKS
+- Implement Kubernetes rollout verification
+- Integrate OWASP ZAP Dynamic Application Security Testing (DAST)
 - Configure Prometheus monitoring
 - Configure Grafana dashboards
 - Add architecture diagrams
@@ -811,3 +887,4 @@ Passionate about building secure, automated, and scalable cloud infrastructure u
 - **LinkedIn:** https://www.linkedin.com/in/jefferson-ohis-oviosu-5a982a168
 
 ---
+

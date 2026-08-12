@@ -3544,3 +3544,491 @@ Next: Static Code Analysis
 
 ---
 
+## Section 9.6 — SonarCloud Static Application Security Testing (SAST)
+
+### Overview
+
+With the Jenkins CI/CD Pipeline successfully executing the **Checkout Source Code**, **Install Dependencies**, and **Unit Testing** stages, the next step was to introduce **Static Application Security Testing (SAST)** using **SonarCloud**.
+
+SonarCloud provides automated source-code analysis to identify potential:
+
+- Bugs
+- Vulnerabilities
+- Security hotspots
+- Code smells
+- Maintainability issues
+- Other code-quality concerns
+
+For this project, SonarCloud was integrated directly into the Jenkins Pipeline so that every applicable Pipeline execution can automatically submit the application's source code for analysis.
+
+The resulting CI/CD flow is:
+
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ▼
+Checkout Source Code
+   │
+   ▼
+Install Dependencies
+   │
+   ▼
+Unit Testing
+   │
+   ▼
+SonarCloud SAST Analysis
+   │
+   ▼
+SonarCloud Project Dashboard
+```
+
+The implementation was validated through an **actual Jenkins Pipeline execution**, including successful SonarCloud analysis and report upload.
+
+---
+
+### 9.6.1 Why SonarCloud?
+
+Security and code quality should be evaluated early in the CI/CD process rather than waiting until the application reaches deployment.
+
+SonarCloud provides an automated SAST capability that complements the other security technologies incorporated into this DevSecOps Pipeline.
+
+| Capability | Description |
+|------------|-------------|
+| **Static Application Security Testing (SAST)** | Analyzes source code without executing the application to identify potential security and quality issues. |
+| **Bug Detection** | Identifies code patterns that may lead to incorrect application behavior. |
+| **Vulnerability Detection** | Detects potentially exploitable security weaknesses in the source code. |
+| **Security Hotspots** | Highlights code requiring additional security review. |
+| **Code Smells** | Identifies maintainability and code-quality issues. |
+| **Continuous Analysis** | Allows source code to be analyzed automatically as part of the Jenkins CI/CD Pipeline. |
+| **Centralized Dashboard** | Provides a centralized view of analysis results and project quality metrics. |
+| **CI/CD Integration** | Allows SonarCloud analysis to operate as an automated Jenkins Pipeline stage. |
+
+---
+
+### 9.6.2 SonarCloud Project Configuration
+
+A SonarCloud project was created and associated with the GitHub repository:
+
+```text
+GitHub Repository:
+Jefferson-ohis1/end-to-end-node-ci-cd-devsecops
+```
+
+The following SonarCloud project configuration was used by the Jenkins Pipeline:
+
+| Configuration | Value |
+|---------------|-------|
+| **SonarCloud Organization** | `jefferson-ohis1` |
+| **Organization Key** | `jefferson-ohis1` |
+| **Project Key** | `Jefferson-ohis1_end-to-end-node-ci-cd-devsecops` |
+| **SonarCloud Server** | `https://sonarcloud.io` |
+| **Jenkins SonarQube Installation** | `SonarCloud` |
+| **Jenkins Scanner Installation** | `sonar-scanner` |
+
+The Jenkins SonarCloud configuration uses a Jenkins-managed authentication credential rather than exposing the authentication token directly inside the `Jenkinsfile`.
+
+This keeps authentication information outside the source-code repository.
+
+---
+
+### 9.6.3 SonarQube Scanner Configuration
+
+The SonarQube Scanner was configured in Jenkins under:
+
+```text
+Manage Jenkins
+→ Tools
+→ SonarQube Scanner installations
+```
+
+The configured scanner installation is:
+
+| Configuration | Value |
+|---------------|-------|
+| **Name** | `sonar-scanner` |
+| **Installation Method** | Install automatically |
+| **Purpose** | Provides the SonarScanner CLI required to submit source-code analysis to SonarCloud |
+
+During the successful Pipeline execution, Jenkins installed and made the configured SonarScanner available to the Pipeline.
+
+The Pipeline therefore does not depend on a manually installed system-wide `sonar-scanner` executable.
+
+---
+
+### 9.6.4 SonarCloud Server Configuration
+
+The SonarCloud server was configured in Jenkins under the SonarQube server settings.
+
+The configuration uses:
+
+| Configuration | Value |
+|---------------|-------|
+| **Name** | `SonarCloud` |
+| **Server URL** | `https://sonarcloud.io` |
+| **Authentication** | Jenkins-managed SonarCloud credential |
+
+The `SonarCloud` configuration name is referenced by the Jenkinsfile through:
+
+```groovy
+withSonarQubeEnv('SonarCloud')
+```
+
+This allows Jenkins to inject the configured SonarCloud environment variables into the analysis stage without exposing authentication credentials in the Jenkinsfile.
+
+---
+
+### 9.6.5 Jenkinsfile SonarCloud Analysis Stage
+
+The SonarCloud analysis stage was added after the successful **Unit Testing** stage.
+
+The implementation uses the SonarScanner installation managed by Jenkins:
+
+```groovy
+stage('SonarCloud Analysis') {
+    steps {
+        script {
+            def scannerHome = tool 'sonar-scanner'
+
+            dir('app') {
+                withSonarQubeEnv('SonarCloud') {
+                    sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                         -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
+                         -Dsonar.organization=jefferson-ohis1 \
+                         -Dsonar.sources=. \
+                         -Dsonar.host.url=https://sonarcloud.io
+                    """
+                }
+            }
+        }
+    }
+}
+```
+#### Configuration Breakdown
+
+| Configuration | Purpose |
+|---------------|---------|
+| `tool 'sonar-scanner'` | Retrieves the SonarScanner installation configured in Jenkins. |
+| `dir('app')` | Executes the analysis from the Node.js application's directory. |
+| `withSonarQubeEnv('SonarCloud')` | Injects the configured SonarCloud environment into the Pipeline. |
+| `sonar.projectKey` | Identifies the SonarCloud project receiving the analysis. |
+| `sonar.organization` | Identifies the SonarCloud organization. |
+| `sonar.sources=.` | Instructs SonarScanner to analyze the current application directory. |
+| `sonar.host.url` | Specifies SonarCloud as the analysis server. |
+
+---
+
+### 9.6.6 Why Use the Jenkins-Managed Scanner?
+
+The initial implementation attempted to execute:
+
+```bash
+sonar-scanner
+```
+
+directly from the Jenkins shell.
+
+This resulted in:
+
+```text
+sonar-scanner: not found
+```
+
+The issue occurred because the executable was not available on the Jenkins agent's system `PATH`.
+
+The implementation was therefore changed to use the SonarScanner installation managed by Jenkins:
+
+```groovy
+def scannerHome = tool 'sonar-scanner'
+```
+
+The scanner is then explicitly executed using:
+
+```groovy
+${scannerHome}/bin/sonar-scanner
+```
+
+#### Benefits
+
+| Benefit | Description |
+|---------|-------------|
+| **Jenkins Tool Management** | Jenkins manages the SonarScanner installation. |
+| **Improved Reliability** | The Pipeline does not depend on a manually configured system `PATH`. |
+| **Pipeline Portability** | The scanner can be used consistently across Jenkins agents. |
+| **Centralized Configuration** | Scanner configuration is managed through Jenkins rather than individual agents. |
+| **Cleaner Jenkinsfile** | The Pipeline references the configured tool instead of a hardcoded installation path. |
+
+---
+
+### 9.6.7 Jenkinsfile Verification
+
+The completed Jenkinsfile was verified locally using:
+
+```bash
+git diff --check
+```
+
+The command returned no output, confirming that Git detected no whitespace or formatting errors.
+
+The updated Jenkinsfile was then committed and pushed to the GitHub repository before executing the Pipeline through Jenkins.
+
+### Jenkinsfile — SonarCloud Analysis Stage
+
+The following screenshot documents the completed Jenkinsfile and the newly implemented SonarCloud Analysis stage.
+
+![Jenkinsfile showing SonarCloud Analysis stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/34-jenkinsfile-showing-sonarcloud-analysis-stage.png)
+
+---
+
+### 9.6.8 Jenkins Pipeline Execution
+
+After the Jenkinsfile was updated, committed, and pushed to GitHub, the Jenkins Pipeline was executed.
+
+The Pipeline successfully progressed through the preceding stages:
+
+```text
+Checkout Source Code
+        │
+        ▼
+Install Dependencies
+        │
+        ▼
+Unit Testing
+        │
+        ▼
+SonarCloud Analysis
+```
+
+The SonarCloud stage appeared as an independent stage within the Jenkins Pipeline.
+
+#### Jenkins Pipeline — SonarCloud Analysis Stage
+
+![Jenkins Pipeline showing SonarCloud Analysis stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/35-jenkins-pipeline-showing-sonarcloud-analysis-stage.png)
+
+---
+
+### 9.6.9 SonarCloud Analysis Execution
+
+During the successful Pipeline execution, Jenkins loaded the configured SonarCloud environment:
+
+```text
+Injecting SonarQube environment variables using the configuration: SonarCloud
+```
+
+Jenkins then executed the configured SonarScanner installation.
+
+The scanner successfully connected to SonarCloud and initiated the source-code analysis.
+
+The analysis confirmed the configured project:
+
+```text
+Project key:
+Jefferson-ohis1_end-to-end-node-ci-cd-devsecops
+```
+
+and organization:
+
+```text
+Organization key:
+jefferson-ohis1
+```
+
+The scanner processed the application's source code and analyzed the configured application directory.
+
+The analysis successfully generated and uploaded the resulting report to SonarCloud.
+
+#### Jenkins Console — Successful SonarCloud Analysis
+
+![Successful SonarCloud analysis in Jenkins console](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/36-sonarcloud-analysis-success-in-jenkins-console.png)
+
+---
+
+### 9.6.10 SonarCloud Analysis Result
+
+The most important confirmation from the Jenkins console was:
+
+```text
+ANALYSIS SUCCESSFUL
+```
+
+The scanner also reported successful report processing and upload.
+
+The analysis execution completed successfully, allowing the Jenkins Pipeline to continue to its subsequent actions.
+
+The Jenkins build ultimately completed with:
+
+```text
+Finished: SUCCESS
+```
+
+#### Analysis Result Summary
+
+| Verification Item | Result |
+|--------------------|:------:|
+| **SonarCloud environment loaded** | ✅ Successful |
+| **SonarScanner initialized** | ✅ Successful |
+| **SonarCloud connection established** | ✅ Successful |
+| **Project identified correctly** | ✅ Successful |
+| **Source-code analysis completed** | ✅ Successful |
+| **Analysis report generated** | ✅ Successful |
+| **Analysis report uploaded** | ✅ Successful |
+| **Jenkins Pipeline completed** | ✅ Successful |
+| **Final build status** | **`SUCCESS`** |
+
+This confirms that the SonarCloud integration was successfully executed as part of the Jenkins CI/CD Pipeline.
+
+---
+
+### 9.6.11 SonarCloud Project Dashboard
+
+After Jenkins successfully uploaded the analysis report, the SonarCloud project dashboard was accessed to verify that the analysis reached the configured project.
+
+![SonarCloud project dashboard](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/37-sonarcloud-project-dashboard.png)
+
+The dashboard provides the centralized view of the project's current analysis and quality information.
+
+This confirms that Jenkins successfully communicated with the configured SonarCloud organization and project.
+
+---
+
+### 9.6.12 SonarCloud Project Overview and Results
+
+The SonarCloud project overview was also inspected to verify the results generated by the static analysis.
+
+![SonarCloud project overview and results](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/38-sonarcloud-project-overview-results.png)
+
+The project overview provides visibility into the findings generated by SonarCloud.
+
+These results establish the foundation for the subsequent **Quality Gate** stage.
+
+---
+
+### 9.6.13 Overall Jenkins Pipeline Verification
+
+The complete Jenkins Pipeline was reviewed after the SonarCloud integration was completed.
+
+![Jenkins Pipeline stages overview](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/39-jenkins-pipeline-stages-overview.png)
+
+At this point in the project, the following Pipeline stages have been successfully implemented:
+
+| Pipeline Stage | Status |
+|----------------|:------:|
+| **Checkout Source Code** | ✅ |
+| **Install Dependencies** | ✅ |
+| **Unit Testing** | ✅ |
+| **SonarCloud Analysis** | ✅ |
+
+The Unit Testing stage successfully executed:
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+```
+
+The SonarCloud stage subsequently completed successfully and uploaded the analysis report.
+
+---
+
+### 9.6.14 SonarCloud Integration Benefits
+
+The integration provides several important benefits to the overall DevSecOps Pipeline:
+
+| Benefit | Description |
+|---------|-------------|
+| **Early Security Analysis** | Identifies potential security issues before the application reaches later deployment stages. |
+| **Automated SAST** | Removes the need to manually initiate source-code analysis. |
+| **Continuous Code Quality** | Provides automated visibility into bugs, vulnerabilities, security hotspots, and code smells. |
+| **Jenkins Integration** | Makes SonarCloud analysis an automated CI/CD Pipeline stage. |
+| **Centralized Visibility** | Provides a dedicated dashboard for reviewing analysis results. |
+| **Secure Credential Management** | Keeps SonarCloud authentication credentials outside the Jenkinsfile. |
+| **Pipeline Quality Control** | Establishes the foundation for the subsequent Quality Gate stage. |
+
+---
+
+### 9.6.15 Section 9.6 Validation Summary
+
+The **SonarCloud SAST integration** was successfully implemented and validated through an actual Jenkins Pipeline execution.
+
+#### Configuration
+
+| Configuration Item | Status |
+|--------------------|:------:|
+| **SonarCloud project created** | ✅ |
+| **SonarCloud organization configured** | ✅ |
+| **SonarCloud project key configured** | ✅ |
+| **Jenkins SonarCloud server configured** | ✅ |
+| **SonarCloud authentication credential configured** | ✅ |
+| **Jenkins SonarScanner installation configured** | ✅ |
+
+#### Jenkins Pipeline
+
+| Pipeline Configuration | Status |
+|------------------------|:------:|
+| **SonarCloud Analysis stage added** | ✅ |
+| **Jenkins-managed SonarScanner used** | ✅ |
+| **Application directory configured using `dir('app')`** | ✅ |
+| **SonarCloud environment injected using `withSonarQubeEnv('SonarCloud')`** | ✅ |
+| **SonarCloud project and organization configured** | ✅ |
+
+#### Execution
+
+| Execution Item | Status |
+|----------------|:------:|
+| **Dependencies installed successfully** | ✅ |
+| **Unit tests passed: 3/3** | ✅ |
+| **SonarScanner connected to SonarCloud** | ✅ |
+| **Source code analyzed successfully** | ✅ |
+| **Analysis report generated** | ✅ |
+| **Analysis report uploaded** | ✅ |
+| **SonarCloud dashboard verified** | ✅ |
+| **SonarCloud project results verified** | ✅ |
+| **Jenkins Pipeline completed successfully** | ✅ |
+
+#### Final Result
+
+```text
+SonarCloud SAST Integration: SUCCESS
+Jenkins Pipeline:            SUCCESS
+SonarCloud Analysis:         SUCCESS
+Analysis Report Upload:      SUCCESS
+```
+
+The project now has a functioning **SonarCloud SAST stage** within the Jenkins CI/CD Pipeline.
+
+---
+
+### 9.6.16 Current Phase 8 Pipeline Status
+
+Following the successful SonarCloud integration, the current Phase 8 Pipeline status is:
+
+| Pipeline Stage | Status |
+|----------------|:------:|
+| **Jenkinsfile Configuration** | ✅ |
+| **Tool Initialization** | ✅ |
+| **Checkout Source Code** | ✅ |
+| **Install Dependencies** | ✅ |
+| **Unit Testing** | ✅ |
+| **SonarCloud Analysis** | ✅ |
+| **Quality Gate** | ⏳ |
+| **Snyk SCA** | ⏳ |
+| **Docker Build** | ⏳ |
+| **Trivy Container Scan** | ⏳ |
+| **Amazon ECR Push** | ⏳ |
+| **Amazon EKS Deployment** | ⏳ |
+| **Rollout Verification** | ⏳ |
+| **OWASP ZAP DAST** | ⏳ |
+
+> **Latest Milestone**
+>
+> The Jenkins Pipeline has successfully implemented and validated **SonarCloud Static Application Security Testing (SAST)**. The application source code was analyzed successfully, the analysis report was uploaded to SonarCloud, and the Jenkins Pipeline completed with a final status of **`SUCCESS`**.
+
+---
+
+## Next Step
+
+With the **SonarCloud Analysis** stage successfully implemented, the next stage is the **SonarCloud Quality Gate**.
+
+The Quality Gate will evaluate the results produced by SonarCloud and provide an automated quality and security decision that can be incorporated into the Jenkins Pipeline before the application proceeds to the subsequent **Snyk SCA** stage.
