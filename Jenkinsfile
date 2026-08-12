@@ -55,6 +55,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Snyk SCA') {
+            steps {
+                dir('app') {
+                    snykSecurity(
+                        snykInstallation: 'Snyk',
+                        snykTokenId: 'snyk-token',
+                        severity: 'high',
+                        failOnIssues: false,
+                        failOnError: true,
+                        targetFile: 'package.json'
+                    )
+                }
+            }
+        }
     }
 
     post {
