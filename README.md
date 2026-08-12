@@ -108,31 +108,29 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ SonarCloud SAST Analysis Stage
 - ✔ Jenkins-Managed SonarScanner Integration
 - ✔ Successful SonarCloud Source-Code Analysis
-- ✔ Successful SonarCloud Report Upload
+- ✔ Successful SonarCloud Analysis Report Upload
+- ✔ SonarCloud Quality Gate Wait Configuration
+- ✔ Successful SonarCloud Quality Gate Evaluation
+- ✔ SonarCloud Quality Gate Passed
 - ✔ SonarCloud Project Dashboard Verification
 - ✔ SonarCloud Project Analysis Results Verification
+- ✔ Successful SonarCloud Pipeline Execution
 
 
 ### 🚧 In Progress
 
 - Jenkins CI/CD & DevSecOps Pipeline
-- SonarCloud Quality Gate
-- Snyk Integration
-- Docker Build and Container Security Scanning
-- Amazon ECR Image Publishing
-- Amazon EKS Deployment
-- OWASP ZAP Dynamic Application Security Testing
+- Incremental integration of remaining security and deployment stages
 
-### 📌 Planned
+### 📌 Next Pipeline Milestone
 
-- SonarCloud Quality Gate enforcement
-- Snyk Software Composition Analysis
-- Docker image security scanning with Trivy
+- Snyk Software Composition Analysis (SCA)
+- Docker image build
+- Trivy container security scanning
 - Amazon ECR image publishing
 - Amazon EKS deployment
-- OWASP ZAP Dynamic Application Security Testing
-- Prometheus Monitoring
-- Grafana Dashboards
+- Kubernetes rollout verification
+- OWASP ZAP Dynamic Application Security Testing (DAST)
 
 ---
 
@@ -235,7 +233,7 @@ The AWS infrastructure for this project has been fully provisioned using Terrafo
 | **Continuous Integration** | Jenkins |
 | **Static Application Security Testing (SAST)** | SonarCloud |
 | **Dependency Scanning / SCA** | Snyk *(Upcoming)* |
-| **Container Security** | Trivy |
+| **Container Security** | Trivy *(Upcoming)* |
 | **Dynamic Application Security Testing (DAST)** | OWASP ZAP *(Upcoming)* |
 | **Monitoring** | Prometheus *(Upcoming)* |
 | **Visualization** | Grafana *(Upcoming)* |
@@ -420,18 +418,30 @@ The project follows a phased implementation strategy to ensure that each compone
 
 ---
 
-## Latest Milestone
+### Latest Milestone
 
-### Phase 8 – Jenkins CI/CD & DevSecOps Pipeline
+The latest Phase 8 milestone is the successful implementation and validation of **SonarCloud Static Application Security Testing (SAST) with Quality Gate enforcement**.
 
-Phase 8 is currently **in progress**.
+The Jenkins Pipeline successfully:
 
-The Jenkins CI/CD pipeline has successfully progressed through:
+1. Initialized the Jenkins-managed SonarScanner.
+2. Loaded the configured SonarCloud environment.
+3. Analyzed the application source code.
+4. Generated the SonarCloud analysis report.
+5. Uploaded the analysis report to SonarCloud.
+6. Waited for SonarCloud to process the analysis.
+7. Received a **Quality Gate: PASSED** result.
+8. Completed the SonarCloud Analysis stage successfully.
 
-**Source Code Checkout → Dependency Installation → Unit Testing → SonarCloud SAST Analysis**
+The Quality Gate evaluation occurs **within the `SonarCloud Analysis` Jenkins stage** rather than as a separate Jenkins stage.
 
-The latest implementation was validated through an actual Jenkins Pipeline execution using the version-controlled `Jenkinsfile` retrieved from GitHub.
+The final Jenkins execution result was:
 
+```text
+QUALITY GATE STATUS: PASSED
+EXECUTION SUCCESS
+Finished: SUCCESS
+```
 
 ### Implemented Pipeline Capabilities
 
@@ -461,6 +471,9 @@ The Jenkins Pipeline currently provides the following capabilities:
 | **SonarCloud Configuration** | SonarCloud project and organization configuration |
 | **Source Analysis** | Automated source-code analysis |
 | **Report Processing** | SonarCloud analysis report upload |
+| **Quality Gate Waiting** | `sonar.qualitygate.wait=true` waits for SonarCloud to process the analysis and return the Quality Gate result |
+| **Quality Gate Evaluation** | SonarCloud Quality Gate evaluated within the `SonarCloud Analysis` stage |
+| **Quality Gate Result** | **PASSED** |
 | **Dashboard Verification** | SonarCloud project dashboard verification |
 | **Results Verification** | SonarCloud analysis results verification |
 | **Pipeline Validation** | Successful Jenkins Pipeline execution |
@@ -507,7 +520,10 @@ SonarCloud SAST Analysis
    ├── Initialize Jenkins-managed SonarScanner
    ├── Load SonarCloud Environment
    ├── Analyze Application Source Code
-   └── Upload Analysis Report
+   ├── Generate Analysis Report
+   ├── Upload Analysis Report
+   ├── Wait for Quality Gate
+   └── Quality Gate: PASSED
    │
    ▼
 Post Actions
@@ -516,48 +532,50 @@ Post Actions
 SUCCESS
 
 
-### SonarCloud SAST Result
+### SonarCloud SAST and Quality Gate Result
 
 The SonarCloud integration was successfully executed within Jenkins.
 
-| Verification Item                            | Result |
-| -------------------------------------------- | :----: |
-| **SonarCloud environment loaded**            |    ✅   |
-| **Jenkins-managed SonarScanner initialized** |    ✅   |
-| **SonarCloud connection established**        |    ✅   |
-| **Project identified correctly**             |    ✅   |
-| **Organization identified correctly**        |    ✅   |
-| **Application source code analyzed**         |    ✅   |
-| **Analysis report generated**                |    ✅   |
-| **Analysis report uploaded**                 |    ✅   |
-| **SonarCloud dashboard verified**            |    ✅   |
-| **SonarCloud analysis results verified**     |    ✅   |
-| **Jenkins Pipeline completed successfully**  |    ✅   |
+| Verification Item | Result |
+|---|:---:|
+| **SonarCloud environment loaded** | ✅ |
+| **Jenkins-managed SonarScanner initialized** | ✅ |
+| **SonarCloud connection established** | ✅ |
+| **Project identified correctly** | ✅ |
+| **Organization identified correctly** | ✅ |
+| **Application source code analyzed** | ✅ |
+| **Analysis report generated** | ✅ |
+| **Analysis report uploaded** | ✅ |
+| **SonarCloud Quality Gate processing completed** | ✅ |
+| **SonarCloud Quality Gate** | **✅ PASSED** |
+| **SonarCloud dashboard verified** | ✅ |
+| **SonarCloud analysis results verified** | ✅ |
+| **Jenkins Pipeline completed successfully** | **✅ SUCCESS** |
 
 
 ### Current Phase 8 Status
 
-| Pipeline Stage                | Status |
-| ----------------------------- | :----: |
-| **Jenkinsfile Configuration** |    ✅   |
-| **Tool Initialization**       |    ✅   |
-| **Checkout Source Code**      |    ✅   |
-| **Install Dependencies**      |    ✅   |
-| **Unit Testing**              |    ✅   |
-| **SonarCloud SAST Analysis**  |    ✅   |
-| **SonarCloud Quality Gate**   |    ⏳   |
-| **Snyk SCA**                  |    ⏳   |
-| **Docker Build**              |    ⏳   |
-| **Trivy Container Scan**      |    ⏳   |
-| **Amazon ECR Push**           |    ⏳   |
-| **Amazon EKS Deployment**     |    ⏳   |
-| **Rollout Verification**      |    ⏳   |
-| **OWASP ZAP DAST**            |    ⏳   |
+| Pipeline Component | Status |
+|---|:---:|
+| **Jenkinsfile Configuration** | ✅ |
+| **Tool Initialization** | ✅ |
+| **Checkout Source Code** | ✅ |
+| **Install Dependencies** | ✅ |
+| **Unit Testing** | ✅ |
+| **SonarCloud Analysis** | **✅ PASSED** |
+| **SonarCloud Quality Gate Evaluation** | **✅ PASSED** |
+| **Snyk SCA** | ⏳ |
+| **Docker Build** | ⏳ |
+| **Trivy Container Scan** | ⏳ |
+| **Amazon ECR Push** | ⏳ |
+| **Amazon EKS Deployment** | ⏳ |
+| **Rollout Verification** | ⏳ |
+| **OWASP ZAP DAST** | ⏳ |
 
 
 > **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated SonarCloud Static Application Security Testing (SAST). The application source code was analyzed successfully, the analysis report was uploaded to SonarCloud, and the Jenkins Pipeline completed with a final status of SUCCESS.
 
-> **Next Milestone:** Implement the SonarCloud Quality Gate to evaluate the analysis results and enforce automated quality and security criteria before the pipeline proceeds to subsequent security and deployment stages.
+> **Next Milestone:** The next Phase 8 milestone is the implementation of Snyk Software Composition Analysis (SCA) to analyze the application's third-party dependencies for known security vulnerabilities.
 
 ---
 
@@ -643,8 +661,11 @@ The SonarCloud Static Application Security Testing (SAST) implementation is docu
 | `37-sonarcloud-project-dashboard.png` | SonarCloud project dashboard confirming that the Jenkins analysis reached the configured project. |
 | `38-sonarcloud-project-overview-results.png` | SonarCloud project overview displaying the results generated by the static analysis. |
 | `39-jenkins-pipeline-stages-overview.png` | Jenkins Pipeline stages overview showing the completed stages through **SonarCloud Analysis**. |
+| `40-sonarcloud-quality-gate-success.png` | Jenkins Pipeline stages overview showing the completed **quality gate success**. |
 
-> **Evidence Status:** Screenshots 30–39 provide documented evidence of the successfully implemented Unit Testing and SonarCloud SAST stages within the Jenkins CI/CD and DevSecOps Pipeline.
+
+
+> **Evidence Status:** Screenshots 30–40 provide documented evidence of the successfully implemented Unit Testing and SonarCloud SAST stages within the Jenkins CI/CD and DevSecOps Pipeline.
 
 > Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented and validated.
 
@@ -696,6 +717,10 @@ The SonarCloud Static Application Security Testing (SAST) implementation is docu
 ##### Jenkins Pipeline stages overview
 
 ![Jenkins Pipeline stages overview](screenshots/08-jenkins-ci-cd-devsecops-pipeline/39-jenkins-pipeline-stages-overview.png)
+
+
+#### sonarcloud-quality-gate-success
+![sonarcloud-quality-gate-success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/40-sonarcloud-quality-gate-success.png)
 
 ---
 
@@ -770,89 +795,37 @@ http://localhost:3000
 
 The Jenkins CI/CD and DevSecOps pipeline is being implemented incrementally. Each pipeline stage is implemented, executed, verified, and documented using actual Jenkins Pipeline builds.
 
-The following pipeline stages have currently been successfully implemented and validated:
+The current pipeline progress is:
 
-
+```text
 GitHub
    │
    ▼
-Checkout Source Code        ✅
+Jenkins
    │
-   ▼
-Install Dependencies        ✅
+   ├── Checkout Source Code        ✅
+   ├── Install Dependencies        ✅
+   ├── Unit Testing                ✅
    │
-   ▼
-Unit Testing                ✅
+   ├── SonarCloud Analysis         ✅
+   │      ├── SAST Analysis
+   │      ├── Report Upload
+   │      ├── Quality Gate Wait
+   │      └── Quality Gate PASSED
    │
-   ▼
-SonarCloud SAST Scan        ✅
-   │
-   ▼
-Quality Gate                ⏳
-   │
-   ▼
-Snyk Scan                   ⏳
-   │
-   ▼
-Docker Build                ⏳
-   │
-   ▼
-Trivy Scan                  ⏳
-   │
-   ▼
-Push Image to Amazon ECR    ⏳
-   │
-   ▼
-Deploy to Amazon EKS        ⏳
-   │
-   ▼
-Verify Rollout              ⏳
-   │
-   ▼
-OWASP ZAP Scan              ⏳
+   ├── Snyk SCA                    ⏳
+   ├── Docker Build                ⏳
+   ├── Trivy Container Scan        ⏳
+   ├── Push Image to Amazon ECR    ⏳
+   ├── Deploy to Amazon EKS        ⏳
+   ├── Verify Rollout              ⏳
+   └── OWASP ZAP DAST              ⏳
+```
 
-The remaining pipeline stages will be implemented and validated incrementally:
+> **Current milestone:** SonarCloud SAST analysis and Quality Gate enforcement have been successfully implemented and validated within the SonarCloud Analysis Jenkins stage.
 
-GitHub
-   │
-   ▼
-Checkout Source Code        ✅
-   │
-   ▼
-Install Dependencies        ✅
-   │
-   ▼
-Unit Testing                ✅
-   │
-   ▼
-SonarCloud SAST Scan        ✅
-   │
-   ▼
-Quality Gate                ⏳
-   │
-   ▼
-Snyk Scan                   ⏳
-   │
-   ▼
-Docker Build                ⏳
-   │
-   ▼
-Trivy Scan                  ⏳
-   │
-   ▼
-Push Image to Amazon ECR    ⏳
-   │
-   ▼
-Deploy to Amazon EKS        ⏳
-   │
-   ▼
-Verify Rollout              ⏳
-   │
-   ▼
-OWASP ZAP Scan              ⏳
+> The remaining pipeline stages will be implemented and validated incrementally.
 
-
-> The pipeline will continue to expand through the subsequent quality, security, containerization, registry, deployment, and dynamic security testing stages.
 
 ---
 
@@ -860,7 +833,6 @@ OWASP ZAP Scan              ⏳
 
 The following enhancements will be implemented as the project progresses:
 
-- Complete SonarCloud Quality Gate integration
 - Integrate Snyk Software Composition Analysis (SCA)
 - Integrate Docker image security scanning with Trivy
 - Publish container images to Amazon ECR
