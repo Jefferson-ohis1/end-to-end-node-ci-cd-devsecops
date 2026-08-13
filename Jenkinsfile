@@ -70,6 +70,14 @@ pipeline {
                 }
             }
         }
+
+        stage('Docker Build') {
+            steps {
+                dir('app') {
+                    sh 'docker build -t node-monitoring-app:${BUILD_NUMBER} .'
+                }
+            }
+        }
     }
 
     post {
