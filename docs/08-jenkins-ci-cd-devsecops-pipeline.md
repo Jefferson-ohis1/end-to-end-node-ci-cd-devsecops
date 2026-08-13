@@ -4454,3 +4454,628 @@ Finished: SUCCESS
 This confirms that the SonarCloud integration was successfully executed as part of the Jenkins CI/CD Pipeline.
 
 ---
+
+## Section 9.7 — Snyk Software Composition Analysis (SCA)
+
+### Overview
+
+Following the successful implementation of SonarCloud Static Application Security Testing (SAST) and Quality Gate enforcement, the next security control introduced into the Jenkins CI/CD Pipeline was Snyk Software Composition Analysis (SCA).
+
+While SonarCloud analyzes the application's source code for bugs, vulnerabilities, security hotspots, and code-quality issues, Snyk extends the security assessment by analyzing the application's third-party dependencies.
+
+Modern applications rely heavily on external packages and open-source libraries. These dependencies can introduce security vulnerabilities even when the application's own source code is secure.
+
+Snyk was therefore integrated into the Jenkins Pipeline to provide automated dependency security analysis.
+
+The Snyk integration performs the following activities:
+
+- Scans the application's third-party dependencies.
+- Identifies known vulnerabilities in dependency packages.
+- Applies a configured severity threshold.
+- Generates a machine-readable JSON security report.
+- Generates an HTML security report.
+- Archives the generated security report as a Jenkins build artifact.
+- Monitors the project in Snyk for newly disclosed vulnerabilities.
+- Integrates dependency security analysis directly into the Jenkins CI/CD workflow.
+
+The resulting DevSecOps Pipeline now follows:
+
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ▼
+Checkout Source Code
+   │
+   ▼
+Install Dependencies
+   │
+   ▼
+Unit Testing
+   │
+   ▼
+SonarCloud Analysis
+   │
+   ├── SAST Analysis
+   ├── Analysis Report Upload
+   ├── Quality Gate Processing
+   └── Quality Gate: PASSED
+   │
+   ▼
+Snyk SCA
+   │
+   ├── Dependency Analysis
+   ├── Vulnerability Detection
+   ├── JSON Report Generation
+   ├── HTML Report Generation
+   ├── Report Archiving
+   └── Snyk Project Monitoring
+   │
+   ▼
+Continue Pipeline
+
+The Snyk implementation was validated through an actual Jenkins Pipeline execution.
+
+The Jenkins console confirmed that the Snyk stage successfully executed the dependency security analysis, generated security reports, archived the results, and configured project monitoring in Snyk.
+
+---
+
+### 9.7.1 Why Snyk?
+
+Software Composition Analysis is an important component of a modern DevSecOps pipeline because application dependencies can contain publicly known security vulnerabilities.
+
+A dependency may be introduced into an application through:
+
+- Direct dependencies declared in package.json.
+- Transitive dependencies installed by other packages.
+- Open-source libraries.
+- Framework packages.
+- Development dependencies.
+- Nested dependency trees.
+
+Snyk provides automated visibility into these dependencies and their associated security risks.
+
+| Capability | Description |
+|------------|-------------|
+| **Software Composition Analysis (SCA)** | Analyzes third-party application dependencies for known security vulnerabilities. |
+| **Dependency Vulnerability Detection** | Identifies vulnerabilities associated with installed packages. |
+| **Severity Thresholding** | Allows the Pipeline to focus on vulnerabilities meeting a configured severity level. |
+| **JSON Reporting** | Generates machine-readable vulnerability results. |
+| **HTML Reporting** | Produces a human-readable security report. |
+| **Jenkins Artifact Archiving** | Preserves the generated security report as part of the Jenkins build. |
+| **Project Monitoring** | Sends the dependency snapshot to Snyk for continuous monitoring. |
+| **DevSecOps Integration** | Incorporates dependency security into the CI/CD lifecycle. |
+
+---
+
+### 9.7.2 Snyk Jenkins Plugin Installation
+
+The Snyk Jenkins integration was enabled through the Snyk Security Plugin.
+
+The plugin provides Jenkins with the functionality required to integrate Snyk security scanning into the Pipeline.
+
+The installation was verified from the Jenkins plugin management interface.
+
+#### Snyk Security Plugin
+
+The screenshot confirms that the Snyk Security Plugin is installed and available within Jenkins.
+
+![snyk-security-plugin-installed](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/41-snyk-security-plugin-installed.png)
+
+This plugin provides the Jenkins integration required for executing Snyk security scans from the CI/CD Pipeline.
+
+---
+
+### 9.7.3 Snyk API Credential Configuration
+
+Snyk requires authentication when Jenkins communicates with the Snyk platform.
+
+A Jenkins-managed Snyk API Token credential was therefore configured rather than placing the token directly inside the Jenkinsfile.
+
+The credential was configured under the Jenkins global credentials store.
+
+The credential uses:
+
+| Configuration | Value |
+|---------------|-------|
+| **Credential Type** | `Snyk API Token` |
+| **Scope** | `Global` |
+| **ID** | `snyk-token` |
+| **Description** | `Snyk API Token` |
+
+#### Snyk Credential Configuration
+
+The screenshot documents the Jenkins Snyk credential configuration.
+
+![snyk-credential-configured](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/42-snyk-credential-configured.png)
+
+The API token itself is intentionally not displayed in the documentation or committed to the GitHub repository.
+
+This follows the principle of keeping security-sensitive credentials outside application source code.
+
+---
+
+### 9.7.4 Snyk Tool Configuration
+
+The Snyk CLI was configured as a Jenkins-managed tool.
+
+The Jenkins configuration provides the Snyk CLI required by the Pipeline without requiring the Pipeline to depend on a manually installed system-wide Snyk executable.
+
+The configured Snyk installation is referenced by Jenkins during Pipeline execution.
+
+#### Snyk Tool Configuration
+
+![snyk-tool-configuration](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/43-snyk-tool-configuration.png)
+
+The screenshot confirms that the Snyk tool installation is configured within Jenkins.
+
+This provides centralized tool management and improves Pipeline portability across Jenkins agents.
+
+---
+
+### 9.7.5 Jenkinsfile Snyk SCA Stage
+
+The Snyk SCA stage was introduced after the successful SonarCloud Analysis and Quality Gate stages.
+
+The purpose of this stage is to analyze the Node.js application's dependency manifest and identify known vulnerabilities within the dependency tree.
+
+The Snyk stage operates from the application's app/ directory.
+
+The implementation uses the Jenkins-managed Snyk installation and performs the following operations:
+
+Snyk Dependency Test
+        │
+        ▼
+Generate JSON Report
+        │
+        ▼
+Generate HTML Report
+        │
+        ▼
+Archive Report
+        │
+        ▼
+Monitor Project in Snyk
+
+#### Jenkinsfile — Snyk SCA Stage
+
+The screenshot documents the implementation of the Snyk SCA stage within the Jenkinsfile.
+
+![Jenkinsfile-Snyk-SCA-Stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/44-jenkinsfile-snyk-sca-stage.png)
+
+The Snyk configuration is positioned after SonarCloud analysis and Quality Gate validation, allowing the Pipeline to perform source-code security analysis before moving into third-party dependency analysis.
+
+---
+
+### 9.7.6 Snyk SCA Pipeline Stage
+
+After the Jenkinsfile was committed and pushed to GitHub, Jenkins automatically retrieved the updated Pipeline configuration.
+
+The Jenkins Pipeline successfully reached the newly implemented Snyk SCA stage.
+
+The Pipeline execution flow was:
+
+Checkout Source Code
+        │
+        ▼
+Install Dependencies
+        │
+        ▼
+Unit Testing
+        │
+        ▼
+SonarCloud Analysis
+        │
+        └── Quality Gate: PASSED
+        │
+        ▼
+Snyk SCA
+
+#### Jenkins Pipeline — Snyk SCA Stage
+
+![Jenkins-pipeline-snyk-sca-stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/45-jenkins-pipeline-snyk-sca-stage.png)
+
+The screenshot confirms that Snyk SCA is now integrated as an independent security stage within the Jenkins Pipeline.
+
+This establishes Snyk as the dependency-security control point following SonarCloud SAST and Quality Gate validation.
+
+---
+
+### 9.7.7 Snyk Dependency Analysis
+
+During the successful Jenkins execution, the Snyk CLI was invoked against the application's dependency manifest.
+
+The Jenkins console confirmed execution of the Snyk dependency test with a configured severity threshold.
+
+The dependency analysis was performed against:
+
+```text
+package.json
+```
+
+from:
+
+```text
+/var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app
+```
+
+The configured severity threshold was:
+
+```text
+high
+```
+
+This allows the Snyk stage to focus on vulnerabilities classified at the configured severity level or above.
+
+#### Snyk Vulnerability Results
+
+![snyk-vulnerability-results](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/46-snyk-vulnerability-results.png)
+
+The screenshot provides evidence of the vulnerability analysis generated by Snyk.
+
+The Snyk analysis provides visibility into security issues associated with the application's dependency tree.
+
+This is an important distinction from SonarCloud SAST:
+
+| **Security Control** | **Primary Focus** |
+|---|---|
+| **SonarCloud SAST** | Application source code |
+| **Snyk SCA** | Third-party dependencies |
+
+Together, these controls provide broader application security coverage.
+
+---
+
+### 9.7.8 Snyk JSON and HTML Reporting
+
+The Snyk Pipeline was configured to generate a JSON report from the dependency analysis.
+
+The generated report was subsequently converted into an HTML report for easier human review.
+
+The Jenkins execution confirmed:
+
+```text
+Generating report...
+```
+
+The generated report was stored within the Jenkins workspace and subsequently archived as a build artifact.
+
+This provides two important forms of security reporting:
+
+| Report | Purpose |
+|--------|---------|
+| **JSON Report** | Machine-readable security results suitable for automated processing. |
+| **HTML Report** | Human-readable vulnerability report for security and engineering review. |
+
+The generated report can therefore be retained as part of the Jenkins build evidence.
+
+---
+
+### 9.7.9 Snyk Project Monitoring
+
+In addition to performing the immediate dependency test, the Pipeline was configured to monitor the project within Snyk.
+
+The Jenkins console confirmed:
+
+```text
+Monitoring /var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app (app)...
+```
+
+Snyk subsequently created a monitored project snapshot.
+
+The Jenkins execution provided a Snyk project history reference for the monitored dependency state.
+
+This monitoring capability is important because dependency vulnerabilities can be disclosed after the original Pipeline execution.
+
+Project monitoring therefore provides continued visibility into newly disclosed vulnerabilities affecting the application's dependencies.
+
+The Snyk monitoring workflow can be represented as:
+
+Jenkins
+   │
+   ▼
+Dependency Analysis
+   │
+   ▼
+Snyk
+   │
+   ▼
+Create Project Snapshot
+   │
+   ▼
+Continuous Monitoring
+   │
+   ▼
+New Vulnerability Notifications
+
+---
+
+### 9.7.10 Snyk SCA Successful Execution
+
+The Snyk SCA stage successfully completed during the Jenkins Pipeline execution.
+
+The Jenkins console confirmed the following sequence:
+
+Testing project...
+        │
+        ▼
+Generating report...
+        │
+        ▼
+Archiving artifacts
+        │
+        ▼
+Monitoring project...
+        │
+        ▼
+Snyk monitoring successfully configured
+
+The Pipeline then proceeded to the post-build actions and completed successfully.
+
+#### Snyk SCA — Successful Execution
+
+The screenshot provides the final execution evidence for the Snyk integration.
+
+![snyk-sca-success](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/47-snyk-sca-success.png)
+
+The Jenkins build ultimately completed with:
+
+```text
+Finished: SUCCESS
+```
+
+This confirms that the Snyk integration was successfully executed as part of the Jenkins CI/CD workflow.
+
+---
+
+### 9.7.11 Snyk SCA Verification Summary
+
+The Snyk Software Composition Analysis integration was successfully implemented and validated through an actual Jenkins Pipeline execution.
+
+#### Configuration
+
+| Configuration Item | Status |
+|--------------------|:------:|
+| **Snyk Jenkins plugin installed** | ✅ |
+| **Snyk API credential configured** | ✅ |
+| **Snyk credential ID configured** | ✅ |
+| **Snyk CLI tool configured in Jenkins** | ✅ |
+| **Snyk SCA stage added to Jenkinsfile** | ✅ |
+| **Snyk dependency manifest configured** | ✅ |
+| **Severity threshold configured** | ✅ |
+
+#### Pipeline Execution
+
+| Execution Item | Status |
+|----------------|:------:|
+| **Snyk CLI initialized** | ✅ |
+| **Application dependency analysis executed** | ✅ |
+| **`package.json` analyzed** | ✅ |
+| **Snyk vulnerability analysis completed** | ✅ |
+| **JSON security report generated** | ✅ |
+| **HTML security report generated** | ✅ |
+| **Security report archived** | ✅ |
+| **Snyk project monitoring enabled** | ✅ |
+| **Jenkins Pipeline completed successfully** | ✅ |
+
+#### Evidence
+
+| Evidence | Screenshot | Status |
+|----------|------------|:------:|
+| **Snyk Security Plugin** | `41-snyk-security-plugin-installed.png` | ✅ |
+| **Snyk Credential Configuration** | `42-snyk-credential-configured.png` | ✅ |
+| **Snyk Tool Configuration** | `43-snyk-tool-configuration.png` | ✅ |
+| **Jenkinsfile Snyk SCA Stage** | `44-jenkinsfile-snyk-sca-stage.png` | ✅ |
+| **Jenkins Pipeline Snyk Stage** | `45-jenkins-pipeline-snyk-sca-stage.png` | ✅ |
+| **Snyk Vulnerability Results** | `46-snyk-vulnerability-results.png` | ✅ |
+| **Snyk SCA Successful Execution** | `47-snyk-sca-success.png` | ✅ |
+
+---
+
+### 9.7.12 SonarCloud and Snyk Security Coverage
+
+With both SonarCloud and Snyk now integrated, the Jenkins Pipeline provides two complementary security analysis mechanisms.
+
+                    Jenkins CI/CD Pipeline
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   Unit Testing  │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   SonarCloud    │
+                    │      SAST       │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │  Quality Gate   │
+                    │     PASSED      │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │      Snyk       │
+                    │      SCA        │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    Dependency Security
+                             │
+                             ▼
+                    Continue Pipeline
+
+
+The security responsibilities are separated as follows:
+
+| Security Layer | Technology | Primary Objective |
+|----------------|------------|-------------------|
+| **Source Code Security** | SonarCloud | Analyze application source code |
+| **Code Quality** | SonarCloud | Identify bugs, code smells, and quality issues |
+| **Security Decision** | SonarCloud Quality Gate | Determine whether configured quality criteria are satisfied |
+| **Dependency Security** | Snyk | Analyze third-party dependencies |
+| **Dependency Monitoring** | Snyk | Monitor dependencies for newly disclosed vulnerabilities |
+
+This layered approach strengthens the overall DevSecOps security model.
+
+---
+
+### 9.7.13 DevSecOps Security Workflow
+
+The implementation now provides the following security workflow:
+
+Developer
+    │
+    ▼
+GitHub Repository
+    │
+    ▼
+Jenkins CI/CD Pipeline
+    │
+    ├── Checkout Source Code
+    │
+    ├── Install Dependencies
+    │
+    ├── Unit Testing
+    │
+    ├── SonarCloud SAST
+    │      │
+    │      ├── Source Code Analysis
+    │      ├── Report Upload
+    │      └── Quality Gate: PASSED
+    │
+    ├── Snyk SCA
+    │      │
+    │      ├── Dependency Analysis
+    │      ├── Vulnerability Detection
+    │      ├── Report Generation
+    │      ├── Report Archiving
+    │      └── Continuous Monitoring
+    │
+    ▼
+Subsequent Security and Deployment Stages
+
+
+> This demonstrates the shift-left security principle by introducing automated security checks before the application reaches the containerization, registry, Kubernetes deployment, and dynamic application security testing stages.
+
+---
+
+### 9.7.14 Section 9.7 Validation Summary
+
+The Snyk Software Composition Analysis integration was successfully implemented and validated through an actual Jenkins Pipeline execution.
+
+#### Final Validation
+
+| Validation Item | Status |
+|-----------------|:------:|
+| **Snyk Jenkins plugin installed** | ✅ |
+| **Snyk API credential configured** | ✅ |
+| **Snyk CLI configured** | ✅ |
+| **Snyk SCA Jenkins stage implemented** | ✅ |
+| **Dependency analysis executed** | ✅ |
+| **`package.json` analyzed** | ✅ |
+| **Vulnerability report generated** | ✅ |
+| **HTML report generated** | ✅ |
+| **Security report archived** | ✅ |
+| **Snyk project monitoring enabled** | ✅ |
+| **Snyk SCA stage completed** | ✅ |
+| **Overall Jenkins Pipeline** | **✅ SUCCESS** |
+
+
+#### Final Result
+
+Snyk Jenkins Integration:    **SUCCESS**  
+Snyk SCA Stage:              **SUCCESS**  
+Dependency Analysis:         **SUCCESS**  
+Security Report Generation:  **SUCCESS**  
+Report Archiving:            **SUCCESS**  
+Snyk Project Monitoring:     **SUCCESS**  
+Jenkins Pipeline:            **SUCCESS**
+
+> Snyk Software Composition Analysis has now been successfully integrated into the Jenkins CI/CD Pipeline.
+
+> The project now has automated dependency security analysis in addition to the previously implemented SonarCloud SAST and Quality Gate controls.
+
+---
+
+### 9.7.15 Current Phase 8 Pipeline Status
+
+Following the successful implementation of Snyk SCA, the current Phase 8 DevSecOps Pipeline status is:
+
+| Pipeline Stage | Status |
+|----------------|:------:|
+| **Jenkinsfile Configuration** | ✅ |
+| **Tool Initialization** | ✅ |
+| **Checkout Source Code** | ✅ |
+| **Install Dependencies** | ✅ |
+| **Unit Testing** | ✅ |
+| **SonarCloud Analysis** | ✅ |
+| **SonarCloud Quality Gate** | **✅ PASSED** |
+| **Snyk SCA** | **✅** |
+| **Docker Build** | ⏳ |
+| **Trivy Container Scan** | ⏳ |
+| **Amazon ECR Push** | ⏳ |
+| **Amazon EKS Deployment** | ⏳ |
+| **Rollout Verification** | ⏳ |
+| **OWASP ZAP DAST** | ⏳ |
+
+
+> **Current Security Milestone:** The Jenkins Pipeline now performs both Static Application Security Testing (SAST) through SonarCloud and Software Composition Analysis (SCA) through Snyk.
+
+> SonarCloud successfully analyzed the application source code and returned a PASSED Quality Gate.
+
+> Snyk successfully analyzed the application's third-party dependencies, generated security reports, archived the results, and enabled project monitoring.
+
+The Jenkins Pipeline completed with:
+
+```text
+Finished: SUCCESS
+```
+
+> **Next Step:** With SonarCloud SAST, Quality Gate enforcement, and Snyk SCA successfully implemented, the next stage of the DevSecOps Pipeline is container security.
+
+> The next security control will introduce Trivy Container Security Scanning to analyze the Docker image for known vulnerabilities before the image is pushed to Amazon Elastic Container Registry (ECR).
+
+> The next section will therefore be: 
+> Section 9.8 — Trivy Container Security Scanning
+
+> Trivy will extend the security pipeline by scanning the container image for known vulnerabilities before the image is promoted to the container registry and subsequently deployed to Amazon EKS.
+
+The updated Pipeline progression is:
+
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout Source Code       ✅
+   ├── Install Dependencies       ✅
+   ├── Unit Testing               ✅
+   │
+   ├── SonarCloud SAST            ✅
+   │      └── Quality Gate PASSED
+   │
+   ├── Snyk SCA                   ✅
+   │      ├── Dependency Scan
+   │      ├── Vulnerability Report
+   │      └── Project Monitoring
+   │
+   ▼
+Trivy Container Security         ⏳
+   │
+   ▼
+Docker Build                     ⏳
+   │
+   ▼
+Amazon ECR                       ⏳
+   │
+   ▼
+Amazon EKS                       ⏳
+   │
+   ▼
+OWASP ZAP DAST                   ⏳
+
+---

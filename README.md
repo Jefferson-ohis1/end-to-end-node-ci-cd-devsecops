@@ -59,8 +59,13 @@ The repository is being developed incrementally using a phased implementation ap
 - Amazon Elastic Container Registry (ECR)
 - Automated unit testing with Jest and Supertest
 - Jenkins CI/CD pipeline with automated source-code checkout and dependency installation
-- DevSecOps pipeline with SonarCloud, Snyk, Trivy, and OWASP ZAP (in progress)
-- Monitoring with Prometheus and Grafana (upcoming)
+- SonarCloud Static Application Security Testing (SAST)
+- SonarCloud Quality Gate enforcement
+- Snyk Software Composition Analysis (SCA)
+- Dependency vulnerability analysis with Snyk
+- Trivy container security scanning *(upcoming)*
+- OWASP ZAP Dynamic Application Security Testing (DAST) *(upcoming)*
+- Monitoring with Prometheus and Grafana *(upcoming)*
 
 ---
 
@@ -115,16 +120,22 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ SonarCloud Project Dashboard Verification
 - ✔ SonarCloud Project Analysis Results Verification
 - ✔ Successful SonarCloud Pipeline Execution
-
+- ✔ Snyk Security Plugin Installation
+- ✔ Snyk Authentication Credential Configuration
+- ✔ Snyk Tool Configuration
+- ✔ Snyk Software Composition Analysis (SCA) Stage
+- ✔ Jenkinsfile Snyk SCA Integration
+- ✔ Snyk SCA Pipeline Execution
+- ✔ Snyk Dependency Vulnerability Analysis
+- ✔ Snyk Vulnerability Results Verification
 
 ### 🚧 In Progress
 
 - Jenkins CI/CD & DevSecOps Pipeline
-- Incremental integration of remaining security and deployment stages
+- Incremental integration of remaining security, containerization, deployment, and runtime security stages
 
 ### 📌 Next Pipeline Milestone
 
-- Snyk Software Composition Analysis (SCA)
 - Docker image build
 - Trivy container security scanning
 - Amazon ECR image publishing
@@ -232,7 +243,7 @@ The AWS infrastructure for this project has been fully provisioned using Terrafo
 | **Container Orchestration** | Amazon Elastic Kubernetes Service (Amazon EKS) |
 | **Continuous Integration** | Jenkins |
 | **Static Application Security Testing (SAST)** | SonarCloud |
-| **Dependency Scanning / SCA** | Snyk *(Upcoming)* |
+| **Dependency Scanning / Software Composition Analysis (SCA)** | Snyk |
 | **Container Security** | Trivy *(Upcoming)* |
 | **Dynamic Application Security Testing (DAST)** | OWASP ZAP *(Upcoming)* |
 | **Monitoring** | Prometheus *(Upcoming)* |
@@ -420,138 +431,89 @@ The project follows a phased implementation strategy to ensure that each compone
 
 ### Latest Milestone
 
-The latest Phase 8 milestone is the successful implementation and validation of **SonarCloud Static Application Security Testing (SAST) with Quality Gate enforcement**.
+The latest Phase 8 milestone is the successful implementation and validation of **Snyk Software Composition Analysis (SCA)** within the Jenkins CI/CD and DevSecOps Pipeline.
+
+Snyk has been integrated into Jenkins to analyze the application's third-party dependencies and identify known security vulnerabilities within the dependency tree.
 
 The Jenkins Pipeline successfully:
 
-1. Initialized the Jenkins-managed SonarScanner.
-2. Loaded the configured SonarCloud environment.
-3. Analyzed the application source code.
-4. Generated the SonarCloud analysis report.
-5. Uploaded the analysis report to SonarCloud.
-6. Waited for SonarCloud to process the analysis.
-7. Received a **Quality Gate: PASSED** result.
-8. Completed the SonarCloud Analysis stage successfully.
+1. Initialized the configured Snyk tooling.
+2. Loaded the configured Snyk authentication credentials.
+3. Entered the application workspace.
+4. Executed the Snyk Software Composition Analysis (SCA) stage.
+5. Analyzed the application's third-party dependencies.
+6. Evaluated dependencies against Snyk's vulnerability database.
+7. Generated Snyk security analysis results.
+8. Exposed identified dependency vulnerabilities through the Jenkins Pipeline.
+9. Verified the Snyk vulnerability results.
+10. Completed the documented Snyk SCA implementation and validation.
 
-The Quality Gate evaluation occurs **within the `SonarCloud Analysis` Jenkins stage** rather than as a separate Jenkins stage.
+The Snyk implementation extends the DevSecOps pipeline beyond source-code security analysis by introducing **Software Composition Analysis (SCA)** for third-party dependencies.
 
-The final Jenkins execution result was:
+### SonarCloud SAST vs Snyk SCA
 
-```text
-QUALITY GATE STATUS: PASSED
-EXECUTION SUCCESS
-Finished: SUCCESS
-```
+The pipeline now includes two complementary application-security controls:
 
-### Implemented Pipeline Capabilities
+| Security Control | Primary Focus | Tool |
+|---|---|---|
+| **Static Application Security Testing (SAST)** | Application source code | SonarCloud |
+| **Software Composition Analysis (SCA)** | Third-party dependencies | Snyk |
 
-The Jenkins Pipeline currently provides the following capabilities:
+SonarCloud analyzes the application's source code, while Snyk analyzes the application's third-party packages and dependency tree for known vulnerabilities.
+
+### Implemented Security Capabilities
 
 | Category | Implemented Capability |
 |---|---|
-| **Pipeline Architecture** | Jenkins Pipeline as Code |
-| **Jenkins Execution** | Jenkins agent allocation |
-| **Java Runtime** | JDK 21 tool resolution |
-| **Node.js Runtime** | Node.js 18.20.8 tool resolution |
-| **Source Control** | Explicit source-code checkout |
-| **Checkout Configuration** | `skipDefaultCheckout(true)` |
-| **Git Branch** | GitHub `main` branch checkout |
-| **Workspace** | Jenkins workspace initialization |
-| **Dependency Management** | `Install Dependencies` stage |
-| **Workspace Targeting** | `dir('app')` workspace targeting |
-| **Dependency Installation** | `npm ci` |
-| **Dependency Verification** | Jenkins workspace dependency verification |
-| **Testing** | `Unit Testing` stage |
-| **Test Execution** | `npm test` |
-| **Testing Framework** | Jest test suite execution |
-| **Application Validation** | Automated application endpoint validation |
-| **SAST** | SonarCloud SAST integration |
-| **Code Analysis** | Jenkins-managed SonarScanner |
-| **SonarCloud Integration** | `withSonarQubeEnv('SonarCloud')` |
-| **SonarCloud Configuration** | SonarCloud project and organization configuration |
-| **Source Analysis** | Automated source-code analysis |
-| **Report Processing** | SonarCloud analysis report upload |
-| **Quality Gate Waiting** | `sonar.qualitygate.wait=true` waits for SonarCloud to process the analysis and return the Quality Gate result |
-| **Quality Gate Evaluation** | SonarCloud Quality Gate evaluated within the `SonarCloud Analysis` stage |
-| **Quality Gate Result** | **PASSED** |
-| **Dashboard Verification** | SonarCloud project dashboard verification |
-| **Results Verification** | SonarCloud analysis results verification |
-| **Pipeline Validation** | Successful Jenkins Pipeline execution |
+| **SAST** | SonarCloud Static Application Security Testing |
+| **SAST Analysis** | Automated source-code analysis |
+| **SAST Quality Gate** | SonarCloud Quality Gate enforcement |
+| **SAST Result** | Quality Gate **PASSED** |
+| **SCA** | Snyk Software Composition Analysis |
+| **SCA Integration** | Jenkins Snyk SCA stage |
+| **SCA Authentication** | Configured Snyk credentials |
+| **SCA Tooling** | Configured Snyk security tool |
+| **Dependency Analysis** | Automated third-party dependency analysis |
+| **Vulnerability Detection** | Snyk dependency vulnerability identification |
+| **SCA Results** | Jenkins-accessible Snyk vulnerability results |
+| **Pipeline Validation** | Snyk SCA execution and results verification |
 
 ---
 
-### Current Pipeline Flow
+### Current Pipeline Flow**
 
-GitHub
-   │
-   ▼
-Jenkinsfile
-   │
-   ▼
-Jenkins Agent
-   │
-   ▼
-Tool Initialization
-   │
-   ├── JDK 21
-   └── Node.js 18.20.8
-   │
-   ▼
-Checkout Source Code
-   │
-   ▼
-Install Dependencies
-   │
-   ├── Enter app/
-   ├── Execute npm ci
-   └── Install Node.js Dependencies
-   │
-   ▼
-Unit Testing
-   │
-   ├── Enter app/
-   ├── Execute npm test
-   ├── Invoke Jest
-   └── Validate Application Tests
-   │
-   ▼
-SonarCloud SAST Analysis
-   │
-   ├── Initialize Jenkins-managed SonarScanner
-   ├── Load SonarCloud Environment
-   ├── Analyze Application Source Code
-   ├── Generate Analysis Report
-   ├── Upload Analysis Report
-   ├── Wait for Quality Gate
-   └── Quality Gate: PASSED
-   │
-   ▼
-Post Actions
-   │
-   ▼
-SUCCESS
+The current Phase 8 Jenkins CI/CD and DevSecOps pipeline has successfully implemented and validated source-code checkout, dependency installation, automated unit testing, SonarCloud SAST, and Snyk Software Composition Analysis (SCA).
 
+Phase 8 – Jenkins CI/CD & DevSecOps Pipeline
 
-### SonarCloud SAST and Quality Gate Result
+Jenkins Pipeline
+      │
+      ├── Checkout Source Code        ✅
+      │
+      ├── Install Dependencies        ✅
+      │
+      ├── Unit Testing                ✅
+      │      └── Jest: 3 Tests Passed
+      │
+      ├── SonarCloud SAST             ✅
+      │      └── Quality Gate: PASSED
+      │
+      ├── Snyk SCA                    ✅
+      │      └── Dependency Vulnerability Analysis
+      │
+      ├── Docker Build                ⏳
+      │
+      ├── Trivy Container Scan        ⏳
+      │
+      ├── Amazon ECR Push             ⏳
+      │
+      ├── Amazon EKS Deployment       ⏳
+      │
+      ├── Rollout Verification        ⏳
+      │
+      └── OWASP ZAP DAST              ⏳
 
-The SonarCloud integration was successfully executed within Jenkins.
-
-| Verification Item | Result |
-|---|:---:|
-| **SonarCloud environment loaded** | ✅ |
-| **Jenkins-managed SonarScanner initialized** | ✅ |
-| **SonarCloud connection established** | ✅ |
-| **Project identified correctly** | ✅ |
-| **Organization identified correctly** | ✅ |
-| **Application source code analyzed** | ✅ |
-| **Analysis report generated** | ✅ |
-| **Analysis report uploaded** | ✅ |
-| **SonarCloud Quality Gate processing completed** | ✅ |
-| **SonarCloud Quality Gate** | **✅ PASSED** |
-| **SonarCloud dashboard verified** | ✅ |
-| **SonarCloud analysis results verified** | ✅ |
-| **Jenkins Pipeline completed successfully** | **✅ SUCCESS** |
-
+---
 
 ### Current Phase 8 Status
 
@@ -564,7 +526,10 @@ The SonarCloud integration was successfully executed within Jenkins.
 | **Unit Testing** | ✅ |
 | **SonarCloud Analysis** | **✅ PASSED** |
 | **SonarCloud Quality Gate Evaluation** | **✅ PASSED** |
-| **Snyk SCA** | ⏳ |
+| **Snyk SCA Integration** | **✅** |
+| **Snyk SCA Pipeline Execution** | **✅** |
+| **Snyk Dependency Vulnerability Analysis** | **✅** |
+| **Snyk Vulnerability Results Verification** | **✅** |
 | **Docker Build** | ⏳ |
 | **Trivy Container Scan** | ⏳ |
 | **Amazon ECR Push** | ⏳ |
@@ -573,9 +538,9 @@ The SonarCloud integration was successfully executed within Jenkins.
 | **OWASP ZAP DAST** | ⏳ |
 
 
-> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated SonarCloud Static Application Security Testing (SAST). The application source code was analyzed successfully, the analysis report was uploaded to SonarCloud, and the Jenkins Pipeline completed with a final status of SUCCESS.
+> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated Snyk Software Composition Analysis (SCA). The Snyk integration analyzes the application's third-party dependencies for known security vulnerabilities and provides vulnerability results within the Jenkins security pipeline.
 
-> **Next Milestone:** The next Phase 8 milestone is the implementation of Snyk Software Composition Analysis (SCA) to analyze the application's third-party dependencies for known security vulnerabilities.
+> **Next Milestone:** The next Phase 8 milestone is the implementation of the Docker image build and Trivy container security scanning stages.
 
 ---
 
@@ -592,7 +557,7 @@ Detailed documentation for each implementation phase is available in the `docs/`
 | `05-terraform-infrastructure.md` | AWS networking, EKS, ECR, and IAM provisioning |
 | `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform, including IAM roles, instance profile, networking, Elastic IP, Terraform validation, verification, and SSH connectivity |
 | `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy |
-| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, SonarCloud SAST integration, Jenkins-managed SonarScanner configuration, SonarCloud analysis execution, report upload, dashboard verification, pipeline execution, security observations, validation, and documented implementation evidence. |
+| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, SonarCloud SAST integration, Jenkins-managed SonarScanner configuration, SonarCloud analysis execution, Quality Gate validation, Snyk Software Composition Analysis (SCA), Snyk plugin and credential configuration, Snyk tool configuration, dependency vulnerability analysis, Snyk pipeline execution, vulnerability results, security observations, validation, and documented implementation evidence. |
 
 > **Additional documentation will be added as new pipeline stages and phases are completed.**
 
@@ -664,8 +629,23 @@ The SonarCloud Static Application Security Testing (SAST) implementation is docu
 | `40-sonarcloud-quality-gate-success.png` | Jenkins Pipeline stages overview showing the completed **quality gate success**. |
 
 
+#### #### Snyk Software Composition Analysis (SCA) Evidence
 
-> **Evidence Status:** Screenshots 30–40 provide documented evidence of the successfully implemented Unit Testing and SonarCloud SAST stages within the Jenkins CI/CD and DevSecOps Pipeline.
+The Snyk Software Composition Analysis (SCA) implementation is documented through the following screenshots:
+
+| Screenshot | Evidence |
+|---|---|
+| `41-snyk-security-plugin-installed.png` | Jenkins Plugin Manager showing the installed Snyk Security plugin. |
+| `42-snyk-credential-configured.png` | Jenkins credential configuration for Snyk authentication. |
+| `43-snyk-tool-configuration.png` | Jenkins global tool configuration showing the configured Snyk tool. |
+| `44-jenkinsfile-snyk-sca-stage.png` | Jenkinsfile containing the Snyk Software Composition Analysis (SCA) stage. |
+| `45-jenkins-pipeline-snyk-sca-stage.png` | Jenkins Pipeline showing execution of the Snyk SCA stage. |
+| `46-snyk-vulnerability-results.png` | Snyk vulnerability analysis results identifying vulnerabilities within the application's third-party dependencies. |
+| `47-snyk-sca-success.png` | Snyk Software Composition Analysis Success. |
+
+
+
+> **Evidence Status:** Screenshots 30–40 provide documented evidence of the successfully implemented Unit Testing and SonarCloud SAST stages. Screenshots 41–47 provide documented evidence of the Snyk Software Composition Analysis (SCA) implementation, Jenkins configuration, pipeline integration, execution, and vulnerability analysis results.
 
 > Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented and validated.
 
@@ -721,6 +701,34 @@ The SonarCloud Static Application Security Testing (SAST) implementation is docu
 
 #### sonarcloud-quality-gate-success
 ![sonarcloud-quality-gate-success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/40-sonarcloud-quality-gate-success.png)
+
+#### Snyk Security Plugin Installed
+
+![Snyk Security Plugin Installed](screenshots/08-jenkins-ci-cd-devsecops-pipeline/41-snyk-security-plugin-installed.png)
+
+#### Snyk Credential Configuration
+
+![Snyk Credential Configuration](screenshots/08-jenkins-ci-cd-devsecops-pipeline/42-snyk-credential-configured.png)
+
+#### Snyk Tool Configuration
+
+![Snyk Tool Configuration](screenshots/08-jenkins-ci-cd-devsecops-pipeline/43-snyk-tool-configuration.png)
+
+#### Jenkinsfile — Snyk SCA Stage
+
+![Jenkinsfile Snyk SCA Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/44-jenkinsfile-snyk-sca-stage.png)
+
+#### Jenkins Pipeline — Snyk SCA Stage
+
+![Jenkins Pipeline Snyk SCA Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/45-jenkins-pipeline-snyk-sca-stage.png)
+
+#### Snyk Vulnerability Results
+
+![Snyk Vulnerability Results](screenshots/08-jenkins-ci-cd-devsecops-pipeline/46-snyk-vulnerability-results.png)
+
+
+#### Snyk Software Compsition Analysis Success
+![Snyk-SCA-Success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/47-snyk-sca-success.png)
 
 ---
 
@@ -813,7 +821,11 @@ Jenkins
    │      ├── Quality Gate Wait
    │      └── Quality Gate PASSED
    │
-   ├── Snyk SCA                    ⏳
+   ├── Snyk SCA                    ✅
+   │      ├── Dependency Analysis
+   │      ├── Vulnerability Scan
+   │      └── Vulnerability Results
+   │
    ├── Docker Build                ⏳
    ├── Trivy Container Scan        ⏳
    ├── Push Image to Amazon ECR    ⏳
@@ -822,9 +834,9 @@ Jenkins
    └── OWASP ZAP DAST              ⏳
 ```
 
-> **Current milestone:** SonarCloud SAST analysis and Quality Gate enforcement have been successfully implemented and validated within the SonarCloud Analysis Jenkins stage.
+> **Latest milestone:** Snyk Software Composition Analysis (SCA) has been successfully integrated into the Jenkins DevSecOps Pipeline. The Snyk stage analyzes third-party dependencies and generates vulnerability analysis results.
 
-> The remaining pipeline stages will be implemented and validated incrementally.
+> **Next milestone:** Docker image build followed by Trivy container security scanning.
 
 
 ---
@@ -833,7 +845,6 @@ Jenkins
 
 The following enhancements will be implemented as the project progresses:
 
-- Integrate Snyk Software Composition Analysis (SCA)
 - Integrate Docker image security scanning with Trivy
 - Publish container images to Amazon ECR
 - Deploy automatically to Amazon EKS
