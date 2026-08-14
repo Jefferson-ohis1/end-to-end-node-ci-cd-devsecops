@@ -5035,14 +5035,18 @@ The Jenkins Pipeline completed with:
 Finished: SUCCESS
 ```
 
-> **Next Step:** With SonarCloud SAST, Quality Gate enforcement, and Snyk SCA successfully implemented, the next stage of the DevSecOps Pipeline is container security.
+> **Next Step:** With SonarCloud SAST, Quality Gate enforcement, and Snyk SCA successfully implemented, the next stage of the DevSecOps Pipeline is containerization.
 
-> The next security control will introduce Trivy Container Security Scanning to analyze the Docker image for known vulnerabilities before the image is pushed to Amazon Elastic Container Registry (ECR).
+> The next milestone will introduce the **Docker Image Build** stage to package the Node.js application into a deployable container image.
 
-> The next section will therefore be: 
-> Section 9.8 — Trivy Container Security Scanning
+> The Jenkins Pipeline will build and tag the Docker image using the Jenkins build number, providing a traceable container artifact for subsequent security scanning and deployment.
 
-> Trivy will extend the security pipeline by scanning the container image for known vulnerabilities before the image is promoted to the container registry and subsequently deployed to Amazon EKS.
+> The next section will therefore be:  
+> **Section 9.8 — Docker Image Build**
+
+> Following the successful Docker Image Build, the next security control will be **Trivy Container Security Scanning**.
+
+> Trivy will analyze the generated Docker image for known vulnerabilities before the image is promoted to **Amazon Elastic Container Registry (ECR)** and subsequently deployed to **Amazon Elastic Kubernetes Service (EKS)**.
 
 The updated Pipeline progression is:
 
@@ -5052,30 +5056,531 @@ GitHub
 Jenkins
    │
    ├── Checkout Source Code       ✅
+   │
    ├── Install Dependencies       ✅
+   │
    ├── Unit Testing               ✅
+   │      └── Jest: 3 Tests Passed
    │
    ├── SonarCloud SAST            ✅
-   │      └── Quality Gate PASSED
+   │      └── Quality Gate: PASSED
    │
    ├── Snyk SCA                   ✅
-   │      ├── Dependency Scan
+   │      ├── Dependency Analysis
    │      ├── Vulnerability Report
    │      └── Project Monitoring
    │
-   ▼
-Trivy Container Security         ⏳
+   ├── Docker Build               ✅
+   │      
+   │
+   ├── Trivy Container Scan       ⏳
+   │
+   ├── Amazon ECR Push            ⏳
+   │
+   ├── Amazon EKS Deployment      ⏳
+   │
+   ├── Rollout Verification       ⏳
+   │
+   └── OWASP ZAP DAST             ⏳
+
+---
+
+## Section 9.8 — Docker Image Build
+
+### 9.8.1 Overview
+
+Following the successful implementation of SonarCloud Static Application Security Testing (SAST), SonarCloud Quality Gate enforcement, and Snyk Software Composition Analysis (SCA), the next stage of the Jenkins CI/CD Pipeline was container image creation.
+
+The Docker Build stage packages the Node.js Monitoring Application into a container image that can subsequently be scanned for vulnerabilities, pushed to Amazon Elastic Container Registry (ECR), and deployed to Amazon Elastic Kubernetes Service (EKS).
+
+The Docker image build therefore represents the transition from application-level security validation to container-level security validation.
+
+The updated Pipeline progression is:
+
+```text
+GitHub
    │
    ▼
-Docker Build                     ⏳
+Jenkins
    │
    ▼
-Amazon ECR                       ⏳
+Checkout Source Code
    │
    ▼
-Amazon EKS                       ⏳
+Install Dependencies
    │
    ▼
-OWASP ZAP DAST                   ⏳
+Unit Testing
+   │
+   ▼
+SonarCloud Analysis
+   │
+   └── Quality Gate: PASSED
+   │
+   ▼
+Snyk SCA
+   │
+   ├── Dependency Analysis
+   ├── Vulnerability Detection
+   ├── JSON Report Generation
+   ├── HTML Report Generation
+   └── Project Monitoring
+   │
+   ▼
+Docker Build
+   │
+   └── node-monitoring-app:${BUILD_NUMBER}
+   │
+   ▼
+Trivy Container Security Scan
+   │
+   ▼
+Amazon ECR
+   │
+   ▼
+Amazon EKS
+```
+
+The Docker image build was successfully executed by Jenkins using the application's Dockerfile.
+
+The successful Jenkins execution confirmed that the application could be packaged into a deployable container image after passing the preceding testing and security stages.
+
+---
+
+### 9.8.2 Dockerfile Configuration
+
+The Node.js Monitoring Application uses a Dockerfile located inside the app/ directory.
+
+The Dockerfile uses the lightweight node:18-alpine base image and installs only production dependencies.
+
+```bash
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci --omit=dev
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
+```
+
+The Dockerfile performs the following operations:
+
+| Dockerfile Instruction | Purpose |
+|------------------------|---------|
+| `FROM node:18-alpine` | Provides a lightweight Node.js 18 runtime image |
+| `WORKDIR /app` | Sets `/app` as the working directory inside the container |
+| `COPY package*.json ./` | Copies the Node.js dependency manifests into the image |
+| `RUN npm ci --omit=dev` | Installs production dependencies while excluding development dependencies |
+| `COPY . .` | Copies the application source code into the image |
+| `EXPOSE 3000` | Documents the application's listening port |
+| `CMD ["node", "server.js"]` | Starts the Node.js application when the container runs |
+
+Using:
+
+```bash
+npm ci --omit=dev
+```
+ensures that development dependencies are excluded from the production container image.
+
+This helps reduce the size of the final image and minimizes unnecessary packages in the runtime environment.
+
+---
+
+### 9.8.3 Jenkinsfile Docker Build Stage
+
+The Docker image build was integrated into the Jenkinsfile as a dedicated pipeline stage.
+
+The stage executes from the app/ directory and builds the application image using the Jenkins build number as the image tag.
+
+```bash
+stage('Docker Build') {
+    steps {
+        dir('app') {
+            sh 'docker build -t node-monitoring-app:${BUILD_NUMBER} .'
+        }
+    }
+}
+```
+
+The use of ${BUILD_NUMBER} provides a unique image tag for each Jenkins build.
+
+For example:
+
+```text
+node-monitoring-app:1
+```
+
+represents the Docker image produced by Jenkins Build #1.
+
+This approach provides traceability between a Jenkins build and the corresponding container image.
+
+#### Jenkinsfile — Docker Build Stage
+
+The following screenshot provides evidence of the Docker Build stage implemented in the Jenkinsfile.
+
+![Jenkinsfile Docker Build Stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/48-jenkinsfile-docker-build-stage.png)
+
+The screenshot confirms that Docker image creation is now part of the automated Jenkins CI/CD workflow.
+
+---
+
+### 9.8.4 Docker Build Pipeline Stage
+
+After the Jenkinsfile was committed and pushed to GitHub, Jenkins retrieved the updated pipeline configuration and executed the Docker Build stage.
+
+The pipeline execution flow was:
+
+Checkout Source Code
+        │
+        ▼
+Install Dependencies
+        │
+        ▼
+Unit Testing
+        │
+        ▼
+SonarCloud Analysis
+        │
+        └── Quality Gate: PASSED
+        │
+        ▼
+Snyk SCA
+        │
+        ▼
+Docker Build
+
+The Jenkins pipeline successfully reached the Docker Build stage after completing the preceding application testing and security stages.
+
+#### Jenkins Pipeline — Docker Build Stage
+
+The screenshot provides evidence that Docker Build is now an active stage in the Jenkins pipeline.
+
+![Jenkins Pipeline — Docker Build Stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/49-jenkins-pipeline-docker-build-stage.png)
+
+This establishes the containerization step immediately after the source-code and dependency security controls.
+
+---
+
+### 9.8.5 Docker Image Build Execution
+
+During the Jenkins execution, the following Docker command was executed:
+
+```bash
+docker build -t node-monitoring-app:1 .
+```
+
+Jenkins used the Dockerfile located in:
+
+```text
+/var/lib/jenkins/workspace/nodejs-devsecops-pipeline/app
+```
+
+The Docker daemon processed the Dockerfile instructions sequentially.
+
+The build included the following major operations:
+
+```text
+FROM node:18-alpine
+        │
+        ▼
+WORKDIR /app
+        │
+        ▼
+COPY package*.json ./
+        │
+        ▼
+npm ci --omit=dev
+        │
+        ▼
+COPY . .
+        │
+        ▼
+EXPOSE 3000
+        │
+        ▼
+CMD ["node", "server.js"]
+```
+
+The Docker build completed successfully.
+
+The Jenkins console reported:
+
+```text
+Successfully built 310036f1b7b7
+Successfully tagged node-monitoring-app:1
+```
+
+#### Docker Build — Successful Execution
+
+This screenshot provides direct evidence that the Docker image was successfully constructed and tagged.
+
+![Docker Build Success](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/50-docker-build-success.png)
+
+---
+
+### 9.8.6 Docker Image Tagging
+
+The Docker image generated by Jenkins was tagged using the Jenkins build number.
+
+The resulting image was:
+
+```text
+node-monitoring-app:1
+```
+
+The image tag establishes a relationship between the Jenkins build and the generated container artifact.
+
+The tagging strategy can be represented as:
+
+Jenkins Build Number
+        │
+        ▼
+BUILD_NUMBER
+        │
+        ▼
+Docker Image Tag
+        │
+        ▼
+node-monitoring-app:${BUILD_NUMBER}
+
+For Jenkins Build #1:
+
+```text
+BUILD_NUMBER = 1
+```
+
+therefore:
+
+```text
+node-monitoring-app:1
+```
+was created.
+
+> This approach can later be extended to the Amazon ECR workflow, where the same build-specific image tag can be used when pushing the image to the container registry.
+
+---
+
+### 9.8.7 Docker Image Created on Jenkins
+
+Following the successful Docker build, the resulting container image was available on the Jenkins host.
+
+The image was created with the following identifier:
+
+```text
+node-monitoring-app:1
+```
+
+The successful creation of the image confirms that Jenkins has access to the Docker daemon and can create container images as part of the CI/CD pipeline.
+
+#### Docker Image Created on Jenkins
+
+![Docker Image Created on Jenkins](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/51-docker-image-created-on-jenkins.png)
+
+The screenshot provides evidence that the Docker image exists on the Jenkins environment following the successful build.
+
+---
+
+### 9.8.8 Docker Build Validation
+
+The Docker Build milestone was validated through an actual Jenkins Pipeline execution.
+
+The Jenkins console confirmed:
+
+```text
++ docker build -t node-monitoring-app:1 .
+```
+
+The Docker daemon successfully completed all Dockerfile instructions and produced the final image:
+
+```text
+Successfully built 310036f1b7b7
+Successfully tagged node-monitoring-app:1
+```
+
+The overall Jenkins Pipeline completed successfully:
+
+```text
+Finished: SUCCESS
+```
+
+The Docker Build milestone therefore satisfies the following validation criteria:
+
+| Validation Item | Status |
+|-----------------|:------:|
+| Dockerfile available in `app/` | ✅ |
+| Docker Build stage added to Jenkinsfile | ✅ |
+| Jenkins executed Docker build | ✅ |
+| `node:18-alpine` image pulled successfully | ✅ |
+| Production dependencies installed | ✅ |
+| Application source copied into image | ✅ |
+| Docker image created | ✅ |
+| Docker image tagged with Jenkins build number | ✅ |
+| `node-monitoring-app:1` created | ✅ |
+| Jenkins Pipeline completed successfully | **✅ SUCCESS** |
+
+---
+
+### 9.8.9 Docker Build Warning
+
+During the Docker build, the Docker daemon displayed the following notice:
+
+```text
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+Install the buildx component to build images with BuildKit.
+```
+
+This message is a Docker build-system deprecation notice and did not cause the build to fail.
+
+The Docker image was successfully created and tagged:
+
+```text
+Successfully built 310036f1b7b7
+Successfully tagged node-monitoring-app:1
+```
+
+Therefore, the current Docker Build milestone remains successful.
+
+The BuildKit/buildx migration can be addressed as a future pipeline enhancement if required.
+
+---
+
+### 9.8.10 Docker Image Build Evidence Summary
+
+The Docker Image Build milestone was supported by the following implementation and execution evidence:
+
+| Evidence | Screenshot | Status |
+|----------|------------|:------:|
+| **Jenkinsfile Docker Build Stage** | `48-jenkinsfile-docker-build-stage.png` | ✅ |
+| **Jenkins Pipeline Docker Build Stage** | `49-jenkins-pipeline-docker-build-stage.png` | ✅ |
+| **Docker Build Successful Execution** | `50-docker-build-success.png` | ✅ |
+| **Docker Image Created on Jenkins** | `51-docker-image-created-on-jenkins.png` | ✅ |
+
+---
+
+### 9.8.11 Docker Build Security Position
+
+The Docker Build stage represents an important transition in the DevSecOps pipeline.
+
+Before this stage, security validation is primarily focused on the application source code and its dependencies.
+
+The Docker Build stage packages the application and its runtime dependencies into the container artifact that will eventually be deployed.
+
+The security workflow can therefore be represented as:
+
+Application Source Code
+        │
+        ▼
+SonarCloud SAST
+        │
+        ▼
+Quality Gate
+        │
+        ▼
+Snyk SCA
+        │
+        ▼
+Docker Image Build
+        │
+        ▼
+Trivy Container Scan
+        │
+        ▼
+Amazon ECR
+
+
+> This sequencing ensures that the container image can be inspected for operating-system and package-level vulnerabilities before it is promoted to the container registry.
+
+---
+
+### 9.8.12 Current Phase 8 Pipeline Status
+
+Following the successful Docker Image Build implementation, the Phase 8 DevSecOps Pipeline status is:
+
+| Pipeline Stage | Status |
+|----------------|:------:|
+| **Jenkinsfile Configuration** | ✅ |
+| **Tool Initialization** | ✅ |
+| **Checkout Source Code** | ✅ |
+| **Install Dependencies** | ✅ |
+| **Unit Testing** | ✅ |
+| **SonarCloud Analysis** | ✅ |
+| **SonarCloud Quality Gate** | **✅ PASSED** |
+| **Snyk SCA** | **✅ PASSED** |
+| **Docker Build** | **✅ PASSED** |
+| **Trivy Container Scan** | ⏳ |
+| **Amazon ECR Push** | ⏳ |
+| **Amazon EKS Deployment** | ⏳ |
+| **Rollout Verification** | ⏳ |
+| **OWASP ZAP DAST** | ⏳ |
+
+The current successful pipeline progression is:
+
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout Source Code       ✅
+   │
+   ├── Install Dependencies       ✅
+   │
+   ├── Unit Testing               ✅
+   │      └── Jest: 3 Tests Passed
+   │
+   ├── SonarCloud SAST            ✅
+   │      └── Quality Gate: PASSED
+   │
+   ├── Snyk SCA                   ✅
+   │      ├── Dependency Analysis
+   │      ├── Vulnerability Report
+   │      └── Project Monitoring
+   │
+   ├── Docker Build               ✅
+   │      └── node-monitoring-app:1
+   │
+   ├── Trivy Container Scan       ⏳
+   │
+   ├── Amazon ECR Push            ⏳
+   │
+   ├── Amazon EKS Deployment      ⏳
+   │
+   ├── Rollout Verification       ⏳
+   │
+   └── OWASP ZAP DAST             ⏳
+
+
+#### Docker Image Build Result
+
+The Docker Image Build milestone was successfully implemented and validated through an actual Jenkins Pipeline execution.
+
+The final Docker image produced by Jenkins was:
+
+```text
+node-monitoring-app:1
+```
+
+The Jenkins Pipeline completed with:
+
+```text
+Finished: SUCCESS
+```
+
+> Docker Image Build Status: SUCCESS
+
+> The application is now packaged as a container image and is ready for the next security validation stage.
+
+> **Next Step:** The next stage of the Phase 8 DevSecOps Pipeline is Trivy Container Security Scanning.
+
+> Trivy will scan the generated Docker image for known vulnerabilities before the image is promoted to Amazon Elastic Container Registry (ECR).
+
+> The next section will therefore be:
+
+> Section 9.9 — Trivy Container Security Scanning
 
 ---

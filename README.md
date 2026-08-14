@@ -63,6 +63,7 @@ The repository is being developed incrementally using a phased implementation ap
 - SonarCloud Quality Gate enforcement
 - Snyk Software Composition Analysis (SCA)
 - Dependency vulnerability analysis with Snyk
+- Automated Docker image build within the Jenkins pipeline
 - Trivy container security scanning *(upcoming)*
 - OWASP ZAP Dynamic Application Security Testing (DAST) *(upcoming)*
 - Monitoring with Prometheus and Grafana *(upcoming)*
@@ -128,15 +129,17 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Snyk SCA Pipeline Execution
 - ✔ Snyk Dependency Vulnerability Analysis
 - ✔ Snyk Vulnerability Results Verification
+- ✔ Docker Image Build Stage
+- ✔ Jenkins Docker Image Build Integration
+- ✔ Successful Docker Image Creation
 
 ### 🚧 In Progress
 
 - Jenkins CI/CD & DevSecOps Pipeline
-- Incremental integration of remaining security, containerization, deployment, and runtime security stages
+- Incremental integration of remaining container security, registry, deployment, and runtime security stages
 
 ### 📌 Next Pipeline Milestone
 
-- Docker image build
 - Trivy container security scanning
 - Amazon ECR image publishing
 - Amazon EKS deployment
@@ -431,60 +434,66 @@ The project follows a phased implementation strategy to ensure that each compone
 
 ### Latest Milestone
 
-The latest Phase 8 milestone is the successful implementation and validation of **Snyk Software Composition Analysis (SCA)** within the Jenkins CI/CD and DevSecOps Pipeline.
+The latest Phase 8 milestone is the successful implementation and validation of the **Docker Image Build stage** within the Jenkins CI/CD and DevSecOps Pipeline.
 
-Snyk has been integrated into Jenkins to analyze the application's third-party dependencies and identify known security vulnerabilities within the dependency tree.
+Following the successful implementation of SonarCloud SAST and Snyk Software Composition Analysis (SCA), the pipeline has now been extended to build the application into a Docker container image.
 
 The Jenkins Pipeline successfully:
 
-1. Initialized the configured Snyk tooling.
-2. Loaded the configured Snyk authentication credentials.
-3. Entered the application workspace.
-4. Executed the Snyk Software Composition Analysis (SCA) stage.
-5. Analyzed the application's third-party dependencies.
-6. Evaluated dependencies against Snyk's vulnerability database.
-7. Generated Snyk security analysis results.
-8. Exposed identified dependency vulnerabilities through the Jenkins Pipeline.
-9. Verified the Snyk vulnerability results.
-10. Completed the documented Snyk SCA implementation and validation.
+1. Initialized the configured Jenkins build environment.
+2. Checked out the application source code.
+3. Installed application dependencies.
+4. Executed the automated unit tests.
+5. Completed SonarCloud SAST analysis.
+6. Passed the SonarCloud Quality Gate.
+7. Executed Snyk Software Composition Analysis (SCA).
+8. Analyzed the application's third-party dependencies.
+9. Initiated the Docker Image Build stage.
+10. Built the Node.js application Docker image successfully.
+11. Created the Docker image on the Jenkins server.
+12. Validated successful Docker image creation.
 
-The Snyk implementation extends the DevSecOps pipeline beyond source-code security analysis by introducing **Software Composition Analysis (SCA)** for third-party dependencies.
+The Docker Image Build stage represents the transition from **application and dependency security validation** to **container security validation** within the DevSecOps pipeline.
 
-### SonarCloud SAST vs Snyk SCA
+### Docker Build → Trivy Security Scanning
 
-The pipeline now includes two complementary application-security controls:
+The Docker image is now successfully created within the Jenkins pipeline.
 
-| Security Control | Primary Focus | Tool |
-|---|---|---|
-| **Static Application Security Testing (SAST)** | Application source code | SonarCloud |
-| **Software Composition Analysis (SCA)** | Third-party dependencies | Snyk |
+The next stage is **Trivy Container Security Scanning**, which will analyze the newly built Docker image for known vulnerabilities before the image is pushed to **Amazon Elastic Container Registry (ECR)**.
 
-SonarCloud analyzes the application's source code, while Snyk analyzes the application's third-party packages and dependency tree for known vulnerabilities.
+The sequence is therefore:
 
-### Implemented Security Capabilities
-
-| Category | Implemented Capability |
-|---|---|
-| **SAST** | SonarCloud Static Application Security Testing |
-| **SAST Analysis** | Automated source-code analysis |
-| **SAST Quality Gate** | SonarCloud Quality Gate enforcement |
-| **SAST Result** | Quality Gate **PASSED** |
-| **SCA** | Snyk Software Composition Analysis |
-| **SCA Integration** | Jenkins Snyk SCA stage |
-| **SCA Authentication** | Configured Snyk credentials |
-| **SCA Tooling** | Configured Snyk security tool |
-| **Dependency Analysis** | Automated third-party dependency analysis |
-| **Vulnerability Detection** | Snyk dependency vulnerability identification |
-| **SCA Results** | Jenkins-accessible Snyk vulnerability results |
-| **Pipeline Validation** | Snyk SCA execution and results verification |
+Snyk SCA
+   │
+   ▼
+Docker Image Build       ✅
+   │
+   ▼
+Trivy Container Scan     ⏳
+   │
+   ▼
+Amazon ECR Push           ⏳
+   │
+   ▼
+Amazon EKS Deployment     ⏳
 
 ---
 
-### Current Pipeline Flow**
+### Current Pipeline Flow
 
-The current Phase 8 Jenkins CI/CD and DevSecOps pipeline has successfully implemented and validated source-code checkout, dependency installation, automated unit testing, SonarCloud SAST, and Snyk Software Composition Analysis (SCA).
+The current Phase 8 Jenkins CI/CD and DevSecOps pipeline has successfully implemented and validated the following stages:
 
-Phase 8 – Jenkins CI/CD & DevSecOps Pipeline
+- Source-code checkout
+- Dependency installation
+- Automated unit testing
+- SonarCloud Static Application Security Testing (SAST)
+- SonarCloud Quality Gate validation
+- Snyk Software Composition Analysis (SCA)
+- Docker image build and creation
+
+The pipeline has therefore progressed from **source-code validation and dependency security analysis to automated container image creation**. The next stage is **Trivy Container Security Scanning**, which will analyze the newly built Docker image for known vulnerabilities before it is pushed to Amazon Elastic Container Registry (ECR).
+
+#### Phase 8 – Jenkins CI/CD & DevSecOps Pipeline Flow
 
 Jenkins Pipeline
       │
@@ -501,7 +510,8 @@ Jenkins Pipeline
       ├── Snyk SCA                    ✅
       │      └── Dependency Vulnerability Analysis
       │
-      ├── Docker Build                ⏳
+      ├── Docker Build                ✅
+      │      └── Docker Image Created
       │
       ├── Trivy Container Scan        ⏳
       │
@@ -530,17 +540,17 @@ Jenkins Pipeline
 | **Snyk SCA Pipeline Execution** | **✅** |
 | **Snyk Dependency Vulnerability Analysis** | **✅** |
 | **Snyk Vulnerability Results Verification** | **✅** |
-| **Docker Build** | ⏳ |
+| **Docker Build** | **✅ PASSED** |
+| **Docker Image Creation** | **✅** |
 | **Trivy Container Scan** | ⏳ |
 | **Amazon ECR Push** | ⏳ |
 | **Amazon EKS Deployment** | ⏳ |
 | **Rollout Verification** | ⏳ |
 | **OWASP ZAP DAST** | ⏳ |
 
+> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated the **Docker Image Build stage**, following the successful integration of SonarCloud SAST and Snyk SCA.
 
-> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated Snyk Software Composition Analysis (SCA). The Snyk integration analyzes the application's third-party dependencies for known security vulnerabilities and provides vulnerability results within the Jenkins security pipeline.
-
-> **Next Milestone:** The next Phase 8 milestone is the implementation of the Docker image build and Trivy container security scanning stages.
+> **Next Milestone:** The next Phase 8 milestone is **Trivy Container Security Scanning**, which will analyze the Docker image for known vulnerabilities before the image is pushed to Amazon ECR.
 
 ---
 
@@ -557,7 +567,7 @@ Detailed documentation for each implementation phase is available in the `docs/`
 | `05-terraform-infrastructure.md` | AWS networking, EKS, ECR, and IAM provisioning |
 | `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform, including IAM roles, instance profile, networking, Elastic IP, Terraform validation, verification, and SSH connectivity |
 | `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy |
-| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, SonarCloud SAST integration, Jenkins-managed SonarScanner configuration, SonarCloud analysis execution, Quality Gate validation, Snyk Software Composition Analysis (SCA), Snyk plugin and credential configuration, Snyk tool configuration, dependency vulnerability analysis, Snyk pipeline execution, vulnerability results, security observations, validation, and documented implementation evidence. |
+| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, SonarCloud SAST integration, SonarCloud Quality Gate validation, Snyk Software Composition Analysis (SCA), Snyk plugin and credential configuration, dependency vulnerability analysis, Docker Image Build integration, Docker image creation, pipeline execution, security observations, validation, and documented implementation evidence. |
 
 > **Additional documentation will be added as new pipeline stages and phases are completed.**
 
@@ -644,8 +654,18 @@ The Snyk Software Composition Analysis (SCA) implementation is documented throug
 | `47-snyk-sca-success.png` | Snyk Software Composition Analysis Success. |
 
 
+#### Docker Image Build Evidence
 
-> **Evidence Status:** Screenshots 30–40 provide documented evidence of the successfully implemented Unit Testing and SonarCloud SAST stages. Screenshots 41–47 provide documented evidence of the Snyk Software Composition Analysis (SCA) implementation, Jenkins configuration, pipeline integration, execution, and vulnerability analysis results.
+The Docker Image Build implementation is documented through the following screenshots:
+
+| Screenshot | Evidence |
+|---|---|
+| `48-jenkinsfile-docker-build-stage.png` | Jenkinsfile containing the **Docker Image Build** stage used to build the application container image. |
+| `49-jenkins-pipeline-docker-build-stage.png` | Jenkins Pipeline showing execution of the **Docker Image Build** stage. |
+| `50-docker-build-success.png` | Jenkins console output confirming the **successful Docker image build**. |
+| `51-docker-image-created-on-jenkins.png` | Jenkins server showing the successfully created Docker image. |
+
+> **Evidence Status:** Screenshots 48–51 provide documented evidence of the Docker Image Build stage, Jenkins pipeline integration, successful image creation, and Docker image availability on the Jenkins server.
 
 > Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented and validated.
 
@@ -730,6 +750,23 @@ The Snyk Software Composition Analysis (SCA) implementation is documented throug
 #### Snyk Software Compsition Analysis Success
 ![Snyk-SCA-Success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/47-snyk-sca-success.png)
 
+
+**#### Jenkinsfile — Docker Image Build Stage**
+
+![Jenkinsfile Docker Build Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/48-jenkinsfile-docker-build-stage.png)
+
+**#### Jenkins Pipeline — Docker Build Stage**
+
+![Jenkins Pipeline Docker Build Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/49-jenkins-pipeline-docker-build-stage.png)
+
+**#### Docker Build — Successful Execution**
+
+![Docker Build Success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/50-docker-build-success.png)
+
+**#### Docker Image Created on Jenkins**
+
+![Docker Image Created on Jenkins](screenshots/08-jenkins-ci-cd-devsecops-pipeline/51-docker-image-created-on-jenkins.png)
+
 ---
 
 ## Prerequisites
@@ -811,33 +848,34 @@ GitHub
    ▼
 Jenkins
    │
-   ├── Checkout Source Code        ✅
-   ├── Install Dependencies        ✅
-   ├── Unit Testing                ✅
+   ├── Checkout Source Code          ✅
+   ├── Install Dependencies          ✅
+   ├── Unit Testing                  ✅
    │
-   ├── SonarCloud Analysis         ✅
+   ├── SonarCloud Analysis           ✅
    │      ├── SAST Analysis
    │      ├── Report Upload
    │      ├── Quality Gate Wait
    │      └── Quality Gate PASSED
    │
-   ├── Snyk SCA                    ✅
+   ├── Snyk SCA                     ✅
    │      ├── Dependency Analysis
    │      ├── Vulnerability Scan
    │      └── Vulnerability Results
    │
-   ├── Docker Build                ⏳
-   ├── Trivy Container Scan        ⏳
-   ├── Push Image to Amazon ECR    ⏳
-   ├── Deploy to Amazon EKS        ⏳
-   ├── Verify Rollout              ⏳
-   └── OWASP ZAP DAST              ⏳
+   ├── Docker Build                 ✅
+   │      └── Docker Image Created
+   │
+   ├── Trivy Container Scan         ⏳
+   ├── Push Image to Amazon ECR     ⏳
+   ├── Deploy to Amazon EKS         ⏳
+   ├── Verify Rollout               ⏳
+   └── OWASP ZAP DAST               ⏳
 ```
 
-> **Latest milestone:** Snyk Software Composition Analysis (SCA) has been successfully integrated into the Jenkins DevSecOps Pipeline. The Snyk stage analyzes third-party dependencies and generates vulnerability analysis results.
+> **Latest milestone:** The Docker Image Build stage has been successfully integrated into the Jenkins DevSecOps Pipeline. The pipeline now builds the Node.js application into a Docker container image on the Jenkins server.
 
-> **Next milestone:** Docker image build followed by Trivy container security scanning.
-
+> **Next milestone:** Trivy Container Security Scanning will analyze the Docker image for known vulnerabilities before the image is pushed to Amazon ECR.
 
 ---
 
