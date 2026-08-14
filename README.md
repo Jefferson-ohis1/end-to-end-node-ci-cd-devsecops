@@ -64,7 +64,7 @@ The repository is being developed incrementally using a phased implementation ap
 - Snyk Software Composition Analysis (SCA)
 - Dependency vulnerability analysis with Snyk
 - Automated Docker image build within the Jenkins pipeline
-- Trivy container security scanning *(upcoming)*
+- Automated Docker image vulnerability scanning with Trivy
 - OWASP ZAP Dynamic Application Security Testing (DAST) *(upcoming)*
 - Monitoring with Prometheus and Grafana *(upcoming)*
 
@@ -132,15 +132,19 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Docker Image Build Stage
 - ✔ Jenkins Docker Image Build Integration
 - ✔ Successful Docker Image Creation
+- ✔ Trivy Container Security Scanning Stage
+- ✔ Jenkinsfile Trivy Container Scan Integration
+- ✔ Jenkins Pipeline Trivy Container Scan Execution
+- ✔ Trivy Docker Image Vulnerability Analysis
+- ✔ Trivy Container Vulnerability Results Verification
 
 ### 🚧 In Progress
 
 - Jenkins CI/CD & DevSecOps Pipeline
-- Incremental integration of remaining container security, registry, deployment, and runtime security stages
+- Incremental integration of remaining registry, deployment, runtime security, and monitoring stages
 
 ### 📌 Next Pipeline Milestone
 
-- Trivy container security scanning
 - Amazon ECR image publishing
 - Amazon EKS deployment
 - Kubernetes rollout verification
@@ -247,7 +251,7 @@ The AWS infrastructure for this project has been fully provisioned using Terrafo
 | **Continuous Integration** | Jenkins |
 | **Static Application Security Testing (SAST)** | SonarCloud |
 | **Dependency Scanning / Software Composition Analysis (SCA)** | Snyk |
-| **Container Security** | Trivy *(Upcoming)* |
+| **Container Security** | Trivy |
 | **Dynamic Application Security Testing (DAST)** | OWASP ZAP *(Upcoming)* |
 | **Monitoring** | Prometheus *(Upcoming)* |
 | **Visualization** | Grafana *(Upcoming)* |
@@ -434,9 +438,9 @@ The project follows a phased implementation strategy to ensure that each compone
 
 ### Latest Milestone
 
-The latest Phase 8 milestone is the successful implementation and validation of the **Docker Image Build stage** within the Jenkins CI/CD and DevSecOps Pipeline.
+The latest Phase 8 milestone is the successful implementation and validation of the **Trivy Container Security Scanning stage** within the Jenkins CI/CD and DevSecOps Pipeline.
 
-Following the successful implementation of SonarCloud SAST and Snyk Software Composition Analysis (SCA), the pipeline has now been extended to build the application into a Docker container image.
+Following the successful implementation of SonarCloud SAST, SonarCloud Quality Gate enforcement, Snyk Software Composition Analysis (SCA), and Docker Image Build, the pipeline has now been extended with automated container vulnerability scanning using **Trivy**.
 
 The Jenkins Pipeline successfully:
 
@@ -447,35 +451,37 @@ The Jenkins Pipeline successfully:
 5. Completed SonarCloud SAST analysis.
 6. Passed the SonarCloud Quality Gate.
 7. Executed Snyk Software Composition Analysis (SCA).
-8. Analyzed the application's third-party dependencies.
-9. Initiated the Docker Image Build stage.
-10. Built the Node.js application Docker image successfully.
-11. Created the Docker image on the Jenkins server.
-12. Validated successful Docker image creation.
+8. Completed the Docker Image Build stage.
+9. Created the `node-monitoring-app:1` Docker image.
+10. Executed the Trivy Container Security Scan.
+11. Scanned the Docker image for known vulnerabilities.
+12. Generated and verified the Trivy vulnerability results.
 
-The Docker Image Build stage represents the transition from **application and dependency security validation** to **container security validation** within the DevSecOps pipeline.
+The Trivy stage represents the transition from **application and dependency security validation** to **container image security validation**.
 
-### Docker Build → Trivy Security Scanning
+### Trivy Security Scanning → Amazon ECR
 
-The Docker image is now successfully created within the Jenkins pipeline.
+The Docker image has now successfully passed through the container security scanning stage.
 
-The next stage is **Trivy Container Security Scanning**, which will analyze the newly built Docker image for known vulnerabilities before the image is pushed to **Amazon Elastic Container Registry (ECR)**.
+The next stage is **Amazon Elastic Container Registry (ECR) image publishing**, where the validated Docker image will be pushed to the configured ECR repository.
 
 The sequence is therefore:
 
+```text
 Snyk SCA
    │
    ▼
 Docker Image Build       ✅
    │
    ▼
-Trivy Container Scan     ⏳
+Trivy Container Scan     ✅
    │
    ▼
-Amazon ECR Push           ⏳
+Amazon ECR Push          ⏳
    │
    ▼
-Amazon EKS Deployment     ⏳
+Amazon EKS Deployment    ⏳
+```
 
 ---
 
@@ -495,6 +501,7 @@ The pipeline has therefore progressed from **source-code validation and dependen
 
 #### Phase 8 – Jenkins CI/CD & DevSecOps Pipeline Flow
 
+```text
 Jenkins Pipeline
       │
       ├── Checkout Source Code        ✅
@@ -513,15 +520,17 @@ Jenkins Pipeline
       ├── Docker Build                ✅
       │      └── Docker Image Created
       │
-      ├── Trivy Container Scan        ⏳
+      ├── Trivy Container Scan        ✅
+      │      └── Container Vulnerability Analysis
       │
-      ├── Amazon ECR Push             ⏳
+      ├── Amazon ECR Push              ⏳
       │
-      ├── Amazon EKS Deployment       ⏳
+      ├── Amazon EKS Deployment        ⏳
       │
-      ├── Rollout Verification        ⏳
+      ├── Rollout Verification         ⏳
       │
       └── OWASP ZAP DAST              ⏳
+```
 
 ---
 
@@ -542,15 +551,17 @@ Jenkins Pipeline
 | **Snyk Vulnerability Results Verification** | **✅** |
 | **Docker Build** | **✅ PASSED** |
 | **Docker Image Creation** | **✅** |
-| **Trivy Container Scan** | ⏳ |
+| **Trivy Container Scan** | **✅ PASSED** |
+| **Trivy Container Vulnerability Analysis** | **✅** |
+| **Trivy Vulnerability Results Verification** | **✅** |
 | **Amazon ECR Push** | ⏳ |
 | **Amazon EKS Deployment** | ⏳ |
 | **Rollout Verification** | ⏳ |
 | **OWASP ZAP DAST** | ⏳ |
 
-> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated the **Docker Image Build stage**, following the successful integration of SonarCloud SAST and Snyk SCA.
+> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated the **Trivy Container Security Scanning stage**, following the successful integration of SonarCloud SAST, Snyk SCA, and Docker Image Build.
 
-> **Next Milestone:** The next Phase 8 milestone is **Trivy Container Security Scanning**, which will analyze the Docker image for known vulnerabilities before the image is pushed to Amazon ECR.
+> **Next Milestone:** The next Phase 8 milestone is **Amazon ECR image publishing**, where the validated Docker image will be pushed to the container registry.
 
 ---
 
@@ -665,7 +676,18 @@ The Docker Image Build implementation is documented through the following screen
 | `50-docker-build-success.png` | Jenkins console output confirming the **successful Docker image build**. |
 | `51-docker-image-created-on-jenkins.png` | Jenkins server showing the successfully created Docker image. |
 
-> **Evidence Status:** Screenshots 48–51 provide documented evidence of the Docker Image Build stage, Jenkins pipeline integration, successful image creation, and Docker image availability on the Jenkins server.
+
+#### Trivy Container Security Scanning Evidence**
+
+The Trivy Container Security Scanning implementation is documented through the following screenshots:
+
+| Screenshot | Evidence |
+|---|---|
+| `52-jenkinsfile-trivy-container-scan-stage.png` | Jenkinsfile containing the **Trivy Container Security Scan** stage used to scan the Docker image. |
+| `53-jenkins-pipeline-trivy-container-scan-stage.png` | Jenkins Pipeline showing execution of the **Trivy Container Security Scan** stage. |
+| `54-trivy-container-vulnerability-results.png` | Trivy vulnerability analysis results generated from scanning the `node-monitoring-app:1` Docker image. |
+
+> **Evidence Status:** Screenshots 52–54 provide documented evidence of the Trivy Container Security Scanning stage, Jenkins pipeline integration, container vulnerability analysis, and Trivy scan results.
 
 > Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented and validated.
 
@@ -751,22 +773,40 @@ The Docker Image Build implementation is documented through the following screen
 ![Snyk-SCA-Success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/47-snyk-sca-success.png)
 
 
-**#### Jenkinsfile — Docker Image Build Stage**
+#### Jenkinsfile — Docker Image Build Stage**
 
 ![Jenkinsfile Docker Build Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/48-jenkinsfile-docker-build-stage.png)
 
-**#### Jenkins Pipeline — Docker Build Stage**
+
+#### Jenkins Pipeline — Docker Build Stage**
 
 ![Jenkins Pipeline Docker Build Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/49-jenkins-pipeline-docker-build-stage.png)
 
-**#### Docker Build — Successful Execution**
+
+#### Docker Build — Successful Execution**
 
 ![Docker Build Success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/50-docker-build-success.png)
 
-**#### Docker Image Created on Jenkins**
+#### Docker Image Created on Jenkins**
 
 ![Docker Image Created on Jenkins](screenshots/08-jenkins-ci-cd-devsecops-pipeline/51-docker-image-created-on-jenkins.png)
 
+
+
+#### Jenkinsfile — Trivy Container Scan Stage**
+
+![Jenkinsfile Trivy Container Scan Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/52-jenkinsfile-trivy-container-scan-stage.png)
+
+
+
+#### Jenkins Pipeline — Trivy Container Scan Stage**
+
+![Jenkins Pipeline Trivy Container Scan Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/53-jenkins-pipeline-trivy-container-scan-stage.png)
+
+
+#### Trivy Container Vulnerability Results**
+
+![Trivy Container Vulnerability Results](screenshots/08-jenkins-ci-cd-devsecops-pipeline/54-trivy-container-vulnerability-results.png)
 ---
 
 ## Prerequisites
@@ -866,24 +906,24 @@ Jenkins
    ├── Docker Build                 ✅
    │      └── Docker Image Created
    │
-   ├── Trivy Container Scan         ⏳
-   ├── Push Image to Amazon ECR     ⏳
-   ├── Deploy to Amazon EKS         ⏳
-   ├── Verify Rollout               ⏳
+   ├── Trivy Container Scan         ✅
+   │      └── Vulnerability Analysis
+   │
+   ├── Push Image to Amazon ECR      ⏳
+   ├── Deploy to Amazon EKS          ⏳
+   ├── Verify Rollout                ⏳
    └── OWASP ZAP DAST               ⏳
 ```
 
-> **Latest milestone:** The Docker Image Build stage has been successfully integrated into the Jenkins DevSecOps Pipeline. The pipeline now builds the Node.js application into a Docker container image on the Jenkins server.
+> **Latest milestone:** The Trivy Container Security Scanning stage has been successfully integrated into the Jenkins DevSecOps Pipeline. The Docker image is now automatically scanned for known vulnerabilities before it is promoted to Amazon ECR.
 
-> **Next milestone:** Trivy Container Security Scanning will analyze the Docker image for known vulnerabilities before the image is pushed to Amazon ECR.
-
+> **Next milestone:** Amazon ECR image publishing, followed by Amazon EKS deployment and rollout verification.
 ---
 
-## Future Enhancements
+### Future Enhancements
 
 The following enhancements will be implemented as the project progresses:
 
-- Integrate Docker image security scanning with Trivy
 - Publish container images to Amazon ECR
 - Deploy automatically to Amazon EKS
 - Implement Kubernetes rollout verification
