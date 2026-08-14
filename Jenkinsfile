@@ -78,6 +78,12 @@ pipeline {
                 }
             }
         }
+
+        stage('Trivy Container Scan') {
+            steps {
+                sh 'trivy image node-monitoring-app:${BUILD_NUMBER}'
+            }
+        }
     }
 
     post {
