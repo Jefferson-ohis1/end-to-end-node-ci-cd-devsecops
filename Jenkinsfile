@@ -101,7 +101,12 @@ pipeline {
 
         stage('Trivy Container Scan') {
             steps {
-                sh 'trivy image node-monitoring-app:${BUILD_NUMBER}'
+                sh '''
+                    trivy image \
+                        --severity HIGH,CRITICAL \
+                        --exit-code 1 \
+                        node-monitoring-app:${BUILD_NUMBER}
+                '''
             }
         }
     }
