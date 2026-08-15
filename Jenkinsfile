@@ -27,6 +27,26 @@ pipeline {
             }
         }
 
+        stage('Dependency Inspection') {
+            steps {
+                dir('app') {
+                    sh '''
+                        echo "Node.js version:"
+                        node --version
+
+                        echo "npm version:"
+                        npm --version
+
+                        echo "Dependency tree for tar:"
+                        npm ls tar || true
+
+                        echo "Dependency tree for brace-expansion:"
+                        npm ls brace-expansion || true
+                    '''
+                }
+            }
+        }
+
         stage('Unit Testing') {
             steps {
                 dir('app') {
