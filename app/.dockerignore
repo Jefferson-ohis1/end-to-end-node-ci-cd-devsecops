@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+npm-audit.json
+app.test.js
+.git
+.gitignore
+Dockerfile
+*.tar
