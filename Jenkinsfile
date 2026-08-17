@@ -168,23 +168,28 @@ pipeline {
                     echo "Starting production container"
                     echo "======================================"
 
-                    docker run -d \
-                        --name ${IMAGE_NAME}-test-${BUILD_NUMBER} \
-                        -p 3000:3000 \
-                        ${IMAGE_NAME}:${IMAGE_TAG}
+                    CONTAINER_NAME="node-monitoring-app-test-${BUILD_NUMBER}"
 
-                    echo "Waiting for application startup..."
+                    # Remove any previous container with this name
+                    docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+
+                    # Start production container
+                    docker run -d \
+                        --name "$CONTAINER_NAME" \
+                        -p 3000:3000 \
+                        node-monitoring-app:${BUILD_NUMBER}
+
+                    echo "Waiting for application to start..."
                     sleep 5
 
                     echo "======================================"
                     echo "Application Health Check"
                     echo "======================================"
 
-                    curl --fail \
-                        http://localhost:3000/health
+                    curl --fail http://localhost:3000/health
 
-                    echo ""
-                    echo "Application health check PASSED"
+                    echo
+                    echo "Application health check passed."
                 '''
             }
         }
@@ -193,8 +198,8 @@ pipeline {
     post {
         always {
             sh '''
-                docker rm -f ${IMAGE_NAME}-test-${BUILD_NUMBER} 2>/dev/null || true
-                docker rmi ${IMAGE_NAME}:${IMAGE_TAG} 2>/dev/null || true
+                docker rm -f node-monitoring-app-test-${BUILD_NUMBER} 2>/dev/null || true
+                docker rmi node-monitoring-app:${BUILD_NUMBER} 2>/dev/null || true
             '''
 
             echo 'Pipeline execution completed.'
