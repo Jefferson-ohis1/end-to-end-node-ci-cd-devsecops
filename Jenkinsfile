@@ -11,6 +11,11 @@ pipeline {
         nodejs 'node24'
     }
 
+    environment {
+        IMAGE_NAME = 'node-monitoring-app'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
     stages {
 
         stage('Checkout Source Code') {
@@ -31,16 +36,24 @@ pipeline {
             steps {
                 dir('app') {
                     sh '''
-                        echo "Node.js version:"
+                        echo "======================================"
+                        echo "Node.js version"
+                        echo "======================================"
                         node --version
 
-                        echo "npm version:"
+                        echo "======================================"
+                        echo "npm version"
+                        echo "======================================"
                         npm --version
 
-                        echo "Dependency tree for tar:"
+                        echo "======================================"
+                        echo "Dependency tree for tar"
+                        echo "======================================"
                         npm ls tar || true
 
-                        echo "Dependency tree for brace-expansion:"
+                        echo "======================================"
+                        echo "Dependency tree for brace-expansion"
+                        echo "======================================"
                         npm ls brace-expansion || true
                     '''
                 }
@@ -64,11 +77,11 @@ pipeline {
                         withSonarQubeEnv('SonarCloud') {
                             sh """
                                 ${scannerHome}/bin/sonar-scanner \
-                                 -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
-                                 -Dsonar.organization=jefferson-ohis1 \
-                                 -Dsonar.sources=. \
-                                 -Dsonar.host.url=https://sonarcloud.io \
-                                 -Dsonar.qualitygate.wait=true
+                                  -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
+                                  -Dsonar.organization=jefferson-ohis1 \
+                                  -Dsonar.sources=. \
+                                  -Dsonar.host.url=https://sonarcloud.io \
+                                  -Dsonar.qualitygate.wait=true
                             """
                         }
                     }
@@ -94,18 +107,84 @@ pipeline {
         stage('Docker Build') {
             steps {
                 dir('app') {
-                    sh 'docker build -t node-monitoring-app:${BUILD_NUMBER} .'
+                    sh '''
+                        docker build \
+                            -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                            .
+                    '''
                 }
+            }
+        }
+
+        stage('Verify Production Image') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Node.js version inside production image"
+                    echo "======================================"
+
+                    docker run --rm \
+                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                        node --version
+
+                    echo "======================================"
+                    echo "Verify npm is removed"
+                    echo "======================================"
+
+                    docker run --rm \
+                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                        sh -c "command -v npm || echo 'npm removed'"
+
+                    echo "======================================"
+                    echo "Verify npx is removed"
+                    echo "======================================"
+
+                    docker run --rm \
+                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                        sh -c "command -v npx || echo 'npx removed'"
+                '''
             }
         }
 
         stage('Trivy Container Scan') {
             steps {
                 sh '''
+                    echo "======================================"
+                    echo "Trivy HIGH/CRITICAL Container Scan"
+                    echo "======================================"
+
                     trivy image \
                         --severity HIGH,CRITICAL \
                         --exit-code 1 \
-                        node-monitoring-app:${BUILD_NUMBER}
+                        ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
+            }
+        }
+
+        stage('Application Health Check') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Starting production container"
+                    echo "======================================"
+
+                    docker run -d \
+                        --name ${IMAGE_NAME}-test-${BUILD_NUMBER} \
+                        -p 3000:3000 \
+                        ${IMAGE_NAME}:${IMAGE_TAG}
+
+                    echo "Waiting for application startup..."
+                    sleep 5
+
+                    echo "======================================"
+                    echo "Application Health Check"
+                    echo "======================================"
+
+                    curl --fail \
+                        http://localhost:3000/health
+
+                    echo ""
+                    echo "Application health check PASSED"
                 '''
             }
         }
@@ -113,6 +192,11 @@ pipeline {
 
     post {
         always {
+            sh '''
+                docker rm -f ${IMAGE_NAME}-test-${BUILD_NUMBER} 2>/dev/null || true
+                docker rmi ${IMAGE_NAME}:${IMAGE_TAG} 2>/dev/null || true
+            '''
+
             echo 'Pipeline execution completed.'
         }
     }

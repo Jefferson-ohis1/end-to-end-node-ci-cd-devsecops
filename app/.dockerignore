@@ -4,5 +4,11 @@ npm-audit.json
 app.test.js
 .git
 .gitignore
-Dockerfile
+Dockerfile.trivy-test
+README.md
+coverage
+.nyc_output
+.env
+.env.*
+*.log
 *.tar
