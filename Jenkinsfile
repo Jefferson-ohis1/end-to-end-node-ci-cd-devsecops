@@ -146,17 +146,22 @@ pipeline {
             }
         }
 
-        stage('Trivy Container Scan') {
+        stage('Trivy Container Security Gate') {
             steps {
                 sh '''
                     echo "======================================"
-                    echo "Trivy HIGH/CRITICAL Container Scan"
+                    echo "Trivy HIGH/CRITICAL Security Gate"
                     echo "======================================"
 
                     trivy image \
                         --severity HIGH,CRITICAL \
                         --exit-code 1 \
                         ${IMAGE_NAME}:${IMAGE_TAG}
+
+                    echo "======================================"
+                    echo "Trivy Security Gate PASSED"
+                    echo "======================================"
+                    echo "No HIGH or CRITICAL vulnerabilities detected."
                 '''
             }
         }
