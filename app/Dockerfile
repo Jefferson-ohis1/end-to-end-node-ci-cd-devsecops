@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install -g npm@12.0.2 && \
-    npm ci --omit=dev --ignore-scripts
+RUN npm install -g npm@12.0.2 --ignore-scripts \
+    && npm ci --omit=dev --ignore-scripts
 
 COPY . .
 
