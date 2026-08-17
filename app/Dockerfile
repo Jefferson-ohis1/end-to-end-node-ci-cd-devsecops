@@ -4,12 +4,9 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install -g npm@12.0.2
-
-RUN npm ci --omit=dev
+RUN npm install -g npm@12.0.2 && \
+    npm ci --omit=dev --ignore-scripts
 
 COPY . .
-
-EXPOSE 3000
 
 CMD ["node", "server.js"]
