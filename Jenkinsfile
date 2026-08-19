@@ -257,6 +257,30 @@ pipeline {
                 '''
             }
         }
+
+        stage('Verify ECR Image') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Verify Amazon ECR Image"
+                    echo "======================================"
+
+                    echo "Checking ECR repository for image tag:"
+                    echo "${IMAGE_TAG}"
+
+                    aws ecr describe-images \
+                        --repository-name "${ECR_REPOSITORY}" \
+                        --image-ids imageTag="${IMAGE_TAG}" \
+                        --region "${AWS_REGION}"
+
+                    echo "======================================"
+                    echo "Amazon ECR Image Verification PASSED"
+                    echo "======================================"
+                    echo "Verified image:"
+                    echo "${ECR_IMAGE}"
+                '''
+            }
+        }
     }
 
     post {
