@@ -14,6 +14,11 @@ pipeline {
     environment {
         IMAGE_NAME = 'node-monitoring-app'
         IMAGE_TAG = "${BUILD_NUMBER}"
+
+        AWS_REGION = 'us-east-1'
+        ECR_REGISTRY = '615300991839.dkr.ecr.us-east-1.amazonaws.com'
+        ECR_REPOSITORY = 'node-devsecops-repository'
+        ECR_IMAGE = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
     }
 
     stages {
@@ -195,6 +200,60 @@ pipeline {
 
                     echo
                     echo "Application health check passed."
+                '''
+            }
+        }
+
+        stage('Amazon ECR Container Image Push') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Amazon ECR Container Image Push"
+                    echo "======================================"
+
+                    echo "AWS Region:"
+                    echo "${AWS_REGION}"
+
+                    echo "ECR Repository:"
+                    echo "${ECR_REPOSITORY}"
+
+                    echo "ECR Image:"
+                    echo "${ECR_IMAGE}"
+
+                    echo "======================================"
+                    echo "Authenticating Docker to Amazon ECR"
+                    echo "======================================"
+
+                    aws ecr get-login-password \
+                        --region "${AWS_REGION}" | \
+                    docker login \
+                        --username AWS \
+                        --password-stdin \
+                        "${ECR_REGISTRY}"
+
+                    echo "Docker authentication to Amazon ECR succeeded."
+
+                    echo "======================================"
+                    echo "Tagging Docker Image"
+                    echo "======================================"
+
+                    docker tag \
+                        "${IMAGE_NAME}:${IMAGE_TAG}" \
+                        "${ECR_IMAGE}"
+
+                    echo "Docker image tagged successfully."
+
+                    echo "======================================"
+                    echo "Pushing Docker Image to Amazon ECR"
+                    echo "======================================"
+
+                    docker push "${ECR_IMAGE}"
+
+                    echo "======================================"
+                    echo "Amazon ECR Container Image Push PASSED"
+                    echo "======================================"
+                    echo "Image successfully pushed:"
+                    echo "${ECR_IMAGE}"
                 '''
             }
         }
