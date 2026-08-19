@@ -5575,32 +5575,46 @@ Finished: SUCCESS
 
 > The application is now packaged as a container image and is ready for the next security validation stage.
 
-> **Next Step:** The next stage of the Phase 8 DevSecOps Pipeline is Trivy Container Security Scanning.
+> **Next Step:** The next stage of the Phase 8 DevSecOps Pipeline is Trivy Container Security Scanning and Quality Gate.
 
 > Trivy will scan the generated Docker image for known vulnerabilities before the image is promoted to Amazon Elastic Container Registry (ECR).
 
 > The next section will therefore be:
 
-> Section 9.9 — Trivy Container Security Scanning
+> Section 9.9 — Trivy Container Security Scanning and Quality Gate
 
 ---
 
-## Section 9.9 — Trivy Container Security Scanning
+## Section 9.9 — Trivy Container Security Scanning and Quality Gate
 
 ### 9.9.1 Overview
 
-Following the successful Docker Image Build stage, the next security control implemented in the Phase 8 Jenkins CI/CD and DevSecOps Pipeline was **Trivy Container Security Scanning**.
+Following the successful Docker Image Build stage, the next security control implemented in the Phase 8 Jenkins CI/CD and DevSecOps Pipeline was Trivy Container Security Scanning.
 
-Trivy is used to scan the generated Docker image for known security vulnerabilities across:
+Trivy is used to inspect the generated Docker image for known security vulnerabilities across multiple detectable components, including:
 
-- Operating-system packages
-- Node.js dependencies
-- Application packages
-- Container image components
+- Alpine/Linux operating-system packages
+- Node.js application dependencies
+- Other detectable components within the container image
 
-The Trivy scan is performed against the Docker image generated during the Jenkins build.
+The Trivy implementation was developed in two stages: 
 
-The updated pipeline progression is:
+#### Stage 1 — Vulnerability Scanning
+
+The initial implementation performed a vulnerability scan against the generated Docker image and exposed the security findings produced by Trivy.
+
+#### Stage 2 — Security Quality Gate
+
+The implementation was subsequently enhanced to enforce a security threshold using:
+
+```text
+--severity HIGH,CRITICAL
+--exit-code 1
+```
+
+This transformed Trivy from a vulnerability-reporting mechanism into an automated HIGH/CRITICAL security quality gate.
+
+The overall pipeline progression is now:
 
 ```text
 GitHub
@@ -5608,132 +5622,158 @@ GitHub
    ▼
 Jenkins
    │
-   ▼
-Checkout Source Code
+   ├── Checkout Source Code
    │
-   ▼
-Install Dependencies
+   ├── Install Dependencies
    │
-   ▼
-Unit Testing
+   ├── Dependency Inspection
    │
-   ▼
-SonarCloud Analysis
+   ├── Unit Testing
    │
-   └── Quality Gate: PASSED
+   ├── SonarCloud Analysis
+   │      └── Quality Gate: PASSED
    │
-   ▼
-Snyk SCA
+   ├── Snyk SCA
    │
-   ├── Dependency Analysis
-   ├── Vulnerability Detection
-   ├── JSON Report Generation
-   ├── HTML Report Generation
-   └── Project Monitoring
+   ├── Docker Build
    │
-   ▼
-Docker Build
+   ├── Verify Production Image
+   │      ├── Node.js Version Validation
+   │      ├── npm Removal Validation
+   │      └── npx Removal Validation
    │
-   └── node-monitoring-app:${BUILD_NUMBER}
+   ├── Trivy Container Security Scan
+   │      ├── Alpine OS Package Scanning
+   │      ├── Node.js Application Dependency Analysis
+   │      ├── HIGH Severity Check
+   │      ├── CRITICAL Severity Check
+   │      └── HIGH/CRITICAL Security Gate
+   │             ├── Findings → Pipeline FAILS
+   │             └── No Findings → Pipeline CONTINUES
    │
-   ▼
-Trivy Container Security Scan
+   ├── Application Health Check
    │
-   ├── OS Package Scanning
-   ├── Node.js Package Scanning
-   └── Vulnerability Detection
+   ├── Amazon ECR
    │
-   ▼
-Amazon ECR
-   │
-   ▼
-Amazon EKS
+   └── Amazon EKS
 ```
 
-The Trivy stage therefore provides an additional security validation layer after the application has been packaged into a container image.
+The Trivy stage therefore provides security validation after the application has been packaged into a production Docker image.
 
-This is important because vulnerabilities can exist not only in the application source code or third-party dependencies, but also in the final container artifact and its underlying operating-system packages.
+This is important because vulnerabilities may exist not only in the application source code and third-party dependencies, but also in the final container artifact and the operating-system packages included inside the image.
 
 ---
 
-### 9.9.2 Trivy Installation and Environment Validation
+## 9.9.2 Trivy Installation and Environment Validation
 
 Trivy was installed on the Jenkins host and verified before integrating it into the Jenkins pipeline.
 
-The installed Trivy version was:
+The installed Trivy version was verified using:
 
-```text
 trivy --version
-```
 
 Result:
 
-```text
 Version: 0.71.2
-```
 
 The Docker environment was also verified:
 
-```text
 docker --version
-```
 
 Result:
 
-```text
 Docker version 29.1.3
-```
 
-The Docker image generated by the previous pipeline stage was available on the Jenkins host:
+The Jenkins environment therefore contained the required tooling for container security scanning:
 
-```text
-docker images
-```
-
-The relevant image was:
-
-```text
-node-monitoring-app:1
-```
-
-This confirmed that the Jenkins environment had both:
-
-- Trivy
-- Docker
-
-available for container security scanning.
+| Tool     | Version | Status |
+|----------|---------|--------|
+| **Trivy**  | 0.71.2  | ✅ |
+| **Docker** | 29.1.3  | ✅ |
+| **Node.js** | Node 24 | ✅ |
 
 ---
 
-### 9.9.3 Trivy Container Scan Configuration
+### 9.9.3 Initial Trivy Container Scan Configuration
 
-The Trivy scan was integrated directly into the Jenkinsfile as a dedicated pipeline stage.
+The initial Trivy implementation was added to the Jenkinsfile as a dedicated container-security stage.
 
-The stage scans the Docker image generated during the current Jenkins build.
+The original configuration was:
 
 ```bash
 stage('Trivy Container Scan') {
     steps {
-        sh 'trivy image node-monitoring-app:${BUILD_NUMBER}'
+        dir('app') {
+            sh 'trivy image node-monitoring-app:${BUILD_NUMBER}'
+        }
     }
 }
 ```
 
-The ${BUILD_NUMBER} environment variable ensures that Trivy scans the exact Docker image generated by the current Jenkins build.
+This implementation performed a Trivy vulnerability scan against the Docker image generated by the preceding Docker Build stage.
 
-For Jenkins Build #1:
+The Docker image was therefore scanned using the same Jenkins build number that was used to tag the image.
 
-```text
-BUILD_NUMBER = 1
-```
-
-Therefore, the Trivy stage scans:
+The initial security flow was:
 
 ```text
-node-monitoring-app:1
+Docker Build
+      │
+      ▼
+node-monitoring-app:${BUILD_NUMBER}
+      │
+      ▼
+Trivy Container Scan
+      │
+      ├── Alpine OS Packages
+      ├── Node.js Application Dependencies
+      └── Other Detectable Container Components
 ```
 
-This creates traceability between:
+This first implementation was important because it established visibility into vulnerabilities contained within the final Docker image.
+
+---
+
+### 9.9.4 Jenkinsfile — Initial Trivy Container Scan
+
+The following screenshot provides evidence of the original Trivy container scanning stage implemented in the Jenkinsfile.
+
+![Initial Jenkinsfile - Trivy container scan stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/52-jenkinsfile-trivy-container-scan-stage.png)
+
+The Jenkinsfile shows the dedicated:
+
+Trivy Container Scan stage.
+
+The scan was executed against:
+
+```text
+node-monitoring-app:${BUILD_NUMBER}
+```
+
+This established the first container-security inspection point in the pipeline.
+
+At this stage, Trivy was primarily being used for vulnerability discovery and reporting rather than as an enforced admission control.
+
+---
+
+### 9.9.5 Jenkins Pipeline — Initial Trivy Container Scan Execution
+
+The initial Trivy stage was executed through Jenkins.
+
+The following screenshot provides evidence of the Jenkins pipeline execution of the original Trivy container scan stage.
+
+![Initial Jenkins pipeline trivy container scan execution](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/53-jenkins-pipeline-trivy-container-scan-stage.png)
+
+The Jenkins console shows the pipeline entering:
+
+```text
+[Pipeline] stage
+[Pipeline] { (Trivy Container Scan)
+```
+
+Trivy then initialized its vulnerability database and scanned the generated Docker image.
+
+The scan therefore established the connection between:
 
 ```text
 Jenkins Build
@@ -5742,496 +5782,1403 @@ Jenkins Build
 Docker Image
       │
       ▼
-Trivy Security Scan
+Trivy Vulnerability Scanner
 ```
+
+The initial scan also demonstrated that Trivy could successfully inspect the production container image and identify vulnerabilities within its underlying components.
 
 ---
 
-### 9.9.4 Jenkinsfile — Trivy Container Scan Stage
+### 9.9.6 Initial Trivy Vulnerability Results
 
-The following screenshot provides evidence of the Trivy Container Security Scan stage implemented in the Jenkinsfile.
+The original Trivy scan produced vulnerability findings within the generated container image.
 
-![Jenkinsfile — Trivy Container Scan Stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/52-jenkinsfile-trivy-container-scan-stage.png)
+The following screenshot provides evidence of the initial Trivy vulnerability results.
 
-The screenshot confirms that Trivy was added as a dedicated security stage immediately after the Docker Build stage.
+![Initial Trivy vulnerability results](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/54-trivy-container-vulnerability-results.png)
 
-The relevant pipeline sequence is:
+
+The scan reported:
+
+```text
+Target: node-monitoring-app:2
+OS: Alpine 3.21.3
+
+Total Vulnerabilities: 50
+
+UNKNOWN:  0
+LOW:      19
+MEDIUM:   14
+HIGH:     15
+CRITICAL: 2
+```
+
+The initial scan therefore identified:
+
+| **Severity** | **Findings** |
+|--------------|--------------|
+| **UNKNOWN**  | 0            |
+| **LOW**      | 19           |
+| **MEDIUM**   | 14           |
+| **HIGH**     | **15**       |
+| **CRITICAL** | **2**        |
+| **Total**    | **50**       |
+
+The most important observation was the presence of:
+
+```text
+HIGH:     15
+CRITICAL: 2
+```
+
+This demonstrated why simply generating a vulnerability report was not sufficient for a DevSecOps pipeline.
+
+A production container containing HIGH or CRITICAL vulnerabilities should not automatically progress through the delivery pipeline without an explicit security decision.
+
+This led to the next improvement: converting Trivy into an automated security quality gate.
+
+---
+
+### 9.9.7 Trivy Vulnerability Remediation and Production Image Hardening
+
+The initial Trivy scan demonstrated that the production container image contained security vulnerabilities requiring remediation before the image could be considered suitable for further delivery.
+
+The initial scan reported:
+
+```text
+HIGH:     15
+CRITICAL: 2
+```
+> These findings triggered a review of the production Docker image and its runtime configuration.
+
+Rather than assuming that the vulnerabilities were caused by a single component, the production image was subsequently hardened through several changes to the Dockerfile and Jenkins environment.
+
+The remediation included:
+
+```text
+Node.js 24 Alpine base image
+        │
+        ├── Updated Node.js runtime
+        │
+        ├── Updated Alpine-based image
+        │
+        ├── Production-only dependencies
+        │
+        ├── npm removed from runtime image
+        │
+        ├── npx removed from runtime image
+        │
+        └── Non-root container execution
+```
+
+The Dockerfile was modified to use a multi-stage build:
+
+```text
+FROM node:24-alpine AS builder
+```
+
+and:
+
+```text
+FROM node:24-alpine AS runtime
+```
+
+Production dependencies were installed using:
+
+```text
+npm ci --omit=dev --ignore-scripts
+```
+
+The production runtime image was also hardened by removing npm and npx:
+
+```text
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/bin/npm \
+           /usr/local/bin/npx
+```
+
+The container was configured to execute as the non-root node user:
+
+```text
+USER node
+```
+
+In addition, the Jenkins environment was updated to use the Node.js 24 installation:
+
+```text
+NodeJS installation:
+node24
+
+Version:
+24.19.0
+```
+
+This was configured under:
+
+```text
+Manage Jenkins
+    → Tools
+        → NodeJS installations
+```
+
+Following these changes, the Docker image was rebuilt and the resulting production image was subjected to the Trivy HIGH/CRITICAL security gate again.
+
+The Dockerfile and runtime configuration were remediated, the production image was rebuilt, and the resulting image subsequently passed the HIGH/CRITICAL Trivy security gate.
+
+The remediation strategy consisted of:
+
+```text
+Initial Production Image
+          │
+          ▼
+   Trivy Initial Scan
+          │
+          ├── HIGH: 15
+          └── CRITICAL: 2
+          │
+          ▼
+       Remediation
+          │
+          ├── Node.js 24
+          ├── Updated Alpine base
+          ├── Production-only dependencies
+          ├── npm removed
+          ├── npx removed
+          └── Non-root runtime user
+          │
+          ▼
+     Docker Image Rebuilt
+          │
+          ▼
+      Trivy Rescan
+          │
+          ├── HIGH: 0
+          └── CRITICAL: 0
+          │
+          ▼
+   Trivy Security Gate
+          │
+          ▼
+        PASSED
+```
+
+The remediation was therefore applied at the container-image construction layer, rather than attempting to suppress or ignore the Trivy findings.
+
+> Important DevSecOps principle: Security findings should be remediated where possible rather than simply excluded from the scanner or downgraded in severity.
+
+---
+
+### 9.9.8 From Vulnerability Reporting to Security Quality Gate
+
+The initial Trivy implementation provided visibility into vulnerabilities present in the original production image. Following remediation and reconstruction of the production image, the pipeline was further enhanced with an explicit HIGH/CRITICAL security quality gate to prevent vulnerable images from progressing automatically through subsequent delivery stages.
+
+The security objective was therefore changed from:
+
+```text
+Scan → Report Vulnerabilities
+```
+
+to:
+
+```text
+Scan → Evaluate Severity → Enforce Security Policy
+```
+
+The updated security policy was defined as:
+
+```text
+HIGH vulnerabilities
+        OR
+CRITICAL vulnerabilities
+        │
+        ▼
+Security Gate FAILED
+        │
+        ▼
+Pipeline Stops
+```
+
+Conversely:
+
+```text
+HIGH = 0
+CRITICAL = 0
+        │
+        ▼
+Security Gate PASSED
+        │
+        ▼
+Pipeline Continues
+```
+
+This introduced automated security enforcement into the container stage.
+
+
+---
+
+
+### 9.9.9 Dockerfile Security Remediation
+
+The original production image was based on an older Node.js Alpine image and contained npm and npx in the final runtime image.
+
+To reduce the attack surface and address the vulnerabilities identified by Trivy, the Dockerfile was redesigned using a multi-stage build.
+
+The Dockerfile was subsequently modified to harden the production container image.
+
+![Hardened Production Dockerfile](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/60-hardened-production-dockerfile.png)
+
+The updated Dockerfile uses Node.js 24 Alpine:
+
+```text
+# ============================================
+# Stage 1: Build production dependencies
+# ============================================
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependency manifests first for better layer caching
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --omit=dev --ignore-scripts
+
+
+# ============================================
+# Stage 2: Production runtime
+# ============================================
+FROM node:24-alpine AS runtime
+
+WORKDIR /app
+
+# Copy only production dependencies from builder
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy application source code
+COPY . .
+
+# Remove npm and npx from the production image
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/bin/npm \
+           /usr/local/bin/npx
+
+# Run application as non-root user
+USER node
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
+```
+
+The Dockerfile changes introduced several security improvements.
+
+| **Dockerfile Change**              | **Security / Engineering Purpose**                                      |
+|------------------------------------|-------------------------------------------------------------------------|
+| **Node.js 18 → Node.js 24**        | Uses the newer Node.js runtime and corresponding updated base image     |
+| **Multi-stage build**              | Separates dependency installation from the final runtime image          |
+| **`npm ci --omit=dev`**             | Excludes development dependencies from the production image             |
+| **`--ignore-scripts`**             | Prevents dependency lifecycle scripts from executing during installation |
+| **npm removal**                     | Removes the npm package manager from the runtime image                  |
+| **npx removal**                     | Removes the npx command from the runtime image                          |
+| **`USER node`**                     | Runs the application as a non-root user                                  |
+| **Minimal runtime contents**        | Reduces unnecessary components and attack surface                       |
+
+The resulting architecture is:
+
+```text
+                 Docker Build
+                     │
+                     ▼
+             ┌─────────────────┐
+             │  Builder Stage  │
+             │                 │
+             │ node:24-alpine  │
+             │                 │
+             │ npm ci           │
+             │ --omit=dev       │
+             │ --ignore-scripts  │
+             └────────┬────────┘
+                      │
+                      │ production
+                      │ node_modules
+                      ▼
+             ┌─────────────────┐
+             │ Runtime Stage   │
+             │                 │
+             │ node:24-alpine  │
+             │                 │
+             │ App Source      │
+             │ Production Deps │
+             │                 │
+             │ npm → removed   │
+             │ npx → removed   │
+             │                 │
+             │ USER node        │
+             └────────┬────────┘
+                      │
+                      ▼
+              Production Image
+                      │
+                      ▼
+                 Trivy Scan
+```
+
+This approach reduces unnecessary components in the final runtime image and helps minimize the container's attack surface.
+
+Following these changes, the Docker image was rebuilt and the resulting production image was subjected to the Trivy HIGH/CRITICAL security gate again.
+
+The Dockerfile and runtime configuration were remediated, the production image was rebuilt, and the resulting image subsequently passed the HIGH/CRITICAL Trivy security gate.
+
+---
+
+### 9.9.10 Jenkins Node.js Runtime Upgrade
+
+The Dockerfile remediation was accompanied by an update to the Node.js runtime configured in Jenkins.
+
+The Jenkins pipeline previously used the Node.js 18 tool configuration:
+
+```text
+node18
+```
+
+The Jenkins NodeJS installation was subsequently updated to:
+
+```text
+Name: node24
+Version: 24.19.0
+```
+
+The configuration was updated through:
+
+```text
+Manage Jenkins
+      │
+      ▼
+Tools
+      │
+      ▼
+NodeJS installations
+      │
+      ▼
+Name: node24
+      │
+      ▼
+Version: 24.19.0
+```
+
+The Jenkinsfile was then updated from:
+
+```bash
+tools {
+    jdk 'jdk21'
+    nodejs 'node18'
+}
+```
+
+to:
+
+```bash
+tools {
+    jdk 'jdk21'
+    nodejs 'node24'
+}
+```
+
+This ensured that the Jenkins build environment used the same major Node.js generation as the production Docker image.
+
+The resulting environment alignment was:
+
+| **Environment**          | **Node.js Configuration** |
+|--------------------------|---------------------------|
+| **Jenkins**              | `node24` — Node.js 24.19.0 |
+| **Docker Builder**       | `node:24-alpine`           |
+| **Docker Runtime**       | `node:24-alpine`           |
+| **Application Runtime**  | Node.js 24                 |
+
+This reduces the possibility of building and testing the application against one major Node.js version while deploying it using another.
+
+---
+
+### 9.9.11 Jenkinsfile Security Remediation and Production Image Verification
+
+The Jenkinsfile was also updated to validate the production image before it reached the Trivy security gate.
+
+The updated pipeline introduced a dedicated stage:
+
+```text
+Verify Production Image
+```
+
+
+The stage validates three important properties of the final container image:
+
+```text
+Production Image
+      │
+      ├── Node.js Version
+      │
+      ├── npm Removed
+      │
+      └── npx Removed
+```
+
+The relevant Jenkinsfile configuration is:
+
+```bash
+stage('Verify Production Image') {
+    steps {
+        sh '''
+            echo "======================================"
+            echo "Node.js version inside production image"
+            echo "======================================"
+
+            docker run --rm \
+                ${IMAGE_NAME}:${IMAGE_TAG} \
+                node --version
+
+            echo "======================================"
+            echo "Verify npm is removed"
+            echo "======================================"
+
+            docker run --rm \
+                ${IMAGE_NAME}:${IMAGE_TAG} \
+                sh -c "command -v npm || echo 'npm removed'"
+
+            echo "======================================"
+            echo "Verify npx is removed"
+            echo "======================================"
+
+            docker run --rm \
+                ${IMAGE_NAME}:${IMAGE_TAG} \
+                sh -c "command -v npx || echo 'npx removed'"
+        '''
+    }
+}
+```
+
+This validation prevents the pipeline from assuming that the Dockerfile changes were correctly reflected in the generated image.
+
+The validation sequence is:
 
 ```text
 Docker Build
       │
       ▼
-Trivy Container Scan
-```
-
-This ensures that the container image is scanned before it proceeds to the container registry stage.
-
----
-
-### 9.9.5 Jenkins Pipeline — Trivy Container Scan Stage
-
-After the Jenkinsfile was updated with the Trivy stage, the pipeline was executed to validate the integration.
-
-The pipeline progression was:
-
-```text
-Checkout Source Code
-        │
-        ▼
-Install Dependencies
-        │
-        ▼
-Unit Testing
-        │
-        ▼
-SonarCloud Analysis
-        │
-        └── Quality Gate: PASSED
-        │
-        ▼
-Snyk SCA
-        │
-        ▼
-Docker Build
-        │
-        ▼
-Trivy Container Scan
-```
-
-The Jenkins pipeline successfully reached and executed the Trivy Container Scan stage.
-
-#### Jenkins Pipeline — Trivy Container Scan
-
-![Jenkins Pipeline Trivy Container Scan Stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/53-jenkins-pipeline-trivy-container-scan-stage.png)
-
-The screenshot provides evidence that the Trivy Container Scan stage is now an active component of the Jenkins CI/CD and DevSecOps pipeline.
-
----
-
-### 9.9.6 Trivy Container Image Scan Execution
-
-The Trivy scan was executed against the Docker image produced by Jenkins.
-
-The command executed by the pipeline was:
-
-```text
-trivy image node-monitoring-app:${BUILD_NUMBER}
-```
-
-For Jenkins Build #1:
-
-```text
-trivy image node-monitoring-app:1
-```
-
-Trivy identified the container operating system as:
-
-```text
-Alpine Linux 3.21.3
-```
-
-Trivy also detected Node.js package dependencies inside the container image.
-
-The scan therefore evaluated both:
-
-```text
-Container Image
+Production Image
       │
-      ├── Alpine Linux Packages
+      ▼
+Verify Production Image
       │
-      └── Node.js Packages
+      ├── node --version
+      │
+      ├── npm → removed
+      │
+      └── npx → removed
+      │
+      ▼
+Trivy Security Gate
 ```
 
-This provides broader container security coverage than scanning application source code alone.
+This is an important improvement because the security controls are validated against the actual generated artifact, rather than relying only on the Dockerfile source code.
 
 ---
 
-### 9.9.7 Trivy Vulnerability Detection Results
+### 9.9.12 Trivy HIGH/CRITICAL Security Gate Configuration
 
-The Trivy scan identified vulnerabilities within the Node.js package layer of the container image.
+Following the Dockerfile security remediation and Node.js runtime upgrade, the production image was rebuilt and subjected to a new Trivy security scan. The Jenkinsfile was subsequently updated to enforce HIGH and CRITICAL severity thresholds
 
-The scan summary reported:
+The security gate was configured to evaluate only HIGH and CRITICAL vulnerabilities:
 
 ```text
-Node.js (node-pkg)
-
-Total: 30
-UNKNOWN: 0
-LOW: 2
-MEDIUM: 7
-HIGH: 20
-CRITICAL: 1
+trivy image \
+    --severity HIGH,CRITICAL \
+    --exit-code 1 \
+    ${IMAGE_NAME}:${IMAGE_TAG}
 ```
 
-The results can be summarized as follows:
+The purpose of this scan was to validate whether the remediated production image could satisfy the defined security admission policy.
 
-| Severity | Count |
-|----------|------:|
-| **UNKNOWN** | 0 |
-| **LOW** | 2 |
-| **MEDIUM** | 7 |
-| **HIGH** | 20 |
-| **CRITICAL** | 1 |
-| **Total** | **30** |
-
-The scan therefore detected:
-
-- 30 total vulnerabilities
-- 20 HIGH vulnerabilities
-- 1 CRITICAL vulnerability
-- 7 MEDIUM vulnerabilities
-- 2 LOW vulnerabilities
-- 0 UNKNOWN vulnerabilities
-
-These findings demonstrate why container image scanning is an important security control in a DevSecOps pipeline.
-
----
-
-### 9.9.8 Examples of Detected Vulnerabilities
-
-Trivy identified vulnerabilities affecting several Node.js packages contained within the Docker image.
-
-Examples included:
-
-| Package | Vulnerability | Severity | Installed Version | Fixed Version |
-|---------|---------------|----------|-------------------|---------------|
-| `@sigstore/core` | CVE-2026-48758 | MEDIUM | 1.1.0 | 3.2.1 |
-| `brace-expansion` | CVE-2026-69152 | HIGH | 1.1.17 | 1.1.18 / newer |
-| `cross-spawn` | CVE-2024-21538 | HIGH | 7.0.3 | 7.0.5 |
-| `glob` | CVE-2025-64756 | HIGH | 10.4.2 | 10.5.0 / newer |
-| `ip-address` | CVE-2026-69192 | HIGH | 9.0.5 | 10.3.1 |
-| `js-yaml` | GHSA-5p4m-2wfm-xmqj | HIGH | 3.15.0 | 3.15.1 / 4.3.1 |
-| `minimatch` | CVE-2026-26996 | HIGH | 9.0.5 | 9.0.6 / newer |
-| `tar` | CVE-2026-59873 | **CRITICAL** | 6.2.1 | 7.5.19 |
-
-> The vulnerability versions and fixed versions reported above are based on the Trivy scan performed against the generated container image.
-
----
-
-### 9.9.9 Trivy Vulnerability Results Evidence
-
-The following screenshot provides direct evidence of the vulnerabilities identified by Trivy during the Jenkins container image scan.
-
-![Trivy Container Vulnerability Results](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/54-trivy-container-vulnerability-results.png)
-
-The scan output demonstrates that Trivy successfully inspected the generated Docker image and identified vulnerabilities within its Node.js dependency layer.
-
-The results include:
+The complete remediation and validation sequence was:
 
 ```text
-Severity
-   │
-   ├── LOW
-   ├── MEDIUM
-   ├── HIGH
-   └── CRITICAL
+Initial Image
+     │
+     ▼
+Trivy Scan
+     │
+     ├── HIGH: 15
+     └── CRITICAL: 2
+     │
+     ▼
+Vulnerability Investigation
+     │
+     ▼
+Dockerfile Remediation
+     │
+     ├── Node.js 24 Alpine
+     ├── Multi-stage build
+     ├── Production dependencies only
+     ├── --ignore-scripts
+     ├── npm removed
+     ├── npx removed
+     └── Non-root runtime
+     │
+     ▼
+Jenkins Node.js 24 Configuration
+     │
+     ▼
+Docker Image Rebuild
+     │
+     ▼
+Production Image Verification
+     │
+     ├── Node.js version ✓
+     ├── npm removed ✓
+     └── npx removed ✓
+     │
+     ▼
+Trivy HIGH/CRITICAL Scan
+     │
+     ▼
+HIGH = 0
+CRITICAL = 0
+     │
+     ▼
+Security Gate PASSED
 ```
 
-Each vulnerability entry includes information such as:
 
-- Library/package name
-- Vulnerability identifier
-- Severity
-- Installed version
-- Fixed version
-- Vulnerability description
-- ecurity advisory reference
+The Jenkinsfile was subsequently updated to enforce HIGH and CRITICAL severity thresholds.
 
-This provides actionable information for subsequent dependency remediation.
+The updated Trivy configuration is:
+
+```bash
+stage('Trivy Container Scan') {
+    steps {
+        sh '''
+            echo "======================================"
+            echo "Trivy HIGH/CRITICAL Container Scan"
+            echo "======================================"
+
+            trivy image \
+                --severity HIGH,CRITICAL \
+                --exit-code 1 \
+                ${IMAGE_NAME}:${IMAGE_TAG}
+        '''
+    }
+}
+```
+
+The two key security controls are:
+
+```text
+--severity HIGH,CRITICAL
+```
+
+and:
+
+```text
+--exit-code 1
+```
+
+#### Severity Filtering
+
+```text
+--severity HIGH,CRITICAL
+```
+
+This instructs Trivy to evaluate HIGH and CRITICAL vulnerabilities for the security gate.
+
+LOW and MEDIUM findings may still exist and can remain visible in other scans, but they do not trigger this particular admission threshold.
+
+#### Exit-Code Enforcement
+
+```text
+--exit-code 1
+```
+
+This instructs Trivy to return exit code 1 when vulnerabilities matching the selected severity levels are detected.
+
+Jenkins interprets a non-zero exit code from the sh step as a failed pipeline step.
+
+Therefore:
+
+```text
+HIGH/CRITICAL Vulnerabilities Found
+              │
+              ▼
+       Trivy Exit Code 1
+              │
+              ▼
+        Jenkins sh Step
+              │
+              ▼
+         Pipeline FAILS
+```
+
+Conversely:
+
+```text
+No HIGH/CRITICAL Vulnerabilities
+              │
+              ▼
+       Trivy Exit Code 0
+              │
+              ▼
+        Jenkins sh Step
+              │
+              ▼
+       Pipeline CONTINUES
+```
+
+This is what transforms Trivy from a passive vulnerability-reporting tool into an automated security quality gate.
 
 ---
 
-### 9.9.10 Trivy Scan and Jenkins Pipeline Result
+### 9.9.13 Jenkinsfile — Trivy Security Quality Gate
 
-The Trivy scan successfully executed as part of the Jenkins pipeline.
+The following screenshot provides evidence of the updated Trivy security-gate implementation in the Jenkinsfile.
 
-The Jenkins console concluded with:
+![Updated Jenkinsfile Trivy Security Quality Gate](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/55-jenkinsfile-trivy-quality-gate.png)
+
+
+The screenshot confirms that the Trivy stage was enhanced to include:
+
+```text
+--severity HIGH,CRITICAL
+```
+
+and:
+
+```text
+--exit-code 1
+```
+
+The resulting security-control logic is:
+
+```text
+Docker Image
+     │
+     ▼
+Trivy Container Scan
+     │
+     ├── Vulnerability Detection
+     ├── HIGH/CRITICAL Filtering
+     └── Exit-Code Enforcement
+     │
+     ▼
+Security Gate Decision
+     │
+     ├── Findings → FAIL
+     └── No Findings → CONTINUE
+```
+
+This configuration ensures that container security is actively enforced before the application is allowed to continue to subsequent pipeline stages.
+
+---
+
+### 9.9.14 Jenkins Pipeline — Trivy Quality Gate Execution
+
+After updating the Jenkinsfile, the pipeline was executed again.
+
+The following screenshot provides evidence of the Jenkins pipeline executing the updated Trivy quality-gate stage.
+
+![Updated Jenkins Pipeline Trivy Quality Gate Stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/56-jenkins-pipeline-trivy-quality-gate-stage.png)
+
+
+The Jenkins console shows:
 
 ```text
 [Pipeline] stage
 [Pipeline] { (Trivy Container Scan)
 ```
 
-followed by the Trivy vulnerability report.
+The security-gate command executed was:
 
-The pipeline subsequently completed with:
+```text
+trivy image \
+    --severity HIGH,CRITICAL \
+    --exit-code 1 \
+    node-monitoring-app:6
+```
+
+The image scanned during this execution was therefore:
+
+```text
+node-monitoring-app:6
+```
+
+This provides traceability between the Jenkins build number, generated Docker image, and Trivy security scan.
+
+The execution demonstrates that the pipeline was no longer merely running an unrestricted vulnerability report; it was now enforcing a defined HIGH/CRITICAL security threshold.
+
+---
+
+### 9.9.15 Trivy Security Gate Result
+
+The successful security-gate implementation was subsequently validated through Jenkins.
+
+The following screenshot provides evidence of the Trivy security-gate result.
+
+![Trivy Quality Gate Results](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/57-trivy-quality-gate-results.png)
+
+
+The Jenkins console reports:
+
+```text
+Trivy Security Gate PASSED
+```
+
+and:
+
+```text
+No HIGH or CRITICAL vulnerabilities detected.
+```
+
+Therefore, the configured security policy evaluated successfully:
+
+```text
+HIGH = 0
+CRITICAL = 0
+```
+
+The resulting security decision was:
+
+```text
+HIGH/CRITICAL Vulnerabilities
+              │
+              ▼
+               0
+              │
+              ▼
+     Trivy Security Gate
+              │
+              ▼
+            PASSED
+```
+
+The key security result can therefore be summarized as:
+
+| **Security Gate**           | **Result**     |
+|-----------------------------|----------------|
+| **HIGH vulnerabilities**    | **0**          |
+| **CRITICAL vulnerabilities** | **0**          |
+| **Trivy exit status**        | **0**          |
+| **Security gate**            | **✅ PASSED**  |
+
+This represents the successful clean-image path through the newly enforced Trivy security gate.
+
+---
+
+### 9.9.16 Trivy Quality Gate — Detailed Interpretation
+
+The updated implementation should be distinguished from the original Trivy configuration.
+
+#### Previous Configuration
+
+The original scan used:
+
+```text
+trivy image node-monitoring-app:${BUILD_NUMBER}
+```
+
+Its purpose was primarily vulnerability discovery and reporting.
+
+The initial scan demonstrated that the image could contain significant security findings, including:
+
+```text
+HIGH:     15
+CRITICAL: 2
+```
+
+However, the original configuration did not explicitly enforce a HIGH/CRITICAL admission threshold.
+
+
+#### Current Configuration
+
+The updated implementation uses:
+
+```text
+trivy image \
+    --severity HIGH,CRITICAL \
+    --exit-code 1 \
+    node-monitoring-app:${BUILD_NUMBER}
+```
+
+This introduces automated enforcement.
+
+| **Configuration**                 | **Previous** | **Current** |
+|-----------------------------------|--------------|-------------|
+| **Container scan**                | ✅           | ✅          |
+| **Vulnerability detection**       | ✅           | ✅          |
+| **HIGH filtering**                | ❌           | ✅          |
+| **CRITICAL filtering**            | ❌           | ✅          |
+| **Exit-code enforcement**         | ❌           | ✅          |
+| **Automatic pipeline failure**    | ❌           | ✅          |
+| **Security quality gate**         | ❌           | **✅**      |
+
+
+The progression is therefore:
+
+```text
+Initial Implementation
+         │
+         ▼
+Vulnerability Visibility
+         │
+         ▼
+Security Findings Identified
+         │
+         ▼
+Security Policy Defined
+         │
+         ▼
+HIGH/CRITICAL Filtering
+         │
+         ▼
+Exit-Code Enforcement
+         │
+         ▼
+Automated Security Quality Gate
+```
+
+---
+
+### 9.9.17 Trivy Quality Gate and Jenkins Pipeline Continuation
+
+Because the validated container image contained no HIGH or CRITICAL vulnerabilities according to the configured gate, Trivy returned a successful exit status.
+
+The following screenshot provides evidence that the pipeline proceeded beyond the Trivy security gate.
+
+![Jenkins Trivy gate passed](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/58-jenkins-trivy-gate-passed.png)
+
+
+The Jenkins console subsequently entered:
+
+```text
+[Pipeline] stage
+[Pipeline] { (Application Health Check)
+```
+
+This is important evidence because it demonstrates that the Trivy stage did not simply report a successful scan; the successful security decision actually allowed Jenkins to proceed to the next pipeline control.
+
+The flow was therefore:
+
+```text
+Trivy Container Scan
+         │
+         ├── HIGH = 0
+         ├── CRITICAL = 0
+         │
+         ▼
+Security Gate PASSED
+         │
+         ▼
+Application Health Check
+```
+
+> This confirms the intended behavior of the quality gate.
+
+---
+
+### 9.9.18 Application Health Check After Trivy Gate
+
+After successfully passing the Trivy security gate, Jenkins proceeded to the application health-check stage.
+
+The production container was started using:
+
+docker run -d \
+    --name "$CONTAINER_NAME" \
+    -p 3000:3000 \
+    node-monitoring-app:${BUILD_NUMBER}
+
+
+The application health endpoint was then tested:
+
+```text
+curl --fail http://localhost:3000/health
+```
+
+The expected application response was:
+
+```text
+ok
+```
+
+The pipeline therefore performed two consecutive validations:
+
+```text
+Docker Image
+      │
+      ▼
+Trivy Security Gate
+      │
+      ├── HIGH = 0
+      └── CRITICAL = 0
+      │
+      ▼
+Security Gate PASSED
+      │
+      ▼
+Application Health Check
+      │
+      ▼
+Application Available
+```
+
+This demonstrates that the container passed both a security validation and an application runtime validation before progressing further through the pipeline.
+
+---
+
+### 9.9.19 Final Jenkins Pipeline Result
+
+The successful Trivy security-gate execution was followed by successful completion of the Jenkins pipeline.
+
+The following screenshot provides final evidence of the successful Jenkins pipeline execution.
+
+![Jenkins Trivy Security Quality Gate Success](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/59-jenkins-trivy-quality-gate-success.png)
+
+
+The Jenkins console concluded with:
+
+```text
+Pipeline execution completed.
+```
+
+and:
 
 ```text
 Finished: SUCCESS
 ```
 
-This is important because the current Trivy configuration reports vulnerabilities without failing the Jenkins build.
-
-The current behavior can therefore be represented as:
-
+The complete validated flow was:
 
 ```text
 Docker Build
       │
       ▼
-Trivy Container Scan
-      │
-      ├── Vulnerabilities Detected
-      │
-      └── Report Generated
+Docker Image
       │
       ▼
-Pipeline Continues
+Trivy Container Scan
+      │
+      ├── Alpine OS Package Scan
+      ├── Node.js Application Dependency Analysis
+      ├── HIGH Severity Check
+      └── CRITICAL Severity Check
+      │
+      ▼
+HIGH = 0
+CRITICAL = 0
+      │
+      ▼
+Trivy Exit Code = 0
+      │
+      ▼
+Security Gate PASSED
+      │
+      ▼
+Application Health Check
+      │
+      ▼
+Pipeline Execution Completed
       │
       ▼
 Finished: SUCCESS
 ```
 
-> Important: A SUCCESS Jenkins result does not mean that the container contains zero vulnerabilities. It means that the Trivy scan executed successfully and, under the current pipeline configuration, detected vulnerabilities without causing the Jenkins build to fail.
+This provides end-to-end evidence that the Trivy quality gate successfully integrated security enforcement into the Jenkins pipeline.
 
 ---
 
-### 9.9.11 Trivy Scan Security Interpretation
+### 9.9.20 Trivy Quality Gate Behavior
 
-The Trivy results demonstrate an important distinction between the different security controls implemented in the pipeline.
+The current Trivy implementation provides two possible pipeline outcomes.
 
-| Security Control | Primary Focus |
-|------------------|---------------|
-| **SonarCloud SAST** | Application source code |
-| **Snyk SCA** | Third-party application dependencies |
-| **Trivy Container Scan** | Final container image and packaged components |
+#### Scenario 1 — Security Gate Passes
 
-The security workflow can therefore be represented as:
+If no HIGH or CRITICAL vulnerabilities are detected:
+
+```text
+Trivy Scan
+      │
+      ▼
+HIGH = 0
+CRITICAL = 0
+      │
+      ▼
+Exit Code = 0
+      │
+      ▼
+Security Gate PASSED
+      │
+      ▼
+Pipeline Continues
+```
+
+This is the successful path demonstrated by the Jenkins validation screenshots.
+
+#### Scenario 2 — Security Gate Fails
+
+If one or more HIGH or CRITICAL vulnerabilities are detected:
+
+```text
+Trivy Scan
+      │
+      ▼
+HIGH > 0
+OR
+CRITICAL > 0
+      │
+      ▼
+Exit Code = 1
+      │
+      ▼
+Jenkins sh Step Fails
+      │
+      ▼
+Trivy Security Gate FAILED
+      │
+      ▼
+Pipeline Stops
+```
+
+This behavior is enforced by:
+
+```text
+--severity HIGH,CRITICAL
+```
+
+and:
+
+```text
+--exit-code 1
+```
+
+Therefore, the Trivy stage now functions as an actual automated security quality gate rather than merely generating a vulnerability report.
+
+---
+
+### 9.9.21 Why the Trivy Quality Gate Is Important
+
+The Trivy quality gate prevents a container image containing HIGH or CRITICAL vulnerabilities from automatically progressing through the CI/CD pipeline.
+
+The security architecture can therefore be represented as:
 
 ```text
 Application Source Code
-        │
-        ▼
+         │
+         ▼
 SonarCloud SAST
-        │
-        ▼
-Quality Gate
-        │
-        ▼
+         │
+         ▼
+SAST Quality Gate
+         │
+         ▼
 Snyk SCA
-        │
-        ▼
+         │
+         ▼
 Docker Image Build
-        │
-        ▼
-Trivy Container Scan
-        │
-        ▼
+         │
+         ▼
+Trivy Container Security Gate
+         │
+         ├── HIGH/CRITICAL → BLOCK
+         │
+         └── CLEAN → CONTINUE
+         │
+         ▼
+Application Health Check
+         │
+         ▼
 Amazon ECR
+         │
+         ▼
+Amazon EKS
 ```
 
-Each security control operates at a different layer of the software delivery lifecycle.
+This provides defense-in-depth across multiple layers of the software supply chain.
 
-This layered approach is a fundamental principle of DevSecOps because vulnerabilities can be introduced or exposed at different stages of the software supply chain.
+| **Security Control**            | **Primary Focus**                  | **Enforcement**                  |
+|---------------------------------|-------------------------------------|-----------------------------------|
+| **SonarCloud SAST**             | Application source code             | Quality Gate                      |
+| **Snyk SCA**                    | Third-party dependencies            | Vulnerability Analysis            |
+| **Trivy Container Scan**        | Final container image               | **HIGH/CRITICAL Security Gate**   |
+| **Application Health Check**    | Runtime application availability    | Health Validation                 |
+
+Each tool therefore addresses a different part of the application delivery lifecycle.
 
 ---
 
-### 9.9.12 Current Trivy Configuration
 
-The current Jenkinsfile configuration is:
+### 9.9.22 Trivy Quality Gate Validation
 
-```bash
-stage('Trivy Container Scan') {
-    steps {
-        sh 'trivy image node-monitoring-app:${BUILD_NUMBER}'
-    }
-}
-```
+The Trivy quality gate was validated through actual Jenkins Pipeline execution.
 
-The current configuration performs a standard Trivy image scan and displays the results in the Jenkins console.
+| **Validation Item**                                  | **Status**       |
+|------------------------------------------------------|-------------------|
+| **Trivy installed on Jenkins host**                  | ✅                |
+| **Docker available on Jenkins host**                 | ✅                |
+| **Docker image generated**                           | ✅                |
+| **Initial Trivy container scan implemented**         | ✅                |
+| **Initial vulnerability results captured**           | ✅                |
+| **HIGH severity findings identified during initial scan** | **15**        |
+| **CRITICAL severity findings identified during initial scan** | **2**    |
+| **Trivy quality-gate stage configured**              | ✅                |
+| **HIGH severity filtering enabled**                  | ✅                |
+| **CRITICAL severity filtering enabled**              | ✅                |
+| **`--exit-code 1` configured**                       | ✅                |
+| **Alpine OS layer scanned**                          | ✅                |
+| **Node.js application dependencies analyzed**        | ✅                |
+| **Validated HIGH vulnerabilities**                   | **0**             |
+| **Validated CRITICAL vulnerabilities**               | **0**             |
+| **Trivy security gate passed**                       | **✅**            |
+| **Pipeline continued after Trivy**                  | **✅**            |
+| **Application health check executed**                | **✅**            |
+| **Jenkins Pipeline result**                          | **✅ SUCCESS**    |
+| **Dockerfile Node.js runtime upgraded**              | **Node.js 24** |
+| **Multi-stage Docker build implemented**             | ✅             |
+| **Production dependencies only**                    | ✅             |
+| **`--ignore-scripts` enabled**                       | ✅             |
+| **npm removed from production image**               | ✅             |
+| **npx removed from production image**                | ✅             |
+| **Production image runs as non-root user**           | ✅             |
+| **Jenkins NodeJS tool updated to `node24`**          | **24.19.0**    |
+| **Production image rebuilt after remediation**       | ✅             |
 
-The pipeline does not currently use a severity threshold or --exit-code configuration to fail the build when vulnerabilities are detected.
+The screenshots therefore document the complete evolution from vulnerability visibility to automated security enforcement.
 
-Consequently:
+---
+
+### 9.9.23 Complete Trivy Evidence Chain
+
+The eight screenshots provide a continuous evidence chain for the Trivy implementation.
+
+| **Screenshot** | **Evidence Provided** |
+|----------------|------------------------|
+| **52-jenkinsfile-trivy-container-scan-stage.png** | Initial Trivy container-scan stage in the Jenkinsfile |
+| **53-jenkins-pipeline-trivy-container-scan-stage.png** | Initial Trivy scan execution in Jenkins |
+| **54-trivy-container-vulnerability-results.png** | Initial vulnerability findings: 15 HIGH and 2 CRITICAL |
+| **55-jenkinsfile-trivy-quality-gate.png** | Updated Trivy HIGH/CRITICAL quality-gate configuration |
+| **56-jenkins-pipeline-trivy-quality-gate-stage.png** | Jenkins execution of the enforced Trivy quality gate |
+| **57-trivy-quality-gate-results.png** | Security gate passed with no HIGH/CRITICAL vulnerabilities detected |
+| **58-jenkins-trivy-gate-passed.png** | Pipeline continuation into Application Health Check |
+| **59-jenkins-trivy-quality-gate-success.png** | Final successful Jenkins pipeline execution |
+| **60-hardened-production-dockerfile.png** | hardened-production-dockerfile |
+
+The evidence chain can therefore be summarized as:
 
 ```text
-Vulnerabilities Detected
-        │
-        ▼
-Trivy Report
-        │
-        ▼
-Jenkins Pipeline
-        │
-        ▼
-SUCCESS
+52 Initial Trivy Configuration
+         │
+         ▼
+53 Initial Trivy Execution
+         │
+         ▼
+54 Vulnerability Findings
+         │
+         ├── 15 HIGH
+         └── 2 CRITICAL
+         │
+         ▼
+60 Hardened Production Dockerfile
+         │
+         ├── Updated Node.js Runtime
+         ├── Multi-Stage Build
+         ├── Production Dependencies Only
+         ├── npm Removed
+         ├── npx Removed
+         ├── Non-Root User
+         └── Minimal Runtime Image
+         │
+         ▼
+Security Policy Improvement
+         │
+         ▼
+55 Trivy Quality Gate Configuration
+         │
+         ▼
+56 Quality Gate Execution
+         │
+         ▼
+57 Gate PASSED
+         │
+         ▼
+58 Application Health Check
+         │
+         ▼
+59 Pipeline SUCCESS
 ```
 
-This configuration is appropriate for the current implementation milestone because it establishes vulnerability visibility before introducing stricter security-gate enforcement.
-
 ---
 
-### 9.9.13 Trivy Container Scan Validation
+### 9.9.24 Trivy Container Security Position
 
-The Trivy Container Security Scan milestone was validated through an actual Jenkins Pipeline execution.
-
-The following validation criteria were satisfied:
-
-| Validation Item | Status |
-|-----------------|:------:|
-| Trivy installed on Jenkins host | ✅ |
-| Docker available on Jenkins host | ✅ |
-| Docker image available for scanning | ✅ |
-| Trivy stage added to Jenkinsfile | ✅ |
-| Trivy scanned the generated image | ✅ |
-| Alpine OS layer detected | ✅ |
-| Node.js package layer detected | ✅ |
-| Vulnerability report generated | ✅ |
-| HIGH vulnerabilities detected | ⚠️ |
-| CRITICAL vulnerability detected | ⚠️ |
-| Jenkins Pipeline completed successfully | **✅ SUCCESS** |
-
-The presence of vulnerabilities is an expected security finding from the scan and should not be interpreted as a failure of the Trivy integration itself.
-
-The Trivy integration successfully performed its intended function: detecting and reporting vulnerabilities in the container image.
-
----
-
-### 9.9.14 Trivy Container Scan Evidence Summary
-
-The Trivy Container Security Scanning milestone is supported by the following implementation and execution evidence:
-
-| Evidence | Screenshot | Status |
-|----------|------------|:------:|
-| **Jenkinsfile Trivy Container Scan Stage** | `52-jenkinsfile-trivy-container-scan-stage.png` | ✅ |
-| **Jenkins Pipeline Trivy Container Scan Stage** | `53-jenkins-pipeline-trivy-container-scan-stage.png` | ✅ |
-| **Trivy Container Vulnerability Results** | `54-trivy-container-vulnerability-results.png` | ✅ |
-
-
-The evidence establishes that:
-
-- Trivy was configured in the Jenkinsfile.
-- Jenkins executed the Trivy stage.
-- Trivy successfully scanned the Docker image.
-- Vulnerabilities were identified and reported.
-- The Jenkins pipeline completed successfully.
-
----
-
-### 9.9.15 Trivy Container Security Position
-
-The addition of Trivy introduces container-level vulnerability visibility into the Phase 8 DevSecOps pipeline.
+The addition of Trivy with HIGH/CRITICAL exit-code enforcement significantly strengthens the Phase 8 DevSecOps pipeline.
 
 The security progression is now:
 
 ```text
 Source Code
-    │
-    ▼
+      │
+      ▼
 SonarCloud SAST
-    │
-    ▼
-Quality Gate
-    │
-    ▼
-Application Dependencies
-    │
-    ▼
+      │
+      ▼
+SAST Quality Gate
+      │
+      ▼
+Third-Party Dependencies
+      │
+      ▼
 Snyk SCA
-    │
-    ▼
+      │
+      ▼
 Docker Image
-    │
-    ▼
-Trivy Container Security Scan
-    │
-    ▼
-Container Registry
-    │
-    ▼
+      │
+      ▼
+Trivy Container Security Gate
+      │
+      ├── HIGH/CRITICAL → BLOCK
+      │
+      └── CLEAN → CONTINUE
+      │
+      ▼
+Application Health Check
+      │
+      ▼
 Amazon ECR
+      │
+      ▼
+Amazon EKS
 ```
 
-The pipeline now validates security across multiple layers:
-
-┌─────────────────────────────────────────────┐
-│             APPLICATION SOURCE CODE         │
-│                                             │
-│               SonarCloud SAST               │
-└──────────────────────┬──────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────┐
-│           THIRD-PARTY DEPENDENCIES          │
-│                                             │
-│                   Snyk SCA                  │
-└──────────────────────┬──────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────┐
-│               CONTAINER IMAGE               │
-│                                             │
-│          Trivy Container Security Scan      │
-└──────────────────────┬──────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────┐
-│              CONTAINER REGISTRY             │
-│                                             │
-│                  Amazon ECR                 │
-└─────────────────────────────────────────────┘
-
-This represents a significant progression from application-level security scanning toward full software supply-chain security validation.
-
----
-
-### 9.9.16 Future Trivy Security Gate Enhancement
-
-The current implementation focuses on vulnerability detection and reporting.
-
-A future enhancement can introduce stricter vulnerability enforcement using Trivy's severity filtering and exit-code functionality.
-
-For example:
-
-```bash
-trivy image \
-  --severity HIGH,CRITICAL \
-  --exit-code 1 \
-  node-monitoring-app:${BUILD_NUMBER}
-```
-
-With such a configuration:
+The resulting DevSecOps security model is:
 
 ```text
-Trivy Scan
-    │
-    ├── No HIGH/CRITICAL vulnerabilities
-    │          │
-    │          ▼
-    │      Pipeline Continues
-    │
-    └── HIGH/CRITICAL vulnerabilities
-               │
-               ▼
-          Pipeline Fails
+┌─────────────────────────────────────────────┐
+│          APPLICATION SOURCE CODE            │
+│                                             │
+│             SonarCloud SAST                 │
+│                                             │
+│              Quality Gate                   │
+└──────────────────────┬──────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────┐
+│         THIRD-PARTY DEPENDENCIES            │
+│                                             │
+│                Snyk SCA                     │
+└──────────────────────┬──────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────┐
+│              CONTAINER IMAGE                │
+│                                             │
+│       Trivy HIGH/CRITICAL Security Gate     │
+└──────────────────────┬──────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────┐
+│           APPLICATION VALIDATION            │
+│                                             │
+│           Container Health Check            │
+└──────────────────────┬──────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────┐
+│             CONTAINER REGISTRY              │
+│                                             │
+│                 Amazon ECR                  │
+└─────────────────────────────────────────────┘
+
+This represents a progression from:
+
+```text
+Source-Code Security
+         │
+         ▼
+Dependency Security
+         │
+         ▼
+Container Security
+         │
+         ▼
+Runtime Validation
+         │
+         ▼
+Container Registry
 ```
 
-This would transform Trivy from a vulnerability-reporting mechanism into an automated container security gate.
+The pipeline therefore implements multiple security controls rather than relying on a single scanning mechanism.
 
 ---
 
-### 9.9.17 Current Phase 8 Pipeline Status
+### 9.9.25 Trivy Container Security Gate Result
 
-Following the successful implementation of Trivy Container Security Scanning, the Phase 8 DevSecOps Pipeline status is:
+The Trivy Container Security Gate was successfully implemented and validated through Jenkins.
 
-| Pipeline Stage                 | Status         |
-| ------------------------------ | -------------- |
-| **Jenkinsfile Configuration**  | ✅              |
-| **Tool Initialization**        | ✅              |
-| **Checkout Source Code**       | ✅              |
-| **Install Dependencies**       | ✅              |
-| **Unit Testing**               | ✅              |
-| **SonarCloud Analysis**        | ✅              |
-| **SonarCloud Quality Gate**    | **✅ PASSED**   |
-| **Snyk SCA**                   | **✅ PASSED**   |
-| **Docker Build**               | **✅ PASSED**   |
-| **Trivy Container Scan**       | **✅ PASSED**   |
-| **Amazon ECR Push**            | ⏳              |
-| **Amazon EKS Deployment**      | ⏳              |
-| **Rollout Verification**       | ⏳              |
-| **OWASP ZAP DAST**             | ⏳              |
+The implementation evolved from an initial vulnerability scan that identified:
 
-The current successful pipeline progression is:
+```text
+HIGH:     15
+CRITICAL: 2
+```
+
+to an enforced security policy using:
+
+```text
+trivy image \
+    --severity HIGH,CRITICAL \
+    --exit-code 1 \
+    node-monitoring-app:${BUILD_NUMBER}
+```
+
+The validated clean-image result was:
+
+| **Severity** | **Result** |
+|--------------|------------|
+| **HIGH**     | **0**       |
+| **CRITICAL** | **0**       |
+
+Therefore:
+
+```text
+Trivy Security Gate: PASSED
+```
+
+The successful security decision allowed Jenkins to continue to the Application Health Check stage.
+
+The application subsequently returned:
+
+```text
+ok
+```
+
+and the Jenkins pipeline completed with:
+
+```text
+Finished: SUCCESS
+```
+
+The final security-gate result can therefore be summarized as:
+
+> Trivy Container Security Gate: ✅ PASSED
+
+> HIGH vulnerabilities: 0
+
+> CRITICAL vulnerabilities: 0
+
+> The configured Trivy gate now blocks the pipeline when HIGH or CRITICAL vulnerabilities are detected.
+
+> The initial vulnerability scan demonstrated why an enforced security threshold was necessary, while the subsequent quality-gate execution demonstrated the clean-image path through which the container was allowed to continue.
+
+
+---
+
+### 9.9.26 Updated Phase 8 Pipeline Status
+
+Following the implementation of the Trivy HIGH/CRITICAL security gate, the current Phase 8 pipeline progression is:
 
 ```text
 GitHub
@@ -6239,79 +7186,89 @@ GitHub
    ▼
 Jenkins
    │
-   ├── Checkout Source Code       ✅
+   ├── Checkout Source Code              ✅
    │
-   ├── Install Dependencies       ✅
+   ├── Install Dependencies              ✅
    │
-   ├── Unit Testing               ✅
+   ├── Dependency Inspection             ✅
+   │
+   ├── Unit Testing                      ✅
    │      └── Jest: 3 Tests Passed
    │
-   ├── SonarCloud SAST            ✅
+   ├── SonarCloud SAST                   ✅
    │      └── Quality Gate: PASSED
    │
-   ├── Snyk SCA                   ✅
+   ├── Snyk SCA                          ✅
    │      ├── Dependency Analysis
-   │      ├── Vulnerability Report
+   │      ├── Vulnerability Detection
    │      └── Project Monitoring
    │
-   ├── Docker Build               ✅
-   │      └── node-monitoring-app:1
+   ├── Docker Build                      ✅
+   │      └── node-monitoring-app:${BUILD_NUMBER}
    │
-   ├── Trivy Container Scan       ✅
-   │      ├── OS Package Scanning
-   │      ├── Node.js Package Scanning
-   │      └── Vulnerability Detection
+   ├── Verify Production Image           ✅
+   │      ├── Node.js Version
+   │      ├── npm Removed
+   │      └── npx Removed
    │
-   ├── Amazon ECR Push            ⏳
+   ├── Trivy Container Security Scan     ✅
+   │      ├── Alpine OS Package Scanning
+   │      ├── Node.js Application Dependency Analysis
+   │      ├── HIGH Severity Check
+   │      ├── CRITICAL Severity Check
+   │      └── HIGH/CRITICAL Security Gate
+   │             ├── Findings → Pipeline FAILS
+   │             └── No Findings → Pipeline CONTINUES
    │
-   ├── Amazon EKS Deployment      ⏳
+   ├── Application Health Check           ✅
+   │      └── /health → ok
    │
-   ├── Rollout Verification       ⏳
+   ├── Amazon ECR Push                    ⏳
    │
-   └── OWASP ZAP DAST             ⏳
+   ├── Amazon EKS Deployment              ⏳
+   │
+   ├── Rollout Verification               ⏳
+   │
+   └── OWASP ZAP DAST                     ⏳
 ```
+
+### 9.9.27 Next Pipeline Stage
+
+The Trivy Container Security Gate has now been successfully implemented and validated.
+
+The current security progression is:
+
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Unit Testing                     ✅
+   │
+   ├── SonarCloud SAST                  ✅
+   │      └── Quality Gate: PASSED
+   │
+   ├── Snyk SCA                         ✅
+   │
+   ├── Docker Build                     ✅
+   │
+   ├── Trivy Container Security Scan    ✅
+   │      ├── Alpine OS Package Scanning
+   │      ├── Node.js Application Dependency Analysis
+   │      ├── HIGH Severity Check
+   │      ├── CRITICAL Severity Check
+   │      └── HIGH/CRITICAL Security Gate
+   │             ├── Findings → Pipeline FAILS
+   │             └── No Findings → Pipeline CONTINUES
+   │
+   ├── Application Health Check          ✅
+   │
+   └── Amazon ECR                       ⏳
+```
+
+> Next Step: The next stage of the Phase 8 DevSecOps Pipeline is Section 9.10 — Amazon ECR Container Image Push.
+
+The Docker image that has successfully passed the application, dependency, SAST, container-security, and health-validation stages can now be authenticated against Amazon ECR, tagged with the appropriate ECR repository URI, and pushed to the container registry.
 
 ---
-
-### 9.9.18 Trivy Container Security Scan Result
-
-The Trivy Container Security Scanning milestone was successfully implemented and validated through an actual Jenkins Pipeline execution.
-
-The generated Docker image:
-
-```text
-node-monitoring-app:1
-```
-
-was successfully scanned by Trivy.
-
-The scan detected:
-
-| Severity | Count |
-|----------|------:|
-| **UNKNOWN** | 0 |
-| **LOW** | 2 |
-| **MEDIUM** | 7 |
-| **HIGH** | 20 |
-| **CRITICAL** | 1 |
-| **Total** | **30** |
-
-The Jenkins pipeline completed with:
-
-```text
-Finished: SUCCESS
-```
-
-> **Trivy Container Scan Status:** SUCCESS
-
-> The Trivy integration successfully scans the generated Docker image and provides visibility into vulnerabilities contained within the final container artifact.
-
-> The current configuration reports vulnerabilities without failing the pipeline. Stricter HIGH/CRITICAL vulnerability enforcement can be introduced as a future security-gate enhancement.
-
-> **Next Step:** The next stage of the Phase 8 DevSecOps Pipeline is Amazon Elastic Container Registry (ECR) Image Push.
-
-> The Docker image that has successfully passed the current pipeline stages can now be authenticated against Amazon ECR, tagged with the appropriate ECR repository URI, and pushed to the container registry.
-
-> The next section will therefore be:
-
-> **Section 9.10 — Amazon ECR Container Image Push**

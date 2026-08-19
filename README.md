@@ -1,5 +1,7 @@
 # End-to-End Node.js CI/CD DevSecOps Pipeline on AWS
 
+> A comprehensive portfolio project demonstrating modern DevOps and DevSecOps practices using Node.js, Docker, Terraform, Jenkins, AWS, Kubernetes, SonarCloud, Snyk, Trivy, OWASP ZAP, Prometheus, and Grafana.
+
 ![AWS](https://img.shields.io/badge/AWS-Cloud-orange?logo=amazonaws)
 ![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?logo=terraform)
 ![Docker](https://img.shields.io/badge/Docker-Containerization-2496ED?logo=docker)
@@ -34,6 +36,7 @@
 18. [Current Status](#current-status)
 19. [Author](#author)
 
+
 ---
 
 
@@ -41,11 +44,22 @@
 
 This repository demonstrates the design, implementation, and deployment of a complete end-to-end DevSecOps pipeline for a containerized Node.js monitoring application on Amazon Web Services (AWS).
 
-The project combines modern DevOps and DevSecOps practices by integrating Infrastructure as Code (Terraform), containerization (Docker), continuous integration and continuous deployment (Jenkins), automated security scanning (SonarCloud, Snyk, Trivy, and OWASP ZAP), container orchestration (Amazon Elastic Kubernetes Service), and application monitoring (Prometheus and Grafana).
+The project combines modern DevOps and DevSecOps practices by integrating:
 
-Rather than focusing on a single technology, this project demonstrates how industry-standard DevOps and DevSecOps tools integrate to automate the complete software delivery lifecycle—from application development and infrastructure provisioning to deployment, security validation, and monitoring.
+- Infrastructure as Code with Terraform
+- Containerization with Docker
+- Continuous Integration and Continuous Deployment with Jenkins
+- Static Application Security Testing (SAST) with SonarCloud
+- Software Composition Analysis (SCA) with Snyk
+- Container vulnerability scanning and quality gating with Trivy
+- Container image publishing with Amazon Elastic Container Registry (ECR)
+- Container orchestration with Amazon Elastic Kubernetes Service (EKS)
+- Dynamic Application Security Testing (DAST) with OWASP ZAP
+- Application and infrastructure monitoring with Prometheus and Grafana
 
-The repository is being developed incrementally using a phased implementation approach. Each phase is independently designed, implemented, tested, and documented to demonstrate both the engineering process and the practical application of modern cloud-native DevOps and DevSecOps practices.
+Rather than focusing on a single technology, this project demonstrates how industry-standard DevOps and DevSecOps tools integrate to automate the software delivery lifecycle—from application development and infrastructure provisioning through automated testing, security validation, containerization, image promotion, deployment, and monitoring.
+
+The repository is being developed incrementally using a phased implementation approach. Each phase is independently designed, implemented, tested, validated, and documented before progressing to the next stage.
 
 
 ---
@@ -55,18 +69,24 @@ The repository is being developed incrementally using a phased implementation ap
 - Infrastructure provisioned using Terraform (IaC)
 - Dedicated Jenkins automation server on Amazon EC2
 - Dockerized Node.js monitoring application
-- Amazon Elastic Kubernetes Service (EKS) deployment platform
 - Amazon Elastic Container Registry (ECR)
+- Amazon Elastic Kubernetes Service (EKS)
 - Automated unit testing with Jest and Supertest
-- Jenkins CI/CD pipeline with automated source-code checkout and dependency installation
+- Jenkins CI/CD pipeline
+- Automated source-code checkout
+- Automated dependency installation
 - SonarCloud Static Application Security Testing (SAST)
 - SonarCloud Quality Gate enforcement
 - Snyk Software Composition Analysis (SCA)
 - Dependency vulnerability analysis with Snyk
-- Automated Docker image build within the Jenkins pipeline
-- Automated Docker image vulnerability scanning with Trivy
-- OWASP ZAP Dynamic Application Security Testing (DAST) *(upcoming)*
-- Monitoring with Prometheus and Grafana *(upcoming)*
+- Automated Docker image build
+- Trivy container vulnerability scanning
+- Trivy HIGH/CRITICAL vulnerability quality gate
+- Security gate enforcement before Amazon ECR image publishing
+- Amazon ECR image promotion after successful security validation
+- OWASP ZAP Dynamic Application Security Testing (DAST) after application deployment
+- Prometheus application and infrastructure monitoring
+- Grafana visualization and dashboards
 
 ---
 
@@ -78,15 +98,15 @@ The project is being developed incrementally, with each phase documented in deta
 
 - ✔ Node.js Monitoring Application
 - ✔ Application Refactoring
-- ✔ Unit Testing (Jest & Supertest)
+- ✔ Unit Testing with Jest and Supertest
 - ✔ Docker Containerization
 - ✔ AWS Infrastructure Provisioned with Terraform
 - ✔ Amazon EKS Cluster
 - ✔ Amazon ECR Repository
 - ✔ Jenkins EC2 Infrastructure
-- ✔ IAM Roles & Instance Profiles
+- ✔ IAM Roles and Instance Profiles
 - ✔ Elastic IP Configuration
-- ✔ Jenkins Installation & Configuration
+- ✔ Jenkins Installation and Configuration
 - ✔ Docker Installation on Jenkins Server
 - ✔ AWS CLI Installation
 - ✔ kubectl Installation
@@ -97,7 +117,7 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Jenkinsfile Configuration
 - ✔ Jenkins Pipeline Agent Initialization
 - ✔ JDK 21 Tool Resolution
-- ✔ Node.js 18.20.8 Tool Resolution
+- ✔ Node.js Tool Resolution
 - ✔ Explicit Source Code Checkout
 - ✔ Default Jenkins SCM Checkout Disabled
 - ✔ Install Dependencies Stage
@@ -106,7 +126,6 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Jest Test Suite Execution
 - ✔ 3 Automated Tests Passed
 - ✔ Successful Unit Testing Pipeline Execution
-- ✔ Successful Initial Pipeline Execution
 - ✔ SonarCloud Project Configuration
 - ✔ Jenkins SonarCloud Server Configuration
 - ✔ Jenkins SonarScanner Configuration
@@ -115,12 +134,10 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Jenkins-Managed SonarScanner Integration
 - ✔ Successful SonarCloud Source-Code Analysis
 - ✔ Successful SonarCloud Analysis Report Upload
-- ✔ SonarCloud Quality Gate Wait Configuration
-- ✔ Successful SonarCloud Quality Gate Evaluation
+- ✔ SonarCloud Quality Gate Configuration
+- ✔ SonarCloud Quality Gate Evaluation
 - ✔ SonarCloud Quality Gate Passed
 - ✔ SonarCloud Project Dashboard Verification
-- ✔ SonarCloud Project Analysis Results Verification
-- ✔ Successful SonarCloud Pipeline Execution
 - ✔ Snyk Security Plugin Installation
 - ✔ Snyk Authentication Credential Configuration
 - ✔ Snyk Tool Configuration
@@ -136,19 +153,23 @@ The project is being developed incrementally, with each phase documented in deta
 - ✔ Jenkinsfile Trivy Container Scan Integration
 - ✔ Jenkins Pipeline Trivy Container Scan Execution
 - ✔ Trivy Docker Image Vulnerability Analysis
-- ✔ Trivy Container Vulnerability Results Verification
+- ✔ Trivy HIGH/CRITICAL Security Quality Gate
+- ✔ Trivy Quality Gate Enforcement Before Amazon ECR Push
+- ✔ Trivy Vulnerability Results Verification
 
 ### 🚧 In Progress
 
-- Jenkins CI/CD & DevSecOps Pipeline
-- Incremental integration of remaining registry, deployment, runtime security, and monitoring stages
+- Jenkins CI/CD and DevSecOps Pipeline
+- Amazon ECR image publishing
+- Amazon EKS application deployment
+- Kubernetes rollout verification
+- OWASP ZAP Dynamic Application Security Testing
 
 ### 📌 Next Pipeline Milestone
 
-- Amazon ECR image publishing
-- Amazon EKS deployment
-- Kubernetes rollout verification
-- OWASP ZAP Dynamic Application Security Testing (DAST)
+#### Amazon ECR image publishing
+
+The validated Docker image will be promoted to Amazon ECR only after successfully passing the Trivy container security quality gate.
 
 ---
 
@@ -156,18 +177,20 @@ The project is being developed incrementally, with each phase documented in deta
 
 The project is being implemented in incremental phases, with each milestone building toward a complete end-to-end DevSecOps platform.
 
-| Phase | Status |
-|--------|:------:|
-| Project Initialization | ✅ |
-| Application Refactoring | ✅ |
-| Unit Testing | ✅ |
-| Docker Containerization | ✅ |
-| Terraform Infrastructure | ✅ |
-| Jenkins Server Setup | ✅ |
-| Jenkins Installation & Configuration | ✅ |
-| Jenkins CI/CD & DevSecOps Pipeline | 🚧 |
-| Amazon EKS Deployment | ⏳ |
-| Prometheus & Grafana | ⏳ |
+| **Phase**                           | **Status** |
+|-------------------------------------|------------|
+| Project Initialization               | ✅         |
+| Application Refactoring              | ✅         |
+| Unit Testing                         | ✅         |
+| Docker Containerization              | ✅         |
+| Terraform Infrastructure             | ✅         |
+| Jenkins Server Setup                 | ✅         |
+| Jenkins Installation & Configuration | ✅         |
+| Jenkins CI/CD & DevSecOps Pipeline   | 🚧         |
+| Amazon ECR Image Publishing           | ⏳         |
+| Amazon EKS Deployment                 | ⏳         |
+| OWASP ZAP DAST                        | ⏳         |
+| Prometheus & Grafana                  | ⏳         |
 
 **Legend**
 
@@ -181,38 +204,86 @@ The project is being implemented in incremental phases, with each milestone buil
 
 The objectives of this project are to:
 
-- Develop a production-ready Node.js monitoring application.
+- DDevelop a production-oriented Node.js monitoring application.
 - Containerize the application using Docker.
 - Provision AWS infrastructure using Terraform.
 - Build an automated Jenkins CI/CD pipeline.
-- Integrate DevSecOps security tools into the deployment workflow.
-- Deploy the application to Amazon Elastic Kubernetes Service (EKS).
-- Implement application monitoring using Prometheus and Grafana.
-- Demonstrate Infrastructure as Code (IaC), CI/CD, Kubernetes, and DevSecOps best practices.
+- Integrate security controls throughout the software delivery lifecycle.
+- Implement SAST using SonarCloud.
+- Implement SCA using Snyk.
+- Implement container image security scanning using Trivy.
+- Enforce a Trivy security quality gate before image promotion.
+- Publish validated container images to Amazon ECR.
+- Deploy the validated application to Amazon EKS.
+- Perform runtime/application security testing using OWASP ZAP.
+- Implement application and infrastructure monitoring using Prometheus and Grafana.
+- Demonstrate Infrastructure as Code, CI/CD, Kubernetes, and DevSecOps best practices.
 
 ---
 
 ## Solution Architecture (Planned)
 
-The final solution architecture will illustrate the complete DevSecOps workflow, demonstrating how application code progresses from source control through automated testing, security validation, containerization, deployment, and monitoring.
+The final solution architecture demonstrates the complete DevSecOps workflow, showing how application code progresses from source control through automated testing, security validation, containerization, image security gating, registry promotion, deployment, runtime security testing, and monitoring.
 
-The architecture will include the following components:
+#### Planned End-to-End Flow
 
-- GitHub
-- Jenkins
-- SonarCloud (SAST)
-- Snyk (SCA)
-- Docker
-- Trivy
-- Amazon Elastic Container Registry (ECR)
-- Amazon Elastic Kubernetes Service (EKS)
-- OWASP ZAP (DAST)
-- Prometheus
-- Grafana
-- AWS Infrastructure provisioned with Terraform
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout Source Code
+   │
+   ├── Install Dependencies
+   │
+   ├── Unit Testing
+   │      └── Jest / Supertest
+   │
+   ├── SonarCloud
+   │      ├── SAST Analysis
+   │      └── Quality Gate
+   │
+   ├── Snyk
+   │      └── SCA / Dependency Analysis
+   │
+   ├── Docker Build
+   │
+   ├── Trivy
+   │      ├── Container Vulnerability Scan
+   │      └── HIGH/CRITICAL Quality Gate
+   │
+   ├── Amazon ECR
+   │      └── Push Validated Image
+   │
+   ├── Amazon EKS
+   │      └── Application Deployment
+   │
+   ├── Kubernetes Rollout Verification
+   │
+   ├── OWASP ZAP
+   │      └── DAST
+   │
+   ├── Prometheus
+   │      └── Metrics Collection
+   │
+   └── Grafana
+          └── Monitoring Dashboards
+```
 
-> **Architecture Diagram:** A comprehensive architecture diagram illustrating the end-to-end DevSecOps workflow will be added after the CI/CD pipeline has been fully implemented.
+#### Security Control Strategy
 
+The pipeline applies security controls at different stages of the software delivery lifecycle:
+
+| **Security Layer**                 | **Tool**      | **Purpose** |
+|------------------------------------|---------------|-------------|
+| **Source Code Security**           | SonarCloud    | Static Application Security Testing (SAST) |
+| **Dependency Security**            | Snyk          | Software Composition Analysis (SCA) |
+| **Container Security**             | Trivy         | Docker image vulnerability scanning |
+| **Release Quality Gate**           | Trivy         | Prevent HIGH/CRITICAL container vulnerabilities from being promoted |
+| **Runtime/Application Security**   | OWASP ZAP     | Dynamic Application Security Testing (DAST) |
+
+> Important: Trivy and OWASP ZAP serve different security purposes. Trivy evaluates the container image before promotion, while OWASP ZAP performs dynamic application security testing against the deployed application.
 
 ---
 
@@ -238,7 +309,7 @@ The AWS infrastructure for this project has been fully provisioned using Terrafo
 ## Technology Stack
 
 | Layer | Technology |
-|---|---|
+| ----- | ---------- |
 | **Programming Language** | Node.js |
 | **Backend Framework** | Express.js |
 | **Monitoring Library** | Prometheus Client |
@@ -248,11 +319,12 @@ The AWS infrastructure for this project has been fully provisioned using Terrafo
 | **Cloud Provider** | Amazon Web Services (AWS) |
 | **Container Registry** | Amazon Elastic Container Registry (Amazon ECR) |
 | **Container Orchestration** | Amazon Elastic Kubernetes Service (Amazon EKS) |
-| **Continuous Integration** | Jenkins |
-| **Static Application Security Testing (SAST)** | SonarCloud |
-| **Dependency Scanning / Software Composition Analysis (SCA)** | Snyk |
+| **Continuous Integration / Deployment** | Jenkins |
+| **SAST** | SonarCloud |
+| **SCA / Dependency Scanning** | Snyk |
 | **Container Security** | Trivy |
-| **Dynamic Application Security Testing (DAST)** | OWASP ZAP *(Upcoming)* |
+| **Container Security Quality Gate** | Trivy HIGH/CRITICAL Gate |
+| **DAST** | OWASP ZAP *(Upcoming)* |
 | **Monitoring** | Prometheus *(Upcoming)* |
 | **Visualization** | Grafana *(Upcoming)* |
 | **Version Control** | Git |
@@ -269,8 +341,7 @@ The project consists of four major components:
 - Project documentation
 - Supporting screenshots
 
-As additional phases are completed, the project will continue to expand with Kubernetes manifests, Jenkins pipeline definitions, monitoring resources, and DevSecOps automation.
-
+As additional phases are completed, the repository will expand with Kubernetes manifests, Jenkins pipeline definitions, monitoring resources, and additional DevSecOps automation.
 ---
 
 ## Repository Structure
@@ -336,72 +407,107 @@ The implementation roadmap is illustrated below:
 
 ```text
 Application Development
-            │
-            ▼
+        │
+        ▼
 Application Refactoring
-            │
-            ▼
+        │
+        ▼
 Unit Testing
-            │
-            ▼
+        │
+        ▼
 Docker Containerization
-            │
-            ▼
+        │
+        ▼
 Terraform Infrastructure
-            │
-            ▼
+        │
+        ▼
 Jenkins Server Provisioning
-            │
-            ▼
+        │
+        ▼
 Jenkins Installation & Configuration
-            │
-            ▼
+        │
+        ▼
 Jenkins CI/CD Pipeline
-            │
-            ▼
-SonarCloud (SAST)
-            │
-            ▼
-Snyk (SCA)
-            │
-            ▼
-Docker Build
-            │
-            ▼
-Trivy Scan
-            │
-            ▼
-Amazon ECR
-            │
-            ▼
-Amazon EKS
-            │
-            ▼
-OWASP ZAP (DAST)
-            │
-            ▼
+        │
+        ▼
+SonarCloud SAST
+        │
+        ▼
+Snyk SCA
+        │
+        ▼
+Docker Image Build
+        │
+        ▼
+Trivy Container Scan
+        │
+        ▼
+Trivy Security Quality Gate
+        │
+        ├── FAIL ──► Stop Pipeline
+        │
+        ▼
+Amazon ECR Push
+        │
+        ▼
+Amazon EKS Deployment
+        │
+        ▼
+Kubernetes Rollout Verification
+        │
+        ▼
+OWASP ZAP DAST
+        │
+        ▼
 Prometheus
-            │
-            ▼
+        │
+        ▼
 Grafana
 ```
+
+### Security Gate Decision
+
+The Trivy stage acts as a release control point between Docker image creation and Amazon ECR promotion.
+
+```text
+Docker Image Build
+        │
+        ▼
+Trivy Container Scan
+        │
+        ▼
+HIGH/CRITICAL Vulnerability Evaluation
+        │
+        ├───────────────┐
+        │               │
+        ▼               ▼
+      PASS            FAIL
+        │               │
+        ▼               ▼
+Amazon ECR        Pipeline Stops
+    Push          Image Not Promoted
+```
+
+> This ensures that a Docker image does not proceed to the container registry when it violates the configured container-security quality policy.
+
 
 ### Implementation Phases
 
 | Phase | Objective |
-|--------|-----------|
+| ----- | --------- |
 | **Application Development** | Develop the Node.js monitoring application and establish the project foundation. |
-| **Application Refactoring** | Improve the application's structure, maintainability, and production readiness. |
-| **Unit Testing** | Validate application functionality through automated unit tests. |
-| **Docker Containerization** | Package the application into a portable and reproducible Docker container. |
-| **Terraform Infrastructure** | Provision AWS infrastructure using Infrastructure as Code (IaC). |
+| **Application Refactoring** | Improve application structure, maintainability, and production readiness. |
+| **Unit Testing** | Validate application functionality through automated testing. |
+| **Docker Containerization** | Package the application into a portable and reproducible container image. |
+| **Terraform Infrastructure** | Provision AWS infrastructure using Infrastructure as Code. |
 | **Jenkins Server Provisioning** | Deploy a dedicated Jenkins automation server on Amazon EC2. |
-| **Jenkins Installation & Configuration** | Configure Jenkins, required plugins, build tools, Docker, AWS CLI, and Kubernetes tooling. |
-| **CI/CD Pipeline** | Automate application build, testing, containerization, and deployment workflows. |
-| **DevSecOps Security Scanning** | Integrate SonarCloud, Snyk, Trivy, and OWASP ZAP to perform security validation throughout the software delivery lifecycle. |
-| **Amazon EKS Deployment** | Deploy the containerized application to an Amazon Elastic Kubernetes Service (EKS) cluster. |
-| **Prometheus Monitoring** | Collect infrastructure and application metrics for operational visibility. |
-| **Grafana Dashboards** | Visualize system health and performance using interactive monitoring dashboards. |
+| **Jenkins Installation & Configuration** | Configure Jenkins, Docker, AWS CLI, kubectl, Helm, Trivy, and required tools. |
+| **CI/CD Pipeline** | Automate application build, testing, security scanning, image creation, and deployment. |
+| **DevSecOps Security Scanning** | Integrate SonarCloud, Snyk, Trivy, and OWASP ZAP throughout the delivery lifecycle. |
+| **Amazon ECR Publishing** | Promote security-validated container images to Amazon ECR. |
+| **Amazon EKS Deployment** | Deploy validated container images to Amazon EKS. |
+| **Prometheus Monitoring** | Collect infrastructure and application metrics. |
+| **Grafana Dashboards** | Visualize system health and performance. |
 
 This phased implementation approach ensures that every component of the platform is independently validated before introducing the next layer of functionality. The result is a reproducible, secure, and production-oriented DevSecOps environment that follows Infrastructure as Code (IaC), Continuous Integration/Continuous Deployment (CI/CD), and cloud-native best practices.
 
@@ -438,50 +544,73 @@ The project follows a phased implementation strategy to ensure that each compone
 
 ### Latest Milestone
 
-The latest Phase 8 milestone is the successful implementation and validation of the **Trivy Container Security Scanning stage** within the Jenkins CI/CD and DevSecOps Pipeline.
+The latest Phase 8 milestone is the successful implementation and validation of the Trivy Container Security Scanning and Quality Gate within the Jenkins CI/CD and DevSecOps pipeline.
 
-Following the successful implementation of SonarCloud SAST, SonarCloud Quality Gate enforcement, Snyk Software Composition Analysis (SCA), and Docker Image Build, the pipeline has now been extended with automated container vulnerability scanning using **Trivy**.
+Following the successful implementation of:
 
-The Jenkins Pipeline successfully:
+- SonarCloud SAST
+- SonarCloud Quality Gate
+- Snyk Software Composition Analysis
+- Docker Image Build
 
-1. Initialized the configured Jenkins build environment.
-2. Checked out the application source code.
-3. Installed application dependencies.
-4. Executed the automated unit tests.
-5. Completed SonarCloud SAST analysis.
-6. Passed the SonarCloud Quality Gate.
-7. Executed Snyk Software Composition Analysis (SCA).
-8. Completed the Docker Image Build stage.
-9. Created the `node-monitoring-app:1` Docker image.
-10. Executed the Trivy Container Security Scan.
-11. Scanned the Docker image for known vulnerabilities.
-12. Generated and verified the Trivy vulnerability results.
+the pipeline has been extended with automated container vulnerability scanning using Trivy.
 
-The Trivy stage represents the transition from **application and dependency security validation** to **container image security validation**.
 
-### Trivy Security Scanning → Amazon ECR
+#### Trivy Security Gate
 
-The Docker image has now successfully passed through the container security scanning stage.
+The Trivy stage now performs two related functions:
 
-The next stage is **Amazon Elastic Container Registry (ECR) image publishing**, where the validated Docker image will be pushed to the configured ECR repository.
+1. Scans the Docker image for known vulnerabilities.
+2. Evaluates the scan against the configured HIGH/CRITICAL vulnerability quality gate.
 
-The sequence is therefore:
+The purpose of this gate is to prevent vulnerable container images from being promoted to Amazon ECR.
+
+#### Current Trivy Pipeline Sequence
 
 ```text
 Snyk SCA
-   │
-   ▼
-Docker Image Build       ✅
-   │
-   ▼
-Trivy Container Scan     ✅
-   │
-   ▼
-Amazon ECR Push          ⏳
-   │
-   ▼
-Amazon EKS Deployment    ⏳
+    │
+    ▼
+Docker Image Build
+    │
+    ▼
+Trivy Container Scan
+    │
+    ▼
+HIGH/CRITICAL Quality Gate
+    │
+    ├── PASS ──► Amazon ECR Push
+    │
+    └── FAIL ──► Pipeline Stops
 ```
+
+> This establishes Trivy as a container-image release gate, rather than simply a reporting mechanism.
+
+#### Security Control Position
+
+```text
+Source Code
+    │
+    ▼
+SonarCloud SAST
+    │
+    ▼
+Snyk SCA
+    │
+    ▼
+Docker Build
+    │
+    ▼
+Trivy Container Security
+    │
+    ▼
+HIGH/CRITICAL Quality Gate
+    │
+    ▼
+Amazon ECR
+```
+
+> Security principle: A container image should be promoted to the registry only after it has successfully passed the configured container-security quality gate.
 
 ---
 
@@ -489,47 +618,97 @@ Amazon EKS Deployment    ⏳
 
 The current Phase 8 Jenkins CI/CD and DevSecOps pipeline has successfully implemented and validated the following stages:
 
-- Source-code checkout
-- Dependency installation
-- Automated unit testing
-- SonarCloud Static Application Security Testing (SAST)
-- SonarCloud Quality Gate validation
-- Snyk Software Composition Analysis (SCA)
-- Docker image build and creation
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout Source Code              ✅
+   │
+   ├── Install Dependencies              ✅
+   │
+   ├── Dependency Inspection             ✅
+   │
+   ├── Unit Testing                      ✅
+   │      └── Jest: 3 Tests Passed
+   │
+   ├── SonarCloud SAST                   ✅
+   │      └── Quality Gate: PASSED
+   │
+   ├── Snyk SCA                          ✅
+   │      ├── Dependency Analysis
+   │      ├── Vulnerability Detection
+   │      └── Project Monitoring
+   │
+   ├── Docker Build                      ✅
+   │      └── node-monitoring-app:${BUILD_NUMBER}
+   │
+   ├── Verify Production Image           ✅
+   │      ├── Node.js Version
+   │      ├── npm Removed
+   │      └── npx Removed
+   │
+   ├── Trivy Container Security Scan     ✅
+   │      ├── Alpine OS Package Scanning
+   │      ├── Node.js Application Dependency Analysis
+   │      ├── HIGH Severity Check
+   │      ├── CRITICAL Severity Check
+   │      └── HIGH/CRITICAL Security Gate
+   │             ├── Findings → Pipeline FAILS
+   │             └── No Findings → Pipeline CONTINUES
+   │
+   ├── Application Health Check           ✅
+   │      └── /health → ok
+   │
+   ├── Amazon ECR Push                    ⏳
+   │
+   ├── Amazon EKS Deployment              ⏳
+   │
+   ├── Rollout Verification               ⏳
+   │
+   └── OWASP ZAP DAST                     ⏳
+```
 
-The pipeline has therefore progressed from **source-code validation and dependency security analysis to automated container image creation**. The next stage is **Trivy Container Security Scanning**, which will analyze the newly built Docker image for known vulnerabilities before it is pushed to Amazon Elastic Container Registry (ECR).
+The Jenkins pipeline has successfully implemented and validated Trivy Container Security Scanning and the HIGH/CRITICAL Security Quality Gate. The pipeline now performs automated vulnerability analysis of the Docker image and enforces a security gate before the image can proceed to Amazon Elastic Container Registry (ECR). This ensures that container images containing unacceptable HIGH or CRITICAL vulnerabilities are prevented from being promoted to the container registry.
 
 #### Phase 8 – Jenkins CI/CD & DevSecOps Pipeline Flow
 
 ```text
 Jenkins Pipeline
-      │
-      ├── Checkout Source Code        ✅
-      │
-      ├── Install Dependencies        ✅
-      │
-      ├── Unit Testing                ✅
-      │      └── Jest: 3 Tests Passed
-      │
-      ├── SonarCloud SAST             ✅
-      │      └── Quality Gate: PASSED
-      │
-      ├── Snyk SCA                    ✅
-      │      └── Dependency Vulnerability Analysis
-      │
-      ├── Docker Build                ✅
-      │      └── Docker Image Created
-      │
-      ├── Trivy Container Scan        ✅
-      │      └── Container Vulnerability Analysis
-      │
-      ├── Amazon ECR Push              ⏳
-      │
-      ├── Amazon EKS Deployment        ⏳
-      │
-      ├── Rollout Verification         ⏳
-      │
-      └── OWASP ZAP DAST              ⏳
+    │
+    ├── Checkout Source Code                  ✅
+    │
+    ├── Install Dependencies                  ✅
+    │
+    ├── Unit Testing                          ✅
+    │      └── Jest: 3 Tests Passed
+    │
+    ├── SonarCloud SAST                       ✅
+    │      └── Quality Gate: PASSED
+    │
+    ├── Snyk SCA                              ✅
+    │      └── Dependency Vulnerability Analysis
+    │
+    ├── Docker Build                          ✅
+    │      └── Docker Image Created
+    │
+    ├── Trivy Container Security Scan         ✅
+    │      ├── Alpine OS Package Scanning
+    │      ├── Node.js Application Dependency Analysis
+    │      ├── HIGH Severity Check
+    │      ├── CRITICAL Severity Check
+    │      └── HIGH/CRITICAL Security Gate
+    │             ├── Findings → Pipeline FAILS
+    │             └── No Findings → Pipeline CONTINUES
+    │
+    ├── Amazon ECR Push                       ⏳
+    │
+    ├── Amazon EKS Deployment                 ⏳
+    │
+    ├── Rollout Verification                  ⏳
+    │
+    └── OWASP ZAP DAST                        ⏳
 ```
 
 ---
@@ -537,31 +716,31 @@ Jenkins Pipeline
 ### Current Phase 8 Status
 
 | Pipeline Component | Status |
-|---|:---:|
+| ------------------ | ------ |
 | **Jenkinsfile Configuration** | ✅ |
 | **Tool Initialization** | ✅ |
 | **Checkout Source Code** | ✅ |
 | **Install Dependencies** | ✅ |
 | **Unit Testing** | ✅ |
-| **SonarCloud Analysis** | **✅ PASSED** |
-| **SonarCloud Quality Gate Evaluation** | **✅ PASSED** |
-| **Snyk SCA Integration** | **✅** |
-| **Snyk SCA Pipeline Execution** | **✅** |
-| **Snyk Dependency Vulnerability Analysis** | **✅** |
-| **Snyk Vulnerability Results Verification** | **✅** |
-| **Docker Build** | **✅ PASSED** |
-| **Docker Image Creation** | **✅** |
-| **Trivy Container Scan** | **✅ PASSED** |
-| **Trivy Container Vulnerability Analysis** | **✅** |
-| **Trivy Vulnerability Results Verification** | **✅** |
+| **SonarCloud Analysis** | ✅ PASSED |
+| **SonarCloud Quality Gate** | ✅ PASSED |
+| **Snyk SCA Integration** | ✅ |
+| **Snyk SCA Pipeline Execution** | ✅ |
+| **Snyk Dependency Vulnerability Analysis** | ✅ |
+| **Docker Build** | ✅ PASSED |
+| **Docker Image Creation** | ✅ |
+| **Trivy Container Scan** | ✅ |
+| **Trivy Container Vulnerability Analysis** | ✅ |
+| **Trivy HIGH/CRITICAL Quality Gate** | ✅ PASSED |
+| **Trivy Release Gate Enforcement** | ✅ |
 | **Amazon ECR Push** | ⏳ |
 | **Amazon EKS Deployment** | ⏳ |
 | **Rollout Verification** | ⏳ |
 | **OWASP ZAP DAST** | ⏳ |
 
-> **Latest Milestone:** The Jenkins Pipeline has successfully implemented and validated the **Trivy Container Security Scanning stage**, following the successful integration of SonarCloud SAST, Snyk SCA, and Docker Image Build.
+> **Latest Milestone:** The Jenkins pipeline has successfully implemented and validated the Trivy Container Security Scanning and Quality Gate.
 
-> **Next Milestone:** The next Phase 8 milestone is **Amazon ECR image publishing**, where the validated Docker image will be pushed to the container registry.
+> **Next Milestone:** The next Phase 8 milestone is Amazon ECR image publishing, where the security-validated Docker image will be pushed to the container registry.
 
 ---
 
@@ -578,7 +757,7 @@ Detailed documentation for each implementation phase is available in the `docs/`
 | `05-terraform-infrastructure.md` | AWS networking, EKS, ECR, and IAM provisioning |
 | `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform, including IAM roles, instance profile, networking, Elastic IP, Terraform validation, verification, and SSH connectivity |
 | `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy |
-| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, SonarCloud SAST integration, SonarCloud Quality Gate validation, Snyk Software Composition Analysis (SCA), Snyk plugin and credential configuration, dependency vulnerability analysis, Docker Image Build integration, Docker image creation, pipeline execution, security observations, validation, and documented implementation evidence. |
+| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, Jest execution, SonarCloud SAST integration, SonarCloud Quality Gate validation, Snyk Software Composition Analysis (SCA), Snyk plugin and credential configuration, dependency vulnerability analysis, Docker Image Build integration, Docker image creation, pipeline execution, security observations, validation, and documented implementation evidence,Trivy container vulnerability scanning, HIGH/CRITICAL quality gate, pipeline enforcement, validation, and security results. |
 
 > **Additional documentation will be added as new pipeline stages and phases are completed.**
 
@@ -677,7 +856,7 @@ The Docker Image Build implementation is documented through the following screen
 | `51-docker-image-created-on-jenkins.png` | Jenkins server showing the successfully created Docker image. |
 
 
-#### Trivy Container Security Scanning Evidence**
+#### Trivy Container Security Scanning and Quality Gate Evidence**
 
 The Trivy Container Security Scanning implementation is documented through the following screenshots:
 
@@ -686,8 +865,15 @@ The Trivy Container Security Scanning implementation is documented through the f
 | `52-jenkinsfile-trivy-container-scan-stage.png` | Jenkinsfile containing the **Trivy Container Security Scan** stage used to scan the Docker image. |
 | `53-jenkins-pipeline-trivy-container-scan-stage.png` | Jenkins Pipeline showing execution of the **Trivy Container Security Scan** stage. |
 | `54-trivy-container-vulnerability-results.png` | Trivy vulnerability analysis results generated from scanning the `node-monitoring-app:1` Docker image. |
+| `55-jenkinsfile-trivy-quality-gate.png` | updated Jenkinsfile containing the **Trivy Container Security Scan and Quality Gate** stage used to scan the rebuilt Docker image. |
+| `56-jenkins-pipeline-trivy-quality-gate-stage.png` | Jenkins Pipeline showing execution of the **Trivy Container Security Scan and Quality Gate** stage. |
+| `57-trivy-quality-gate-results.png` | Trivy Quality Gate results generated from scanning the `node-monitoring-app:7` Docker image. |
+| `58-jenkins-trivy-gate-passed.png` | Jenkins Pipeline showing Trivy Quality Gate Stage Passed. |
+| `59-jenkins-trivy-quality-gate-success.png` | Jenkins Pipeline showing Trivy Quality Gate Success. |
+| `60-hardened-production-dockerfile.png` | Dockerfile showing the rebuilt production ready docker base image. |
 
-> **Evidence Status:** Screenshots 52–54 provide documented evidence of the Trivy Container Security Scanning stage, Jenkins pipeline integration, container vulnerability analysis, and Trivy scan results.
+
+> **Evidence Status:** Screenshots 52–60 provide documented evidence of the Trivy Container Security Scanning and quality gate stage, Jenkins pipeline integration, container vulnerability analysis, and Trivy Quality Gate scan results.
 
 > Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented and validated.
 
@@ -807,7 +993,63 @@ The Trivy Container Security Scanning implementation is documented through the f
 #### Trivy Container Vulnerability Results**
 
 ![Trivy Container Vulnerability Results](screenshots/08-jenkins-ci-cd-devsecops-pipeline/54-trivy-container-vulnerability-results.png)
+
+
+#### Jenkinsfile Trivy Quality Gate Integration
+
+![Jenkinsfile Trivy Quality Gate](screenshots/08-jenkins-ci-cd-devsecops-pipeline/55-jenkinsfile-trivy-quality-gate.png)
+
+
+#### Jenkins Pipeline Trivy Quality Gate Stage
+
+![Jenkins Pipeline Trivy Quality Gate Stage](screenshots/08-jenkins-ci-cd-devsecops-pipeline/56-jenkins-pipeline-trivy-quality-gate-stage.png)
+
+
+#### Trivy Quality Gate Results
+
+![Trivy Quality Gate Results](screenshots/08-jenkins-ci-cd-devsecops-pipeline/57-trivy-quality-gate-results.png)
+
+
+#### Jenkins Trivy Quality Gate Stage Passed
+
+![Jenkins Trivy Quality Gate Passed](screenshots/08-jenkins-ci-cd-devsecops-pipeline/58-jenkins-trivy-gate-passed.png)
+
+
+#### Jenkins Trivy Quality Gate Success
+
+![Jenkins Trivy Quality Gate Success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/59-jenkins-trivy-quality-gate-success.png)
+
+
+#### Hardened Production Ready Dockerfile
+
+![hardened-production-dockerfile](screenshots/08-jenkins-ci-cd-devsecops-pipeline/60-hardened-production-dockerfile.png)
+
+
+#### Trivy Security Quality Gate
+
+The Trivy implementation now represents both vulnerability analysis and release-quality enforcement.
+
+The security workflow is:
+
+```text
+Docker Image
+    │
+    ▼
+Trivy Scan
+    │
+    ▼
+Vulnerability Analysis
+    │
+    ▼
+HIGH/CRITICAL Evaluation
+    │
+    ├── PASS ──► Continue Pipeline
+    │
+    └── FAIL ──► Stop Pipeline
+```
+
 ---
+
 
 ## Prerequisites
 
@@ -888,43 +1130,109 @@ GitHub
    ▼
 Jenkins
    │
-   ├── Checkout Source Code          ✅
-   ├── Install Dependencies          ✅
-   ├── Unit Testing                  ✅
+   ├── Checkout Source Code              ✅
    │
-   ├── SonarCloud Analysis           ✅
-   │      ├── SAST Analysis
-   │      ├── Report Upload
-   │      ├── Quality Gate Wait
-   │      └── Quality Gate PASSED
+   ├── Install Dependencies              ✅
    │
-   ├── Snyk SCA                     ✅
+   ├── Dependency Inspection             ✅
+   │
+   ├── Unit Testing                      ✅
+   │      └── Jest: 3 Tests Passed
+   │
+   ├── SonarCloud SAST                   ✅
+   │      └── Quality Gate: PASSED
+   │
+   ├── Snyk SCA                          ✅
    │      ├── Dependency Analysis
-   │      ├── Vulnerability Scan
-   │      └── Vulnerability Results
+   │      ├── Vulnerability Detection
+   │      └── Project Monitoring
    │
-   ├── Docker Build                 ✅
-   │      └── Docker Image Created
+   ├── Docker Build                      ✅
+   │      └── node-monitoring-app:${BUILD_NUMBER}
    │
-   ├── Trivy Container Scan         ✅
-   │      └── Vulnerability Analysis
+   ├── Verify Production Image           ✅
+   │      ├── Node.js Version
+   │      ├── npm Removed
+   │      └── npx Removed
    │
-   ├── Push Image to Amazon ECR      ⏳
-   ├── Deploy to Amazon EKS          ⏳
-   ├── Verify Rollout                ⏳
-   └── OWASP ZAP DAST               ⏳
+   ├── Trivy Container Security Scan     ✅
+   │      ├── Alpine OS Package Scanning
+   │      ├── Node.js Application Dependency Analysis
+   │      ├── HIGH Severity Check
+   │      ├── CRITICAL Severity Check
+   │      └── HIGH/CRITICAL Security Gate
+   │             ├── Findings → Pipeline FAILS
+   │             └── No Findings → Pipeline CONTINUES
+   │
+   ├── Application Health Check           ✅
+   │      └── /health → ok
+   │
+   ├── Amazon ECR Push                    ⏳
+   │
+   ├── Amazon EKS Deployment              ⏳
+   │
+   ├── Rollout Verification               ⏳
+   │
+   └── OWASP ZAP DAST                     ⏳
 ```
 
-> **Latest milestone:** The Trivy Container Security Scanning stage has been successfully integrated into the Jenkins DevSecOps Pipeline. The Docker image is now automatically scanned for known vulnerabilities before it is promoted to Amazon ECR.
+### Release Promotion Logic
 
-> **Next milestone:** Amazon ECR image publishing, followed by Amazon EKS deployment and rollout verification.
+The current security architecture ensures that the container image passes multiple security controls before deployment:
+
+```text
+Source Code
+    │
+    ▼
+Unit Tests
+    │
+    ▼
+SonarCloud SAST
+    │
+    ▼
+SonarCloud Quality Gate
+    │
+    ▼
+Snyk SCA
+    │
+    ▼
+Docker Build
+    │
+    ▼
+Trivy Container Scan
+    │
+    ▼
+Trivy HIGH/CRITICAL Quality Gate
+    │
+    ├── FAIL ──► Pipeline Stops
+    │
+    ▼
+Amazon ECR
+    │
+    ▼
+Amazon EKS
+    │
+    ▼
+OWASP ZAP DAST
+```
+> This separation ensures that each security tool addresses a different layer of the application delivery lifecycle.
+
+
+> **Latest milestone:** Trivy Container Security Scanning and Quality Gate successfully implemented.
+The Docker image is now subjected to automated vulnerability scanning before being promoted to Amazon ECR. The Trivy quality gate provides an automated security control that can stop the pipeline when the configured HIGH/CRITICAL vulnerability policy is violated.
+
+> **Next milestone:** Amazon ECR image publishing. 
+The next implementation stage is to authenticate Jenkins with Amazon ECR and publish the security-validated Docker image to the configured ECR repository.
+
+
 ---
+
 
 ### Future Enhancements
 
 The following enhancements will be implemented as the project progresses:
 
-- Publish container images to Amazon ECR
+- Publish security-validated container images to Amazon ECR
 - Deploy automatically to Amazon EKS
 - Implement Kubernetes rollout verification
 - Integrate OWASP ZAP Dynamic Application Security Testing (DAST)
@@ -932,7 +1240,8 @@ The following enhancements will be implemented as the project progresses:
 - Configure Grafana dashboards
 - Add architecture diagrams
 - Add pipeline workflow diagrams
-- Implement GitHub Actions (Optional)
+- Implement GitHub Actions as an optional future enhancement
+- Add additional CI/CD security controls such as PR validation and secrets detection as future enhancements
 
 ---
 
@@ -949,3 +1258,12 @@ Passionate about building secure, automated, and scalable cloud infrastructure u
 
 ---
 
+## Project Status
+
+Current Phase: Phase 8 – Jenkins CI/CD & DevSecOps Pipeline
+
+Latest Completed Security Control: Trivy Container Security Scanning and HIGH/CRITICAL Quality Gate
+
+Next Milestone: Amazon ECR Image Publishing
+
+Target Architecture: AWS-based end-to-end CI/CD and DevSecOps platform using Jenkins, Docker, Terraform, ECR, EKS, SonarCloud, Snyk, Trivy, OWASP ZAP, Prometheus, and Grafana.
