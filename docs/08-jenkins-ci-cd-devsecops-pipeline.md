@@ -7272,3 +7272,593 @@ Jenkins
 The Docker image that has successfully passed the application, dependency, SAST, container-security, and health-validation stages can now be authenticated against Amazon ECR, tagged with the appropriate ECR repository URI, and pushed to the container registry.
 
 ---
+
+## 9.10 — Amazon ECR Container Image Push
+
+After successfully completing the Docker build, production-image verification, Trivy HIGH/CRITICAL security gate, and application health check, the next stage of the CI/CD pipeline pushes the validated Docker image to Amazon Elastic Container Registry (Amazon ECR).
+
+The ECR integration ensures that only a successfully tested and security-validated container image is promoted to the AWS container registry.
+
+### ECR Deployment Flow
+
+```text
+Docker Build
+      │
+      ▼
+Verify Production Image
+      │
+      ▼
+Trivy HIGH/CRITICAL Security Gate
+      │
+      ▼
+Application Health Check
+      │
+      ▼
+Amazon ECR Container Image Push
+      │
+      ├── Authenticate Docker to ECR
+      ├── Tag Docker Image
+      └── Push Docker Image
+      │
+      ▼
+Verify ECR Image
+      │
+      └── AWS CLI describe-images
+      │
+      ▼
+Jenkins Pipeline SUCCESS
+```
+
+---
+
+### 9.10.1 — Amazon ECR Configuration
+
+The Jenkins pipeline uses the following ECR configuration:
+
+| Configuration | Value |
+|---|---|
+| **AWS Region** | `us-east-1` |
+| **ECR Registry** | `615300991839.dkr.ecr.us-east-1.amazonaws.com` |
+| **ECR Repository** | `node-devsecops-repository` |
+| **Local Image** | `node-monitoring-app:${BUILD_NUMBER}` |
+| **ECR Image** | `615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository:${BUILD_NUMBER}` |
+| **Image Tag** | Jenkins `BUILD_NUMBER` |
+| **ECR Scan on Push** | Enabled |
+| **Encryption** | AES-256 |
+
+The Jenkinsfile defines the ECR configuration as environment variables:
+
+```text
+environment {
+    IMAGE_NAME     = 'node-monitoring-app'
+    IMAGE_TAG      = "${BUILD_NUMBER}"
+
+    AWS_REGION     = 'us-east-1'
+    ECR_REGISTRY   = '615300991839.dkr.ecr.us-east-1.amazonaws.com'
+    ECR_REPOSITORY = 'node-devsecops-repository'
+    ECR_IMAGE      = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+}
+```
+
+Using ${BUILD_NUMBER} as the image tag provides a unique version for each successful Jenkins build.
+
+```text
+For example:
+
+Jenkins Build #3
+        │
+        ▼
+Image Tag: 3
+        │
+        ▼
+615300991839.dkr.ecr.us-east-1.amazonaws.com/
+node-devsecops-repository:3
+```
+
+---
+
+### 9.10.2 — Amazon ECR Container Image Push Stage
+
+The following Jenkins stage authenticates Docker with Amazon ECR, tags the locally validated image, and pushes the image to the ECR repository.
+
+```text
+stage('Amazon ECR Container Image Push') {
+    steps {
+        sh '''
+            echo "======================================"
+            echo "Amazon ECR Container Image Push"
+            echo "======================================"
+
+            echo "AWS Region:"
+            echo "${AWS_REGION}"
+
+            echo "ECR Repository:"
+            echo "${ECR_REPOSITORY}"
+
+            echo "ECR Image:"
+            echo "${ECR_IMAGE}"
+
+            echo "======================================"
+            echo "Authenticating Docker to Amazon ECR"
+            echo "======================================"
+
+            aws ecr get-login-password \
+                --region "${AWS_REGION}" | \
+            docker login \
+                --username AWS \
+                --password-stdin \
+                "${ECR_REGISTRY}"
+
+            echo "Docker authentication to Amazon ECR succeeded."
+
+            echo "======================================"
+            echo "Tagging Docker Image"
+            echo "======================================"
+
+            docker tag \
+                "${IMAGE_NAME}:${IMAGE_TAG}" \
+                "${ECR_IMAGE}"
+
+            echo "Docker image tagged successfully."
+
+            echo "======================================"
+            echo "Pushing Docker Image to Amazon ECR"
+            echo "======================================"
+
+            docker push "${ECR_IMAGE}"
+
+            echo "======================================"
+            echo "Amazon ECR Container Image Push PASSED"
+            echo "======================================"
+
+            echo "Image successfully pushed:"
+            echo "${ECR_IMAGE}"
+        '''
+    }
+}
+```
+
+---
+
+### 9.10.3 — Authenticate Docker with Amazon ECR
+
+The pipeline obtains a temporary Amazon ECR authentication token using the AWS CLI:
+
+```bash
+aws ecr get-login-password \
+    --region "${AWS_REGION}"
+```
+
+The authentication token is securely passed to Docker through standard input:
+
+```bash
+docker login \
+    --username AWS \
+    --password-stdin \
+    "${ECR_REGISTRY}"
+```
+
+This avoids placing the authentication token directly in the Jenkinsfile or exposing it as a command-line argument.
+
+The Jenkins console confirmed:
+
+Login Succeeded
+Docker authentication to Amazon ECR succeeded.
+
+
+#### Screenshot — Jenkins ECR authentication:
+
+##### Jenkins Amazon ECR Container Image Push stage.
+
+![Jenkins ecr image push stage](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/61-jenkins-ecr-image-push-stage.png)
+
+
+##### Docker successfully authenticated with Amazon ECR.
+
+![Jenkins ecr image push login succeeded](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/62-jenkins-ecr-image-push-login-succeeded.png)
+
+
+> Note: Docker displays a warning that credentials are stored in /var/lib/jenkins/.docker/config.json. This is a Docker credential-storage warning and does not indicate that the ECR authentication failed. For production environments, a Docker credential helper or another appropriate credential-management mechanism should be considered.
+
+---
+
+### 9.10.4 — Tag Docker Image for Amazon ECR
+
+Before pushing the image, the locally built Docker image is tagged with the full ECR repository URI:
+
+```bash
+docker tag \
+    "${IMAGE_NAME}:${IMAGE_TAG}" \
+    "${ECR_IMAGE}"
+```
+
+For Jenkins Build #3, the resulting image was:
+
+```text
+615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository:3
+```
+
+This associates the local Docker image with the target Amazon ECR repository and build-specific image tag.
+
+The Jenkins console confirmed:
+
+```text
+Docker image tagged successfully.
+```
+
+----
+
+### 9.10.5 — Push Docker Image to Amazon ECR
+
+The tagged image is pushed to Amazon ECR using:
+
+```bash
+docker push "${ECR_IMAGE}"
+```
+
+During the push, Docker uploads the image layers to the ECR repository.
+
+The Jenkins console confirmed:
+
+```text
+The push refers to repository
+[615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository]
+
+4f4b81eb9b05: Pushed
+955b2b5256ac: Pushed
+
+3: digest: 
+sha256:8ad0a4288bfdb674ae3882cc5c9eb360116cee7e695a0894af822b015a95e174
+```
+
+The resulting image was:
+
+```text
+615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository:3
+```
+
+The image digest provides an immutable content identifier for the pushed container image.
+
+#### Screenshot — Docker image successfully pushed to Amazon ECR repository:
+
+![ECR Docker Push Success](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/63-ecr-docker-push-success.png)
+
+---
+
+### 9.10.6 — Verify Image in Amazon ECR
+
+After the push succeeds, the pipeline performs an explicit verification step.
+
+This ensures that Jenkins does not simply assume the docker push operation succeeded; instead, it queries Amazon ECR and confirms that the expected image tag actually exists in the repository.
+
+The Jenkinsfile contains:
+
+```text
+stage('Verify ECR Image') {
+    steps {
+        sh '''
+            echo "======================================"
+            echo "Verify Amazon ECR Image"
+            echo "======================================"
+
+            echo "Checking ECR repository for image tag:"
+            echo "${IMAGE_TAG}"
+
+            aws ecr describe-images \
+                --repository-name "${ECR_REPOSITORY}" \
+                --image-ids imageTag="${IMAGE_TAG}" \
+                --region "${AWS_REGION}"
+
+            echo "======================================"
+            echo "Amazon ECR Image Verification PASSED"
+            echo "======================================"
+
+            echo "Verified image:"
+            echo "${ECR_IMAGE}"
+        '''
+    }
+}
+```
+
+The AWS CLI command used for verification is:
+
+```bash
+aws ecr describe-images \
+    --repository-name "${ECR_REPOSITORY}" \
+    --image-ids imageTag="${IMAGE_TAG}" \
+    --region "${AWS_REGION}"
+```
+
+For Jenkins Build #3, Amazon ECR returned:
+
+```text
+repositoryName: node-devsecops-repository
+imageTags:
+  - "3"
+imageDigest: sha256:8ad0a4288bfdb674ae3882cc5c9eb360116cee7e695a0894af822b015a95e174
+imageSizeInBytes: 60220586
+imagePushedAt: 2026-08-19T23:30:43.116000+00:00
+```
+
+> This confirms that the image tagged 3 exists in the expected ECR repository.
+
+#### Screenshot — ECR repository containing the pushed image:
+
+![Amazon ECR Repository Image](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/64-amazon-ecr-repository-image.png)
+
+> Amazon ECR repository showing the successfully pushed container image.
+
+![ECR cli Image Verification](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/65-ecr-cli-image-verification.png)
+
+> AWS CLI verification confirming that the expected image tag exists in Amazon ECR.
+
+![Jenkins ECR Image Verification](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/66-jenkins-ecr-image-verification.png)
+
+> Jenkins successfully verifying the image in Amazon ECR.
+
+---
+
+### 9.10.7 — ECR Verification Result
+
+The Jenkins console reported:
+
+```text
+Amazon ECR Image Verification PASSED
+
+and:
+
+Verified image:
+615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository:3
+```
+
+This provides an additional validation point between the image push and subsequent deployment stages.
+
+The complete promotion chain is therefore:
+
+```text
+Source Code
+      ↓
+Unit Tests
+      ↓
+SonarCloud SAST
+      ↓
+Snyk SCA
+      ↓
+Docker Build
+      ↓
+Production Image Verification
+      ↓
+Trivy HIGH/CRITICAL Gate
+      ↓
+Application Health Check
+      ↓
+Amazon ECR Push
+      ↓
+Amazon ECR Image Verification
+      ↓
+Deployment
+```
+
+---
+
+### 9.10.8 — Final Jenkins Pipeline Result
+
+Following successful ECR image verification, Jenkins executed the post-build cleanup actions:
+
+```text
+docker rm -f node-monitoring-app-test-3
+docker rmi node-monitoring-app:3
+```
+
+The local test container and local application image were removed from the Jenkins agent after the pipeline completed.
+
+The final Jenkins result was:
+
+```text
+Pipeline execution completed.
+Finished: SUCCESS
+```
+
+#### Screenshot — Final Jenkins pipeline success:
+
+![Final Jenkins Pipeline Success](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/67-final-jenkins-pipeline-success.png)
+
+> Complete Jenkins pipeline successfully completed after Amazon ECR image verification.
+
+---
+
+### 9.10.9 — Security and Quality Controls
+
+The Amazon ECR push occurs after the application's major pre-deployment quality and security controls have passed.
+
+| Stage | Control | Result |
+|---|---|---|
+| Unit Testing | Jest/Supertest | ✅ Passed |
+| SAST | SonarCloud | ✅ Quality Gate Passed |
+| SCA | Snyk | ✅ Completed |
+| Container Build | Docker | ✅ Passed |
+| Production Image Verification | Node/npm/npx checks | ✅ Passed |
+| Container Security | Trivy HIGH/CRITICAL Gate | ✅ Passed |
+| Application Validation | `/health` endpoint | ✅ Passed |
+| Container Registry | Amazon ECR Push | ✅ Passed |
+| Registry Verification | AWS CLI `describe-images` | ✅ Passed |
+| Pipeline | Jenkins | ✅ SUCCESS |
+
+> This sequencing prevents an untested or HIGH/CRITICAL-vulnerable container image from being promoted to Amazon ECR.
+
+---
+
+### 9.10.10 — Implementation Outcome
+
+The Amazon ECR integration successfully established an automated container image promotion workflow from Jenkins to AWS.
+
+For Jenkins Build #3:
+
+```text
+Local Docker Image
+node-monitoring-app:3
+        │
+        ▼
+Trivy Security Gate PASSED
+        │
+        ▼
+Application Health Check PASSED
+        │
+        ▼
+Amazon ECR
+node-devsecops-repository:3
+        │
+        ▼
+ECR Verification PASSED
+        │
+        ▼
+Jenkins Pipeline SUCCESS
+```
+
+> The container image is now available in Amazon ECR and has been successfully verified using the AWS CLI.
+
+#### Key Takeaways
+- Jenkins authenticates to Amazon ECR using the AWS CLI.
+- Docker authentication is performed without hard-coding AWS credentials in the Jenkinsfile.
+- Each Jenkins build receives a unique image tag through ${BUILD_NUMBER}.
+- The image is pushed only after the Trivy security gate and application health check succeed.
+- Amazon ECR is explicitly queried after the push to verify that the expected image tag exists.
+- The returned image digest provides an immutable identifier for the pushed image.
+- The successful ECR verification provides a reliable hand-off point for the subsequent Kubernetes/EKS deployment stage.
+- Jenkins Build #3 completed with Finished: SUCCESS.
+
+The Amazon ECR Container Image Push and ECR Image Verification stages are therefore successfully implemented and validated.
+
+---
+
+### 9.10.11 — Updated Phase 8 Pipeline Status
+
+Following the successful implementation of the Amazon ECR Container Image Push and ECR Image Verification stages, the current Phase 8 pipeline progression is:
+
+```text
+GitHub
+
+   │
+
+   ▼
+
+Jenkins
+
+   │
+
+   ├── Checkout Source Code              ✅
+   │
+   ├── Install Dependencies              ✅
+   │
+   ├── Dependency Inspection             ✅
+   │
+   ├── Unit Testing                      ✅
+   │      └── Jest: 3 Tests Passed
+   │
+   ├── SonarCloud SAST                   ✅
+   │      └── Quality Gate: PASSED
+   │
+   ├── Snyk SCA                          ✅
+   │      ├── Dependency Analysis
+   │      ├── Vulnerability Detection
+   │      └── Project Monitoring
+   │
+   ├── Docker Build                      ✅
+   │      └── node-monitoring-app:${BUILD_NUMBER}
+   │
+   ├── Verify Production Image           ✅
+   │      ├── Node.js Version
+   │      ├── npm Removed
+   │      └── npx Removed
+   │
+   ├── Trivy Container Security Scan     ✅
+   │      ├── Alpine OS Package Scanning
+   │      ├── Node.js Application Dependency Analysis
+   │      ├── HIGH Severity Check
+   │      ├── CRITICAL Severity Check
+   │      └── HIGH/CRITICAL Security Gate
+   │             ├── Findings → Pipeline FAILS
+   │             └── No Findings → Pipeline CONTINUES
+   │
+   ├── Application Health Check           ✅
+   │      └── /health → ok
+   │
+   ├── Amazon ECR Container Image Push    ✅
+   │      ├── Authenticate Docker to ECR
+   │      ├── Tag Docker Image
+   │      └── Push Docker Image
+   │
+   ├── Amazon ECR Image Verification      ✅
+   │      └── AWS CLI describe-images
+   │
+   ├── Amazon EKS Deployment              ⏳
+   │
+   ├── Rollout Verification               ⏳
+   │
+   └── OWASP ZAP DAST                     ⏳
+```
+
+> The Amazon ECR integration has now been successfully implemented and validated.
+
+For Jenkins Build #3, the container image:
+
+```text
+node-monitoring-app:3
+```
+
+was successfully promoted to:
+
+```text
+615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository:3
+```
+
+> The image was subsequently verified in Amazon ECR using AWS CLI describe-images.
+
+The ECR promotion process therefore completed successfully:
+
+```text
+Docker Build
+      ↓
+Production Image Verification
+      ↓
+Trivy HIGH/CRITICAL Security Gate
+      ↓
+Application Health Check
+      ↓
+Amazon ECR Push
+      ↓
+Amazon ECR Image Verification
+      ↓
+Jenkins Pipeline SUCCESS
+```
+
+---
+
+### 9.10.12 — Next Pipeline Stage
+
+The Amazon ECR Container Image Push and ECR Image Verification stages have now been successfully implemented and validated.
+
+The validated container image is securely stored in Amazon ECR and has successfully passed the required security, health, and registry verification controls.
+
+The next stage of the Phase 8 DevSecOps Pipeline is:
+
+```text
+Amazon ECR
+      │
+      ▼
+Amazon EKS Deployment
+      │
+      ▼
+Kubernetes Rollout Verification
+      │
+      ▼
+OWASP ZAP DAST
+```
+
+> Next Step: The next stage of the Phase 8 DevSecOps Pipeline is ## Section 9.11 — Amazon EKS Deployment.
+
+> The validated container image is now securely stored in Amazon ECR and has been successfully verified using the AWS CLI. It has therefore passed the required security, health, and registry verification controls and is ready for deployment to Amazon EKS.
+
+---
+
+
