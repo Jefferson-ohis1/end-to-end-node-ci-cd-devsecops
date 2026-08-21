@@ -7862,3 +7862,391 @@ OWASP ZAP DAST
 ---
 
 
+## 9.11 — Amazon EKS Deployment
+
+After successfully building, scanning, publishing, and verifying the Docker image in Amazon ECR, the next stage of the project was to deploy the verified container image to Amazon Elastic Kubernetes Service (Amazon EKS).
+
+This stage was implemented incrementally.
+
+The **initial implementation was performed manually using Kubernetes (`kubectl`)** to validate the EKS cluster, Kubernetes manifests, ECR image integration, application deployment, LoadBalancer configuration, and external application accessibility.
+
+The manual implementation establishes a known-good deployment baseline before introducing Jenkins-based automation.
+
+### EKS Deployment Architecture
+
+```text
+Amazon ECR
+    │
+    │ Verified Docker Image
+    ▼
+Amazon EKS Cluster
+    │
+    ├── Worker Node 1
+    │       └── node-monitoring-app Pod
+    │
+    └── Worker Node 2
+            └── node-monitoring-app Pod
+                    │
+                    ▼
+             Kubernetes Service
+              Type: LoadBalancer
+                    │
+                    ▼
+             AWS Load Balancer
+                    │
+          ┌─────────┼─────────┐
+          ▼         ▼         ▼
+       /health      /       /metrics
+```
+
+---
+
+### 9.11.1 — Manual Amazon EKS Deployment
+
+The Amazon EKS cluster was provisioned using Terraform and successfully validated before deploying the application.
+
+#### EKS Cluster
+
+The cluster used for the deployment is:
+
+| Configuration | Value |
+| ------------- | ----- |
+| **Cluster Name** | `node-devsecops-cluster` |
+| **AWS Region** | `us-east-1` |
+| **Kubernetes Version** | `v1.33.13` |
+| **Worker Nodes** | 2 |
+| **Node Operating System** | Amazon Linux 2023 |
+| **Container Runtime** | `containerd` |
+
+The EKS cluster was verified using:
+
+```text
+kubectl get nodes
+```
+
+![eks-cluster](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/68-eks-cluster.png)
+
+Both worker nodes reported a Ready status.
+
+#### EKS Worker Node Verification
+
+The worker nodes were further inspected using:
+
+```text
+kubectl get nodes -o wide
+```
+
+![eks-pods](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/69-eks-pods.png)
+
+The cluster successfully reported two worker nodes:
+
+```text
+ip-10-0-3-33.ec2.internal
+ip-10-0-4-237.ec2.internal
+```
+
+Both nodes were in the Ready state and were running Kubernetes version v1.33.13.
+
+---
+
+### 9.11.1.1 — Deploy Kubernetes Application
+
+The application Kubernetes resources were manually deployed using the existing Kubernetes manifests:
+
+```bash
+kubectl apply -f k8s/deployment.yaml
+```
+
+Result:
+
+```text
+deployment.apps/node-monitoring-app created
+```
+
+The Kubernetes Service was then created:
+
+```bash
+kubectl apply -f k8s/service.yaml
+```
+
+Result:
+
+```text
+service/node-monitoring-app created
+```
+
+The deployment created two application replicas.
+
+kubectl get pods -o wide
+
+```text
+NAME                                   READY   STATUS    RESTARTS   AGE
+node-monitoring-app-854fc9cf97-847sq   1/1     Running   0          ...
+node-monitoring-app-854fc9cf97-lq4cv   1/1     Running   0          ...
+```
+
+---
+
+### 9.11.1.2 — Kubernetes Deployment Verification
+
+The deployment was verified using:
+
+```bash
+kubectl get deployment
+```
+
+Result:
+
+```text
+NAME                  READY   UP-TO-DATE   AVAILABLE
+node-monitoring-app   2/2     2            2
+```
+
+This confirmed that both application replicas were successfully created and available.
+
+The pods were distributed across the two EKS worker nodes, providing basic workload distribution across the cluster.
+
+---
+
+### 9.11.1.3 — ECR Image Integration
+
+The Kubernetes deployment used the Docker image previously published and verified by the Jenkins pipeline in Amazon ECR:
+
+```text
+615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository:1
+```
+
+The deployed pods were verified to use this image.
+
+
+The image digest reported by Kubernetes was:
+
+```text
+sha256:0f7fe0428a799084d62e055227b9910a4129bf84d9b57737c86127aa8562fa5c
+```
+
+This is the same image digest produced during the Amazon ECR push and subsequently verified by the Jenkins Verify ECR Image stage.
+
+This provides an important deployment traceability link:
+
+```text
+Jenkins
+   │
+   ▼
+Docker Image
+   │
+   ▼
+Amazon ECR
+   │
+   ├── Tag: 1
+   └── Digest: sha256:0f7fe042...
+   │
+   ▼
+Amazon EKS
+   │
+   └── Running Container
+         └── Same Image Digest
+```
+
+---
+
+### 9.11.1.4 — Kubernetes LoadBalancer Service
+
+The application was exposed through a Kubernetes Service configured with:
+
+```text
+Type: LoadBalancer
+```
+
+The Service was verified using:
+
+```bash
+kubectl get service node-monitoring-app
+```
+
+![eks-service-loadbalancer](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/70-eks-service-loadbalancer.png)
+
+The Service successfully received an AWS Load Balancer endpoint.
+
+The Service routes external traffic on port 80 to the Node.js application running on port 3000.
+
+---
+
+### 9.11.2 — Manual Application Verification
+
+After the application pods and LoadBalancer Service were successfully deployed, the application was externally verified through the AWS Load Balancer endpoint.
+
+![eks-application-loadbalancer](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/72-eks-application-loadbalancer.png)
+
+The application LoadBalancer endpoint was:
+
+http://a4035e0ea37ef42c49a7fa1bd28f419c-1789020279.us-east-1.elb.amazonaws.com
+
+---
+
+### 9.11.2.1 — Kubernetes Application Health Verification
+
+The application health endpoint was verified using:
+
+```bash
+curl http://a4035e0ea37ef42c49a7fa1bd28f419c-1789020279.us-east-1.elb.amazonaws.com/health
+```
+
+Result:
+
+```text
+ok
+```
+
+![application-health](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/71-application-health.png)
+
+This confirmed that traffic successfully traveled through the AWS Load Balancer to the Kubernetes Service and ultimately reached the Node.js application's /health endpoint.
+
+A browser-based verification was also performed:
+
+http://a4035e0ea37ef42c49a7fa1bd28f419c-1789020279.us-east-1.elb.amazonaws.com/health
+
+![eks-application-browser-health-check](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/73-eks-application-browser-health-check.png)
+
+---
+
+### 9.11.2.2 — Application LoadBalancer Verification
+
+The application's root endpoint was accessed through the AWS Load Balancer:
+
+```bash
+curl http://a4035e0ea37ef42c49a7fa1bd28f419c-1789020279.us-east-1.elb.amazonaws.com/
+```
+
+The Node.js DevOps Monitoring application successfully returned its application interface.
+
+The application displayed:
+
+```text
+🚀 DevOps Monitoring App
+
+
+This Node.js app exposes Prometheus metrics.
+
+
+STATUS: RUNNING
+```
+
+---
+
+### 9.11.2.3 — Prometheus Metrics Verification
+
+The application's Prometheus metrics endpoint was performed using a browser-based verification:
+
+```text
+http://a4035e0ea37ef42c49a7fa1bd28f419c-1789020279.us-east-1.elb.amazonaws.com/metrics
+```
+
+![74-eks-prometheus-metrics](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/74-eks-prometheus-metrics.png)
+
+The endpoint successfully returned Prometheus-compatible Node.js and HTTP metrics.
+
+This confirms that the application's monitoring endpoint remained functional after deployment to Amazon EKS.
+
+---
+
+### 9.11.2.4 — EKS Deployment Verification Summary
+
+The manual implementation successfully validated the complete application deployment path:
+
+| Verification | Result |
+| ------------ | ------ |
+| Amazon EKS Cluster | ✅ |
+| EKS Worker Nodes | ✅ 2 Nodes Ready |
+| Kubernetes Deployment | ✅ |
+| Application Replicas | ✅ 2/2 Running |
+| Amazon ECR Image Pull | ✅ |
+| ECR Image Digest Verification | ✅ |
+| Kubernetes LoadBalancer | ✅ |
+| AWS Load Balancer | ✅ |
+| Application `/health` Endpoint | ✅ |
+| Application Root Endpoint `/` | ✅ |
+| Prometheus `/metrics` Endpoint | ✅ |
+
+#### Manual Deployment Result
+
+```text
+Amazon ECR
+     │
+     ▼
+Verified Docker Image
+     │
+     ▼
+Amazon EKS
+     │
+     ├── Pod 1 ──► Running
+     │
+     └── Pod 2 ──► Running
+             │
+             ▼
+      Kubernetes Service
+       LoadBalancer
+             │
+             ▼
+       AWS Load Balancer
+             │
+       ┌─────┼─────┐
+       ▼     ▼     ▼
+    /health   /   /metrics
+       │     │      │
+       ▼     ▼      ▼
+      OK   App UI  Metrics
+```
+
+Manual Amazon EKS Deployment: SUCCESS ✅
+
+The successful manual deployment establishes a known-good baseline for the next stage of the project.
+
+---
+
+### 9.11.3 — Automated Amazon EKS Deployment
+
+Status: Planned / Next Implementation
+
+The next iteration will automate the Amazon EKS deployment through the Jenkins CI/CD pipeline.
+
+The Jenkins pipeline will be extended to automatically:
+
+1. Configure access to the Amazon EKS cluster.
+2. Deploy the Kubernetes manifests.
+3. Deploy the verified Amazon ECR image.
+4. Monitor the Kubernetes rollout.
+5. Verify application pod readiness.
+6. Verify the Kubernetes Service.
+7. Perform an automated application health check.
+8. Fail the pipeline if the deployment or health verification fails.
+
+The target automated flow will be:
+
+```text
+Docker Build
+     │
+     ▼
+Security Scanning
+     │
+     ▼
+Amazon ECR Push
+     │
+     ▼
+ECR Image Verification
+     │
+     ▼
+Amazon EKS Deployment
+     │
+     ▼
+Kubernetes Rollout Verification
+     │
+     ▼
+Application Health Verification
+     │
+     ├── PASS ──► Pipeline SUCCESS
+     │
+     └── FAIL ──► Pipeline FAILURE
+```
+
+The automated implementation and its evidence will be documented in this section after Jenkins-based EKS deployment has been implemented and successfully validated.
