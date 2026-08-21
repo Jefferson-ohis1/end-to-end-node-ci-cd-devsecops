@@ -281,6 +281,142 @@ pipeline {
                 '''
             }
         }
+
+        stage('Configure Amazon EKS Access') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Configure Amazon EKS Access"
+                    echo "======================================"
+
+                    aws eks update-kubeconfig \
+                        --region "${AWS_REGION}" \
+                        --name node-devsecops-cluster
+
+                    echo "Verifying EKS cluster access..."
+
+                    kubectl get nodes
+
+                    echo "Amazon EKS access verification PASSED"
+                '''
+            }
+        }
+
+        stage('Amazon EKS Deployment') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Amazon EKS Deployment"
+                    echo "======================================"
+
+                    echo "Deploying image:"
+                    echo "${ECR_IMAGE}"
+
+                    echo "Replacing Kubernetes image placeholder..."
+
+                    sed -i "s|IMAGE_PLACEHOLDER|${ECR_IMAGE}|g" \
+                        k8s/deployment.yaml
+
+                    echo "Applying Kubernetes Deployment..."
+
+                    kubectl apply -f k8s/deployment.yaml
+
+                    echo "Applying Kubernetes Service..."
+
+                    kubectl apply -f k8s/service.yaml
+
+                    echo "Kubernetes manifests applied successfully."
+                '''
+            }
+        }
+
+        stage('Kubernetes Rollout Verification') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Kubernetes Rollout Verification"
+                    echo "======================================"
+
+                    kubectl rollout status \
+                        deployment/node-monitoring-app \
+                        --timeout=180s
+
+                    echo "======================================"
+                    echo "Deployment Status"
+                    echo "======================================"
+
+                    kubectl get deployment node-monitoring-app
+
+                    echo "======================================"
+                    echo "Pod Status"
+                    echo "======================================"
+
+                    kubectl get pods -o wide
+
+                    echo "Kubernetes rollout verification PASSED"
+                '''
+            }
+        }
+
+        stage('Kubernetes Service Verification') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Kubernetes Service Verification"
+                    echo "======================================"
+
+                    kubectl get service node-monitoring-app
+
+                    echo "Kubernetes Service verification PASSED"
+                '''
+            }
+        }
+
+        stage('EKS Application Health Check') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "EKS Application Health Check"
+                    echo "======================================"
+
+                    echo "Waiting for LoadBalancer endpoint..."
+
+                    for i in {1..30}; do
+
+                        LOAD_BALANCER_HOST=$(kubectl get service node-monitoring-app \
+                            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+
+                        if [ -n "$LOAD_BALANCER_HOST" ]; then
+                            break
+                        fi
+
+                        echo "LoadBalancer endpoint not available yet..."
+                        sleep 10
+
+                    done
+
+                    if [ -z "$LOAD_BALANCER_HOST" ]; then
+                        echo "ERROR: LoadBalancer endpoint was not assigned."
+                        exit 1
+                    fi
+
+                    echo "LoadBalancer Host:"
+                    echo "$LOAD_BALANCER_HOST"
+
+                    echo "======================================"
+                    echo "Testing /health endpoint"
+                    echo "======================================"
+
+                    curl --fail \
+                        --retry 10 \
+                        --retry-delay 5 \
+                        "http://${LOAD_BALANCER_HOST}/health"
+
+                    echo
+                    echo "EKS application health check PASSED."
+                '''
+            }
+        }
     }
 
     post {

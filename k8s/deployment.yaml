@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: node-monitoring-app
-          image: 615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository:1
+          image: IMAGE_PLACEHOLDER
           ports:
             - containerPort: 3000
           readinessProbe:
