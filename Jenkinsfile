@@ -491,13 +491,25 @@ pipeline {
                     echo "Testing /health endpoint"
                     echo "======================================"
 
-                    curl --fail \
-                        --retry 10 \
-                        --retry-delay 5 \
-                        "http://${LOAD_BALANCER_HOST}/health"
+                    for i in {1..12}; do
 
-                    echo
-                    echo "EKS application health check PASSED."
+                        if curl --fail --silent --show-error \
+                            --connect-timeout 10 \
+                            "http://${LOAD_BALANCER_HOST}/health"; then
+
+                            echo
+                            echo "EKS application health check PASSED."
+                            exit 0
+                        fi
+
+                        echo
+                        echo "Health endpoint not ready yet. Retrying in 10 seconds..."
+                        sleep 10
+
+                    done
+
+                    echo "ERROR: EKS application health check failed."
+                    exit 1
                 '''
             }
         }
