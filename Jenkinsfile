@@ -325,7 +325,22 @@ pipeline {
 
                     kubectl apply -f k8s/service.yaml
 
-                    echo "Kubernetes manifests applied successfully."
+                    echo "Applying Kubernetes ServiceMonitor..."
+
+                    kubectl apply -f k8s/service-monitor.yaml
+
+                    echo "Applying Kubernetes HPA..."
+
+                    kubectl apply -f k8s/hpa.yaml
+
+                    echo "======================================"
+                    echo "Kubernetes manifests applied successfully"
+                    echo "======================================"
+
+                    kubectl get deployment node-monitoring-app
+                    kubectl get service node-monitoring-app
+                    kubectl get servicemonitor node-monitoring-app
+                    kubectl get hpa node-monitoring-app
                 '''
             }
         }
@@ -357,6 +372,75 @@ pipeline {
                 '''
             }
         }
+
+        stage('Kubernetes HPA Verification') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Kubernetes HPA Verification"
+                    echo "======================================"
+
+                    kubectl get hpa node-monitoring-app
+
+                    echo "======================================"
+                    echo "HPA Detailed Status"
+                    echo "======================================"
+
+                    kubectl describe hpa node-monitoring-app
+
+                    echo "Kubernetes HPA verification completed."
+                '''
+            }
+        }
+
+        stage('HPA Metrics Verification') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "HPA Metrics Verification"
+                    echo "======================================"
+
+                    echo "Current Pod Metrics:"
+                    kubectl top pods
+
+                    echo "======================================"
+                    echo "HPA Status"
+                    echo "======================================"
+
+                    kubectl get hpa node-monitoring-app
+
+                    echo "======================================"
+                    echo "HPA Detailed Status"
+                    echo "======================================"
+
+                    kubectl describe hpa node-monitoring-app
+
+                    echo "======================================"
+                    echo "HPA metrics verification completed."
+                    echo "======================================"
+                '''
+            }
+        }        
+
+        stage('Prometheus ServiceMonitor Verification') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Prometheus ServiceMonitor Verification"
+                    echo "======================================"
+
+                    kubectl get servicemonitor node-monitoring-app
+
+                    echo "======================================"
+                    echo "ServiceMonitor Details"
+                    echo "======================================"
+
+                    kubectl describe servicemonitor node-monitoring-app
+
+                    echo "Prometheus ServiceMonitor verification completed."
+                '''
+            }
+        }                
 
         stage('Kubernetes Service Verification') {
             steps {
@@ -426,7 +510,8 @@ pipeline {
                 docker rmi node-monitoring-app:${BUILD_NUMBER} 2>/dev/null || true
             '''
 
-            echo 'Pipeline execution completed.'
+            echo '✅ Kubernetes Deployment successful!'
+            echo '✅ Pipeline execution completed.'
         }
     }
 }
