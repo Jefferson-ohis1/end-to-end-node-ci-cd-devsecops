@@ -5,6 +5,9 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
+# Update Alpine security packages
+RUN apk update && apk upgrade
+
 # Copy dependency manifests first for better layer caching
 COPY package*.json ./
 
@@ -18,6 +21,9 @@ RUN npm ci --omit=dev --ignore-scripts
 FROM node:24-alpine AS runtime
 
 WORKDIR /app
+
+# Update Alpine security packages
+RUN apk update && apk upgrade
 
 # Copy only production dependencies from builder
 COPY --from=builder /app/node_modules ./node_modules
