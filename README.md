@@ -1,6 +1,6 @@
-# End-to-End Node.js CI/CD DevSecOps Pipeline on AWS
+# End-to-End Node.js CI/CD & DevSecOps Pipeline on AWS
 
-> A comprehensive portfolio project demonstrating modern DevOps and DevSecOps practices using Node.js, Docker, Terraform, Jenkins, AWS, Kubernetes, SonarCloud, Snyk, Trivy, OWASP ZAP, Prometheus, and Grafana.
+> A comprehensive cloud-native DevSecOps portfolio project demonstrating automated testing, source-code security, dependency security, container security, container image promotion, Amazon ECR publishing, Amazon EKS deployment, Kubernetes orchestration, autoscaling, and observability using Node.js, Jenkins, Docker, Terraform, AWS, SonarCloud, Snyk, Trivy, Prometheus, and Grafana. OWASP ZAP DAST is the next planned security milestone.
 
 
 ![AWS](https://img.shields.io/badge/AWS-Cloud-orange?logo=amazonaws)
@@ -9,10 +9,14 @@
 ![Jenkins](https://img.shields.io/badge/Jenkins-CI%2FCD-D24939?logo=jenkins)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS-326CE5?logo=kubernetes)
 ![Node.js](https://img.shields.io/badge/Node.js-Application-339933?logo=node.js)
+![SonarCloud](https://img.shields.io/badge/SonarCloud-SAST-F3702A?logo=sonarcloud)
+![Snyk](https://img.shields.io/badge/Snyk-SCA-4C4A73?logo=snyk)
+![Trivy](https://img.shields.io/badge/Trivy-Container%20Security-1904DA)
+![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?logo=prometheus)
+![Grafana](https://img.shields.io/badge/Grafana-Visualization-F46800?logo=grafana)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-> A comprehensive portfolio project demonstrating modern DevOps and DevSecOps practices using Node.js, Docker, Terraform, Jenkins, AWS, Kubernetes, Prometheus, and Grafana.
-
+> A comprehensive portfolio project demonstrating modern DevOps and DevSecOps practices using Node.js, Docker, Terraform, Jenkins, AWS, Kubernetes, SonarCloud, Snyk, Trivy, Prometheus, and Grafana.
 
 ---
 
@@ -40,173 +44,176 @@
 20. [CI/CD Pipeline Roadmap](#cicd-pipeline-roadmap)
 21. [Future Enhancements](#future-enhancements)
 22. [Project Status](#project-status)
-23. [Author](#author
+23. [Author](#author)
 
 
 ---
 
 ## Project Overview
 
-This repository demonstrates the design, implementation, and deployment of a complete end-to-end DevSecOps pipeline for a containerized Node.js monitoring application on Amazon Web Services (AWS).
+This repository demonstrates the design, implementation, deployment, security validation, and monitoring of an end-to-end DevSecOps pipeline for a containerized Node.js monitoring application on Amazon Web Services (AWS).
 
-The project combines modern DevOps and DevSecOps practices by integrating:
+The project integrates modern DevOps, DevSecOps, cloud-native, Infrastructure as Code (IaC), Kubernetes, and observability practices to demonstrate how an application progresses from source code through automated testing, security validation, containerization, image promotion, Kubernetes deployment, autoscaling, and runtime monitoring.
+
+The implemented solution integrates:
 
 - Infrastructure as Code with Terraform
 - Containerization with Docker
 - Continuous Integration and Continuous Deployment with Jenkins
 - Static Application Security Testing (SAST) with SonarCloud
 - Software Composition Analysis (SCA) with Snyk
-- Container vulnerability scanning and quality gating with Trivy
-- Container image publishing with Amazon Elastic Container Registry (ECR)
-- Container orchestration with Amazon Elastic Kubernetes Service (EKS)
+- Container vulnerability scanning with Trivy
+- Trivy HIGH/CRITICAL security quality gating
+- Container image publishing with Amazon Elastic Container Registry (Amazon ECR)
+- Container orchestration with Amazon Elastic Kubernetes Service (Amazon EKS)
+- Manual Amazon EKS deployment validation
+- Automated Amazon EKS deployment through Jenkins
+- Kubernetes rollout and service verification
+- Kubernetes Horizontal Pod Autoscaling (HPA)
+- Prometheus application and Kubernetes metrics collection
+- Grafana monitoring and visualization
+
+The project also provides the runtime environment required for the next security milestone:
+
 - Dynamic Application Security Testing (DAST) with OWASP ZAP
-- Application and infrastructure monitoring with Prometheus and Grafana
 
-Rather than focusing on a single technology, this project demonstrates how industry-standard DevOps and DevSecOps tools integrate to automate the software delivery lifecycle — from application development and infrastructure provisioning through automated testing, security validation, containerization, image promotion, deployment, and monitoring.
+Rather than focusing on a single technology, this project demonstrates how industry-standard tools can be integrated into a controlled, automated, and security-focused software delivery lifecycle.
 
-The repository is being developed incrementally using a phased implementation approach. Each phase is independently designed, implemented, tested, validated, and documented before progressing to the next stage.
-
+The implementation follows an incremental engineering approach in which each phase is designed, implemented, tested, validated, and documented before progressing to the next stage.
 
 ---
 
 ## Key Features
 
-- Infrastructure provisioned using Terraform (IaC)
+### Infrastructure & Cloud
+
+- Infrastructure provisioned using Terraform
+- Amazon VPC with public and private networking
 - Dedicated Jenkins automation server on Amazon EC2
+- Jenkins IAM integration
+- Amazon Elastic Container Registry (Amazon ECR)
+- Amazon Elastic Kubernetes Service (Amazon EKS)
+
+### Application & Containerization
+
 - Dockerized Node.js monitoring application
-- Amazon Elastic Container Registry (ECR)
-- Amazon Elastic Kubernetes Service (EKS)
-- Automated unit testing with Jest and Supertest
+- Automated Docker image build
+- Production image verification
+- Application health verification
+
+### CI/CD Automation
+
 - Jenkins CI/CD pipeline
 - Automated source-code checkout
 - Automated dependency installation
+- Automated unit testing with Jest and Supertest
+- Automated Amazon ECR image publishing
+- Amazon ECR image verification
+- Automated Amazon EKS deployment
+- Kubernetes rollout verification
+
+### DevSecOps Security
+
 - SonarCloud Static Application Security Testing (SAST)
 - SonarCloud Quality Gate enforcement
 - Snyk Software Composition Analysis (SCA)
 - Dependency vulnerability analysis with Snyk
-- Automated Docker image build
-- Production image verification
 - Trivy container vulnerability scanning
-- Trivy HIGH/CRITICAL vulnerability quality gate
+- Trivy HIGH/CRITICAL security quality gate
 - Security gate enforcement before Amazon ECR image publishing
-- Amazon ECR image publishing after successful security validation
-- Amazon ECR image verification after publishing
-- Amazon EKS application deployment
-- Kubernetes rollout verification
+
+### Kubernetes & Cloud-Native Deployment
+
+- Manual Amazon EKS deployment validation
+- Automated Amazon EKS deployment through Jenkins
+- Kubernetes application deployment
+- Kubernetes Service and AWS Load Balancer integration
+- Kubernetes Horizontal Pod Autoscaler (HPA)
+- HPA metrics verification
+- Kubernetes Service verification
+
+### Observability
+
+- Prometheus application metrics collection
+- Prometheus Kubernetes ServiceMonitor discovery
+- Prometheus metrics verification
+- Grafana monitoring dashboards
+- Application and Kubernetes monitoring
+
+### Next Security Milestone
+
 - OWASP ZAP Dynamic Application Security Testing (DAST)
-- Prometheus application and infrastructure monitoring
-- Grafana visualization and dashboards
 
 ---
 
 ## Current Progress
 
-The project is being developed incrementally, with each phase documented in detail. The following milestones have been completed or are currently in progress.
+The project has progressed from application development and containerization through AWS infrastructure provisioning, CI/CD automation, DevSecOps security validation, Amazon ECR image publishing, Amazon EKS deployment, Kubernetes orchestration, and runtime monitoring.
 
 ### ✅ Completed
 
-- ✔ Node.js Monitoring Application
-- ✔ Application Refactoring
-- ✔ Unit Testing with Jest and Supertest
-- ✔ Docker Containerization
-- ✔ AWS Infrastructure Provisioned with Terraform
-- ✔ Amazon EKS Cluster
-- ✔ Amazon ECR Repository
-- ✔ Jenkins EC2 Infrastructure
-- ✔ IAM Roles and Instance Profiles
-- ✔ Elastic IP Configuration
-- ✔ Jenkins Installation and Configuration
-- ✔ Docker Installation on Jenkins Server
-- ✔ AWS CLI Installation
-- ✔ kubectl Installation
-- ✔ Helm Installation
-- ✔ Trivy Installation
-- ✔ Jenkins Initial Configuration
-- ✔ Jenkins Pipeline Job Configuration
-- ✔ Jenkinsfile Configuration
-- ✔ Jenkins Pipeline Agent Initialization
-- ✔ JDK 21 Tool Resolution
-- ✔ Node.js Tool Resolution
-- ✔ Explicit Source Code Checkout
-- ✔ Default Jenkins SCM Checkout Disabled
-- ✔ Install Dependencies Stage
-- ✔ Jenkins Workspace Dependency Preparation
-- ✔ Unit Testing Stage
-- ✔ Jest Test Suite Execution
-- ✔ 3 Automated Tests Passed
-- ✔ Successful Unit Testing Pipeline Execution
-- ✔ SonarCloud Project Configuration
-- ✔ Jenkins SonarCloud Server Configuration
-- ✔ Jenkins SonarScanner Configuration
-- ✔ SonarCloud Authentication Credential Configuration
-- ✔ SonarCloud SAST Analysis Stage
-- ✔ Jenkins-Managed SonarScanner Integration
-- ✔ Successful SonarCloud Source-Code Analysis
-- ✔ Successful SonarCloud Analysis Report Upload
-- ✔ SonarCloud Quality Gate Configuration
-- ✔ SonarCloud Quality Gate Evaluation
-- ✔ SonarCloud Quality Gate Passed
-- ✔ SonarCloud Project Dashboard Verification
-- ✔ Snyk Security Plugin Installation
-- ✔ Snyk Authentication Credential Configuration
-- ✔ Snyk Tool Configuration
-- ✔ Snyk Software Composition Analysis (SCA) Stage
-- ✔ Jenkinsfile Snyk SCA Integration
-- ✔ Snyk SCA Pipeline Execution
-- ✔ Snyk Dependency Vulnerability Analysis
-- ✔ Snyk Vulnerability Results Verification
-- ✔ Docker Image Build Stage
-- ✔ Jenkins Docker Image Build Integration
-- ✔ Successful Docker Image Creation
-- ✔ Production Image Verification
-- ✔ Trivy Container Security Scanning Stage
-- ✔ Jenkinsfile Trivy Container Scan Integration
-- ✔ Jenkins Pipeline Trivy Container Scan Execution
-- ✔ Trivy Docker Image Vulnerability Analysis
-- ✔ Trivy HIGH/CRITICAL Security Quality Gate
-- ✔ Trivy Quality Gate Enforcement Before Amazon ECR Push
-- ✔ Trivy Vulnerability Results Verification
-- ✔ Application Health Check
-- ✔ Amazon ECR Authentication
-- ✔ Amazon ECR Image Tagging
-- ✔ Amazon ECR Image Publishing
-- ✔ Amazon ECR Image Verification
-- ✔ Successful Jenkins ECR Push Pipeline Execution
+- ✔ Node.js monitoring application
+- ✔ Application refactoring
+- ✔ Unit testing with Jest and Supertest
+- ✔ Docker containerization
+- ✔ AWS infrastructure provisioned with Terraform
+- ✔ Amazon ECR repository
+- ✔ Amazon EKS cluster
+- ✔ Dedicated Jenkins server on Amazon EC2
+- ✔ Jenkins installation and configuration
+- ✔ Jenkins CI/CD pipeline
+- ✔ SonarCloud SAST and Quality Gate
+- ✔ Snyk Software Composition Analysis (SCA)
+- ✔ Docker production image verification
+- ✔ Trivy container vulnerability scanning
+- ✔ Trivy HIGH/CRITICAL security quality gate
+- ✔ Application health verification
+- ✔ Amazon ECR image publishing and verification
+- ✔ Manual Amazon EKS deployment validation
+- ✔ Automated Amazon EKS deployment through Jenkins
+- ✔ Kubernetes rollout verification
+- ✔ Kubernetes Service and AWS Load Balancer verification
+- ✔ Kubernetes Horizontal Pod Autoscaler (HPA)
+- ✔ Prometheus ServiceMonitor discovery
+- ✔ Prometheus application and Kubernetes metrics collection
+- ✔ Grafana Kubernetes monitoring
+- ✔ Final Amazon EKS application verification
 
-### 🚧 In Progress
 
-- Jenkins CI/CD and DevSecOps Pipeline
-- Amazon EKS application deployment
-- Kubernetes rollout verification
-- OWASP ZAP Dynamic Application Security Testing
+### ⏳ Next Milestone
 
-### 📌 Next Pipeline Milestone
+- OWASP ZAP Dynamic Application Security Testing (DAST)
 
-**Amazon EKS Application Deployment**
+The application is now successfully deployed and running on Amazon EKS, exposed through the Kubernetes Service and AWS Load Balancer, and monitored through Prometheus and Grafana.
 
-The next stage is to deploy the security-validated Docker image from Amazon ECR to the provisioned Amazon EKS cluster.
+The next milestone is therefore to introduce runtime application security testing using OWASP ZAP.
 
 ---
 
 ## Project Roadmap
 
-The project is being implemented in incremental phases, with each milestone building toward a complete end-to-end DevSecOps platform.
+The project is being implemented incrementally, with each milestone building toward a complete end-to-end DevSecOps platform.
 
-| **Phase** | **Status** |
-|-----------|------------|
-| Project Initialization | ✅ |
-| Application Refactoring | ✅ |
-| Unit Testing | ✅ |
-| Docker Containerization | ✅ |
-| Terraform Infrastructure | ✅ |
-| Jenkins Server Setup | ✅ |
-| Jenkins Installation & Configuration | ✅ |
-| Jenkins CI/CD & DevSecOps Pipeline | 🚧 |
-| Amazon ECR Image Publishing | ✅ |
-| Amazon EKS Deployment | ⏳ |
-| Kubernetes Rollout Verification | ⏳ |
-| OWASP ZAP DAST | ⏳ |
-| Prometheus & Grafana | ⏳ |
+| Phase | Status |
+|---|---|
+| Project Initialization | ✅ Completed |
+| Application Refactoring | ✅ Completed |
+| Unit Testing | ✅ Completed |
+| Docker Containerization | ✅ Completed |
+| Terraform Infrastructure | ✅ Completed |
+| Jenkins Server Setup | ✅ Completed |
+| Jenkins Installation & Configuration | ✅ Completed |
+| Jenkins CI/CD & DevSecOps Pipeline | ✅ Completed |
+| Amazon ECR Image Publishing | ✅ Completed |
+| Amazon EKS Deployment | ✅ Completed |
+| Kubernetes Rollout Verification | ✅ Completed |
+| Prometheus & Grafana Monitoring | ✅ Completed |
+| OWASP ZAP DAST | ⏳ Planned |
+| Pull Request Validation | ⏳ Planned |
+| Secrets Detection | ⏳ Planned |
+| GitHub Webhook Integration | ⏳ Planned |
+| GitHub Actions | ⏳ Planned |
+| Complete DevSecOps Platform Integration & Validation | ⏳ Planned |
 
 ### Legend
 
@@ -218,32 +225,369 @@ The project is being implemented in incremental phases, with each milestone buil
 
 ## Project Objectives
 
-The objectives of this project are to:
+The primary objectives of this project are to:
 
 - Develop a production-oriented Node.js monitoring application.
+- Refactor the application for improved structure, maintainability, and production readiness.
+- Implement automated unit testing using Jest and Supertest.
 - Containerize the application using Docker.
-- Provision AWS infrastructure using Terraform.
-- Build an automated Jenkins CI/CD pipeline.
+- Provision AWS infrastructure using Terraform and Infrastructure as Code (IaC).
+- Deploy and configure a dedicated Jenkins automation server on Amazon EC2.
+- Build an automated Jenkins CI/CD and DevSecOps pipeline.
 - Integrate security controls throughout the software delivery lifecycle.
-- Implement SAST using SonarCloud.
-- Implement SCA using Snyk.
-- Implement container image security scanning using Trivy.
-- Enforce a Trivy security quality gate before image promotion.
-- Publish validated container images to Amazon ECR.
+- Implement Static Application Security Testing (SAST) using SonarCloud.
+- Enforce SonarCloud Quality Gate evaluation.
+- Implement Software Composition Analysis (SCA) using Snyk.
+- Perform container image vulnerability scanning using Trivy.
+- Enforce a Trivy HIGH/CRITICAL security quality gate before image promotion.
+- Verify the production Docker image before release.
+- Perform an application health check before image promotion.
+- Publish security-validated container images to Amazon ECR.
 - Verify successfully published container images in Amazon ECR.
-- Deploy the validated application to Amazon EKS.
-- Verify Kubernetes application rollout.
-- Perform runtime/application security testing using OWASP ZAP.
-- Implement application and infrastructure monitoring using Prometheus and Grafana.
-- Demonstrate Infrastructure as Code, CI/CD, Kubernetes, and DevSecOps best practices.
+- Deploy validated container images to Amazon EKS.
+- Validate Kubernetes deployment through both manual and automated deployment approaches.
+- Verify successful Kubernetes application rollout.
+- Verify Kubernetes Services and AWS Load Balancer availability.
+- Implement Kubernetes application health verification.
+- Implement Kubernetes Horizontal Pod Autoscaling (HPA).
+- Implement Prometheus ServiceMonitor-based application metrics discovery.
+- Collect application and Kubernetes metrics using Prometheus.
+- Visualize application and Kubernetes monitoring data using Grafana.
+- Demonstrate an observable, cloud-native application running on Amazon EKS.
+- Demonstrate an end-to-end software delivery lifecycle from source-code development through testing, security validation, container image promotion, Kubernetes deployment, and monitoring.
+
+### Future Objectives
+
+The following objectives represent planned extensions to the current implementation:
+
+- Implement Dynamic Application Security Testing (DAST) using OWASP ZAP.
+- Automate runtime security testing against the deployed Amazon EKS application.
+- Evaluate and document OWASP ZAP security findings.
+- Integrate DAST security results into the Jenkins pipeline.
+- Implement Pull Request Validation as an additional source-control security and quality control.
+- Implement automated Secrets Detection to help prevent sensitive credentials and secrets from being committed.
+- Integrate GitHub Webhooks with Jenkins for automated pipeline triggering.
+- Evaluate GitHub Actions as an additional CI/CD automation workflow.
+- Add additional monitoring dashboards and observability enhancements.
+- Complete and validate the broader end-to-end DevSecOps platform.
+
+The project ultimately aims to demonstrate a reproducible, production-oriented DevSecOps delivery platform on AWS that combines Infrastructure as Code, CI/CD automation, security controls, containerization, Kubernetes orchestration, observability, and runtime security testing.
 
 ---
 
 ## Solution Architecture
 
-The final solution architecture demonstrates the complete DevSecOps workflow, showing how application code progresses from source control through automated testing, security validation, containerization, image security gating, registry promotion, deployment, runtime security testing, and monitoring.
+The solution architecture demonstrates the implemented end-to-end DevSecOps lifecycle of the Node.js monitoring application, covering source-code management, automated testing, security validation, container image promotion, Amazon EKS deployment, Kubernetes verification, and observability.
 
-### End-to-End Flow
+The architecture follows a **security-first release flow**, where the application and container image pass automated quality and security controls before the validated image is promoted to Amazon ECR and deployed to Amazon EKS.
+
+### End-to-End DevSecOps Architecture
+
+```text
+GitHub
+   │
+   │ Source Code
+   ▼
+Jenkins
+   │
+   ├── Checkout Source Code
+   │
+   ├── Install Dependencies
+   │
+   ├── Unit Testing
+   │      └── Jest / Supertest
+   │
+   ├── SonarCloud
+   │      ├── SAST Analysis
+   │      └── Quality Gate
+   │
+   ├── Snyk
+   │      └── SCA / Dependency Analysis
+   │
+   ├── Docker
+   │      └── Build Container Image
+   │
+   ├── Production Image Verification
+   │      ├── Node.js Runtime Verification
+   │      ├── npm Removal Verification
+   │      └── npx Removal Verification
+   │
+   ├── Trivy
+   │      ├── Container Vulnerability Scan
+   │      ├── Alpine OS Package Analysis
+   │      ├── Node.js Dependency Analysis
+   │      └── HIGH/CRITICAL Security Quality Gate
+   │             │
+   │             ├── FAIL ──► Stop Pipeline
+   │             │
+   │             └── PASS
+   │
+   ├── Application Health Check
+   │      └── /health
+   │
+   ├── Amazon ECR
+   │      ├── Authenticate
+   │      ├── Tag Validated Image
+   │      ├── Push Image
+   │      └── Verify Published Image
+   │
+   ▼
+Amazon EKS
+   │
+   ├── Kubernetes Deployment
+   │      ├── Application Pods
+   │      └── ECR Image
+   │
+   ├── Kubernetes Service
+   │      └── LoadBalancer
+   │
+   ├── AWS Load Balancer
+   │      └── External Application Access
+   │
+   ├── Kubernetes Rollout Verification
+   │      ├── Deployment Status
+   │      ├── Pod Readiness
+   │      └── Replica Availability
+   │
+   ├── Horizontal Pod Autoscaler
+   │      └── HPA Verification
+   │
+   └── Kubernetes Service Verification
+          │
+          ▼
+Application Health & Runtime Validation
+   │
+   ├── Application Health Endpoint
+   │      └── /health
+   │
+   ├── Application Endpoint
+   │      └── /
+   │
+   └── Prometheus Metrics Endpoint
+          └── /metrics
+          │
+          ▼
+Prometheus
+   │
+   ├── ServiceMonitor Discovery
+   ├── Kubernetes Metrics Collection
+   └── Application Metrics Collection
+          │
+          ▼
+Grafana
+   │
+   └── Monitoring Dashboards
+          ├── Application Health
+          ├── Application Metrics
+          ├── Kubernetes Metrics
+          └── Infrastructure Visibility
+```
+
+### Planned Runtime Security Extension
+
+The next security milestone extends the implemented architecture with Dynamic Application Security Testing (DAST):
+
+```text
+Running Amazon EKS Application
+             │
+             ▼
+        OWASP ZAP
+             │
+             ▼
+     Dynamic Application
+     Security Testing (DAST)
+             │
+             ├── Runtime Application Scanning
+             ├── Security Finding Detection
+             └── DAST Results Evaluation
+```
+
+### Architecture Layers
+
+The implemented solution is organized into the following architectural layers:
+
+| Layer | Technology | Responsibility |
+|---|---|---|
+| **Source Control** | GitHub | Application source-code management and version control |
+| **CI/CD Automation** | Jenkins | Pipeline orchestration and automated software delivery |
+| **Application Testing** | Jest / Supertest | Automated application unit and integration testing |
+| **SAST** | SonarCloud | Static source-code security and quality analysis |
+| **SCA** | Snyk | Third-party dependency and open-source vulnerability analysis |
+| **Containerization** | Docker | Application packaging and reproducible container image creation |
+| **Container Security** | Trivy | Container image vulnerability scanning |
+| **Security Quality Gate** | Trivy | Blocks images containing configured HIGH/CRITICAL vulnerabilities |
+| **Container Registry** | Amazon ECR | Storage, publishing, and verification of validated container images |
+| **Container Orchestration** | Amazon EKS | Kubernetes-based application deployment and management |
+| **Application Exposure** | Kubernetes Service / AWS Load Balancer | External access to the deployed application |
+| **Application Scaling** | Kubernetes HPA | Automatic application replica scaling based on configured metrics |
+| **Runtime Health Validation** | Kubernetes Health Checks | Verification of application availability and runtime health |
+| **Metrics Discovery** | Prometheus ServiceMonitor | Automatic discovery and scraping configuration for application metrics |
+| **Metrics Collection** | Prometheus | Application and Kubernetes metrics collection |
+| **Visualization** | Grafana | Application, Kubernetes, and infrastructure monitoring dashboards |
+
+
+### Planned Security Layer
+
+| Layer | Technology | Responsibility | Status |
+|---|---|---|---|
+| **DAST** | OWASP ZAP | Dynamic security testing against the running Amazon EKS application | ⏳ Planned |
+
+
+
+### DevSecOps Security Flow
+
+Security is integrated throughout the application delivery lifecycle rather than being performed only after deployment.
+
+```text
+Source Code
+    │
+    ▼
+Unit Testing
+    │
+    ▼
+SonarCloud SAST
+    │
+    ▼
+SonarCloud Quality Gate
+    │
+    ▼
+Snyk SCA
+    │
+    ▼
+Docker Image Build
+    │
+    ▼
+Production Image Verification
+    │
+    ▼
+Trivy Container Scan
+    │
+    ▼
+HIGH/CRITICAL Security Quality Gate
+    │
+    ├────────────── FAIL ──────────────► Pipeline Stops
+    │
+    ▼ PASS
+Application Health Check
+    │
+    ▼
+Amazon ECR
+    │
+    ▼
+ECR Image Verification
+    │
+    ▼
+Amazon EKS Deployment
+    │
+    ▼
+Kubernetes Rollout Verification
+    │
+    ▼
+Application Runtime
+    │
+    ├── Prometheus Metrics
+    │
+    ├── Grafana Monitoring
+    │
+    └── OWASP ZAP DAST
+```
+
+---
+
+## Container Image Promotion Flow
+
+The container promotion process ensures that only a validated image progresses toward deployment.
+
+```text
+Docker Build
+     │
+     ▼
+Production Image Verification
+     │
+     ▼
+Trivy Vulnerability Scan
+     │
+     ▼
+HIGH/CRITICAL Evaluation
+     │
+     ├───────────────┐
+     │               │
+     ▼               ▼
+   PASS             FAIL
+     │               │
+     ▼               ▼
+Application       Pipeline
+Health Check       Stops
+     │
+     ▼
+Amazon ECR
+     │
+     ▼
+ECR Image Verification
+     │
+     ▼
+Amazon EKS
+```
+
+> This establishes Amazon ECR as the trusted container-image registry between the CI/CD security-validation process and the Amazon EKS deployment environment.
+
+---
+
+## Amazon EKS Deployment Architecture
+
+The validated container image is deployed to Amazon EKS using Kubernetes manifests.
+
+```text
+Amazon ECR
+    │
+    │ Validated Container Image
+    ▼
+Amazon EKS Cluster
+    │
+    ├── Kubernetes Deployment
+    │      │
+    │      ├── Pod
+    │      ├── Pod
+    │      └── Replicas
+    │
+    ├── Horizontal Pod Autoscaler
+    │
+    └── Kubernetes Service
+           │
+           ▼
+     AWS Load Balancer
+           │
+           ▼
+     Running Application
+```
+
+The project validates the EKS deployment through both:
+
+1. Manual Amazon EKS deployment, used to validate the Kubernetes manifests, ECR image integration, application availability, Service, and LoadBalancer behavior.
+2. Automated Amazon EKS deployment, integrated into Jenkins so the validated container image can be deployed automatically to the EKS cluster.
+
+---
+
+### Manual Amazon EKS Deployment
+
+Before automating the deployment through Jenkins, the application was manually deployed to Amazon EKS.
+
+The manual deployment served as an important baseline validation step.
+
+It verified that:
+
+1. The Amazon EKS cluster was operational.
+2. Kubernetes worker nodes were available.
+3. Kubernetes manifests were valid.
+4. The application container could be pulled from Amazon ECR.
+5. Kubernetes Pods could start successfully.
+6. The Kubernetes Service could expose the application.
+7. AWS could provision the required Load Balancer.
+8. The application could be accessed externally.
+9. The /health endpoint returned a successful response.
+10. The /metrics endpoint exposed Prometheus metrics.
+
+Manual Deployment Flow
 
 ```text
 GitHub
@@ -282,42 +626,713 @@ Jenkins
    │      └── Verify Published Image
    │
    ├── Amazon EKS
-   │      └── Application Deployment
+   │      ├── Application Deployment
+   │      ├── Kubernetes Service
+   │      └── AWS Load Balancer
    │
-   ├── Kubernetes Rollout Verification
-   │
-   ├── OWASP ZAP
-   │      └── DAST
+   ├── Kubernetes
+   │      ├── Rollout Verification
+   │      ├── HPA Verification
+   │      └── Service Verification
    │
    ├── Prometheus
+   │      ├── ServiceMonitor Discovery
    │      └── Metrics Collection
    │
-   └── Grafana
-          └── Monitoring Dashboards
+   ├── Grafana
+   │      └── Monitoring Dashboards
+   │
+   └── OWASP ZAP
+          └── DAST
 ```
 
-#### Security Control Strategy
+Manual deployment provided confidence that the Kubernetes manifests, container image, service configuration, networking, and application endpoints were working correctly before introducing Jenkins automation.
 
-The pipeline applies security controls at different stages of the software delivery lifecycle:
+---
 
-| **Security Layer**                 | **Tool**      | **Purpose** |
-|------------------------------------|---------------|-------------|
-| **Source Code Security**           | SonarCloud    | Static Application Security Testing (SAST) |
-| **Dependency Security**            | Snyk          | Software Composition Analysis (SCA) |
-| **Container Security**             | Trivy         | Docker image vulnerability scanning |
-| **Release Quality Gate**           | Trivy         | Prevent HIGH/CRITICAL container vulnerabilities from being promoted |
-| **Runtime/Application Security**   | OWASP ZAP     | Dynamic Application Security Testing (DAST) |
+## Automated Amazon EKS Deployment
 
-> Important: Trivy and OWASP ZAP serve different security purposes. Trivy evaluates the container image before promotion to Amazon ECR, while OWASP ZAP performs dynamic application security testing against the deployed application.
+After successful manual validation, the deployment process was integrated into the Jenkins CI/CD pipeline.
+
+The automated deployment allows Jenkins to deploy the validated Amazon ECR image directly to the Amazon EKS cluster.
+
+The automated flow is:
+
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ▼
+CI/CD Pipeline
+   │
+   ├── Unit Tests
+   │
+   ├── SonarCloud SAST
+   │
+   ├── SonarCloud Quality Gate
+   │
+   ├── Snyk SCA
+   │
+   ├── Docker Build
+   │
+   ├── Production Image Verification
+   │
+   ├── Trivy Scan
+   │
+   ├── Trivy HIGH/CRITICAL Quality Gate
+   │
+   ├── Application Health Check
+   │
+   ├── Amazon ECR Push
+   │
+   ├── ECR Image Verification
+   │
+   ▼
+Amazon EKS Deployment
+   │
+   ▼
+Kubernetes Rollout Verification
+   │
+   ▼
+Kubernetes Service Verification
+   │
+   ▼
+Application Health Check
+   │
+   ▼
+Prometheus Monitoring
+   │
+   ▼
+Grafana Visualization
+```
+
+This establishes a complete automated delivery path from GitHub source code to a running application on Amazon EKS.
+
+---
+
+## Manual vs Automated Amazon EKS Deployment
+
+The project intentionally implements both deployment approaches.
+
+### Manual vs Automated Amazon EKS Deployment
+
+The project intentionally implements both deployment approaches.
+
+| Deployment Method | Purpose | Result |
+|---|---|---|
+| Manual Amazon EKS Deployment | Validate Kubernetes configuration and application deployment independently | ✅ Successful |
+| Automated Jenkins EKS Deployment | Integrate Kubernetes deployment into the CI/CD pipeline | ✅ Successful |
+| Kubernetes Rollout Verification | Confirm Pods become ready successfully | ✅ Passed |
+| Kubernetes Service Verification | Confirm application networking and service exposure | ✅ Passed |
+| AWS Load Balancer Verification | Confirm external application accessibility | ✅ Passed |
+| Application Health Check | Confirm application runtime health | ✅ Passed |
+| Jenkins EKS Pipeline | Confirm repeatable automated deployment | ✅ Successful |
+
+The manual deployment therefore served as the deployment baseline, while the automated deployment transformed the validated deployment process into a repeatable CI/CD capability.
+
+---
+
+## Kubernetes Deployment and Runtime Architecture
+
+The running application follows this architecture:
+
+```text
+Internet
+   │
+   ▼
+AWS Load Balancer
+   │
+   ▼
+Kubernetes Service
+   │
+   ▼
+node-monitoring-app Pods
+   │
+   ▼
+Node.js Application
+   │
+   ├── /
+   ├── /health
+   └── /metrics
+```
+
+The /health endpoint is used to verify application availability.
+
+The /metrics endpoint exposes Prometheus-compatible application metrics.
+
+---
+
+## Kubernetes Rollout and Availability Verification
+
+The automated deployment includes Kubernetes rollout verification.
+
+```text
+Jenkins
+   │
+   ▼
+Kubernetes Deployment
+   │
+   ▼
+Pod Creation
+   │
+   ▼
+Pod Readiness
+   │
+   ▼
+Rollout Verification
+   │
+   ├── PASS ──► Continue
+   │
+   └── FAIL ──► Pipeline Stops
+```
+
+This prevents Jenkins from reporting a successful deployment when the Kubernetes application has not successfully rolled out.
+
+The project also verifies:
+
+- Kubernetes Pods
+- Deployment status
+- Kubernetes Service
+- AWS Load Balancer
+- Application health endpoint
+- External application accessibility
+
+---
+
+## Kubernetes Horizontal Pod Autoscaler
+
+The deployed application also includes Horizontal Pod Autoscaler verification.
+
+The HPA provides a Kubernetes-native mechanism for automatically adjusting application replicas based on configured resource utilization.
+
+```text
+Application Load
+        │
+        ▼
+Kubernetes Metrics
+        │
+        ▼
+Horizontal Pod Autoscaler
+        │
+        ├── Scale Out
+        │
+        └── Scale In
+        │
+        ▼
+Application Pods
+```
+
+HPA verification provides additional evidence that the Kubernetes deployment is not only running but also has an autoscaling capability.
+
+---
+
+## Prometheus and Grafana Monitoring
+
+After successfully deploying the application to Amazon EKS, Prometheus and Grafana were implemented to provide observability into the running application and Kubernetes environment.
+
+Monitoring was intentionally introduced after deployment validation because the application needed to be running inside the Kubernetes environment before meaningful runtime metrics could be collected and visualized.
+
+### Why Prometheus Was Implemented
+
+Prometheus provides metrics collection for the running application and Kubernetes environment.
+
+The Node.js application exposes a Prometheus-compatible /metrics endpoint.
+
+Prometheus can therefore collect information about:
+
+- Application requests
+- Application runtime behavior
+- Node.js process metrics
+- Application performance indicators
+- Kubernetes infrastructure metrics
+- Kubernetes workload health
+
+The Kubernetes ServiceMonitor configuration allows Prometheus to discover the application metrics endpoint automatically.
+
+### Prometheus Monitoring Flow
+
+```text
+Node.js Application
+        │
+        │ /metrics
+        ▼
+Kubernetes Service
+        │
+        ▼
+ServiceMonitor
+        │
+        ▼
+Prometheus
+        │
+        ▼
+Metrics Database
+```
+
+This provides automated metrics discovery and collection rather than relying on manual inspection of the application.
+
+---
+
+## Why Grafana Was Implemented
+
+Prometheus is primarily responsible for collecting and storing metrics, while Grafana provides visualization and dashboards.
+
+Grafana was implemented to provide a visual representation of the running Kubernetes application and infrastructure.
+
+This allows the project to move beyond deployment verification into runtime observability.
+
+The monitoring architecture is:
+
+```text
+Running Application
+        │
+        ▼
+Prometheus
+        │
+        ▼
+Grafana
+        │
+        ▼
+Monitoring Dashboards
+```
+
+Grafana provides a centralized view of application and Kubernetes metrics, making it easier to identify:
+
+- Application activity
+- Resource utilization
+- Kubernetes workload behavior
+- Pod health
+- Runtime performance
+- Infrastructure conditions
+- Potential operational issues
+
+The implementation demonstrates that a production-oriented DevOps platform should not stop at successful deployment. The running application should also be observable.
+
+---
+
+## Monitoring Architecture
+
+The monitoring architecture is:
+
+```text
+Node.js Application
+        │
+        ├── /
+        ├── /health
+        └── /metrics
+                │
+                ▼
+        Kubernetes Service
+                │
+                ▼
+          ServiceMonitor
+                │
+                ▼
+             Prometheus
+                │
+                ▼
+              Grafana
+                │
+                ▼
+        Monitoring Dashboards
+```
+
+This creates an observability layer around the deployed application.
+
+---
+
+## Runtime Security Architecture
+
+The next security layer is OWASP ZAP DAST.
+
+Unlike SonarCloud, Snyk, and Trivy, which evaluate the application source code, dependencies, or container image before deployment, OWASP ZAP evaluates the running application.
+
+```text
+Amazon EKS
+    │
+    ▼
+AWS Load Balancer
+    │
+    ▼
+Running Node.js Application
+    │
+    ▼
+OWASP ZAP
+    │
+    ├── Dynamic Application Scanning
+    ├── Runtime Security Testing
+    ├── Security Finding Detection
+    └── Results Evaluation
+```
+
+This provides an additional security layer by testing the deployed application's externally accessible behavior and identifying potential runtime web-application security issues.
+
+---
+
+## Future CI/CD Security and Automation Architecture
+
+After the current Jenkins-based deployment, monitoring, and observability implementation, additional controls will extend the platform toward a more complete DevSecOps workflow.
+
+```text
+GitHub
+   │
+   ├── Pull Request
+   │      │
+   │      ├── Pull Request Validation
+   │      └── Secrets Detection
+   │
+   └── GitHub Webhook
+          │
+          ▼
+       Jenkins
+          │
+          ▼
+     CI/CD Pipeline
+          │
+          ├── Testing
+          ├── SAST
+          ├── SCA
+          ├── Container Security
+          ├── ECR Promotion
+          ├── EKS Deployment
+          ├── DAST
+          └── Monitoring
+```
+
+> GitHub Webhook integration will allow repository events to automatically trigger Jenkins builds instead of relying on manual pipeline execution.
+
+> Pull Request Validation and Secrets Detection will provide additional controls earlier in the software-development lifecycle, helping identify quality, security, and credential-exposure issues before changes are merged.
+
+> GitHub Actions will subsequently be implemented as an additional CI/CD automation workflow, providing an alternative automation mechanism alongside Jenkins.
+
+---
+
+## Target Architecture
+
+The long-term target architecture combines source-control security, CI/CD automation, DevSecOps scanning, container security, cloud-native deployment, observability, and runtime security.
+
+```text
+                         ┌──────────────────────┐
+                         │       GitHub         │
+                         │ Source Control       │
+                         └──────────┬───────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    │                               │
+                    ▼                               ▼
+          Pull Request Validation           GitHub Webhook
+                    │                               │
+                    └───────────────┬───────────────┘
+                                    ▼
+                              ┌───────────┐
+                              │  Jenkins  │
+                              └─────┬─────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │ CI/CD & DevSecOps   │
+                         └──────────┬──────────┘
+                                    │
+             ┌──────────────────────┼──────────────────────┐
+             │                      │                      │
+             ▼                      ▼                      ▼
+        Unit Testing          SonarCloud               Snyk
+             │                  SAST/QG                 SCA
+             └──────────────────────┬──────────────────────┘
+                                    ▼
+                              Docker Build
+                                    │
+                                    ▼
+                         Production Image Verification
+                                    │
+                                    ▼
+                               Trivy Scan
+                                    │
+                                    ▼
+                         HIGH/CRITICAL Quality Gate
+                                    │
+                          ┌─────────┴─────────┐
+                          │                   │
+                        FAIL                 PASS
+                          │                   │
+                          ▼                   ▼
+                       STOP              Amazon ECR
+                                              │
+                                              ▼
+                                      ECR Verification
+                                              │
+                                              ▼
+                                        Amazon EKS
+                                              │
+                         ┌────────────────────┼────────────────────┐
+                         │                    │                    │
+                         ▼                    ▼                    ▼
+                    Deployment              HPA              Kubernetes
+                         │                                      Service
+                         ▼                                         │
+                  Rollout Verification                              ▼
+                         │                                  AWS Load Balancer
+                         ▼                                         │
+                  Running Application                              ▼
+                         │                                  External Access
+              ┌──────────┼───────────┐
+              │          │           │
+              ▼          ▼           ▼
+           /health       /        /metrics
+                                     │
+                                     ▼
+                                Prometheus
+                                     │
+                              ServiceMonitor
+                                     │
+                                     ▼
+                                  Grafana
+                                     │
+                                     ▼
+                            Monitoring Dashboards
+
+                    Running Application
+                            │
+                            ▼
+                       OWASP ZAP
+                            │
+                            ▼
+                           DAST
+
+                    GitHub Actions
+                            │
+                            ▼
+                 Additional CI/CD Workflow
+```
+
+> This architecture represents the project's progression from application development and infrastructure provisioning to a complete cloud-native DevSecOps platform incorporating CI/CD automation, security gates, container-image promotion, Kubernetes deployment, autoscaling, observability, runtime security testing, source-control security, webhook-driven automation, and GitHub Actions.
+
+
+---
+
+## Security Control Strategy
+
+The pipeline applies security controls at multiple stages of the software delivery lifecycle. Each security tool addresses a different layer of the DevSecOps process, providing defense in depth from source-code analysis through container security and runtime application security.
+
+| Security Layer | Tool | Purpose | Implementation Status |
+|---|---|---|---|
+| **Source Code Security** | SonarCloud | Static Application Security Testing (SAST) and source-code quality analysis | ✅ Implemented |
+| **Dependency Security** | Snyk | Software Composition Analysis (SCA) and third-party dependency vulnerability analysis | ✅ Implemented |
+| **Container Security** | Trivy | Docker container image vulnerability scanning | ✅ Implemented |
+| **Release Security Quality Gate** | Trivy | Prevent HIGH/CRITICAL container vulnerabilities from being promoted | ✅ Implemented |
+| **Container Image Promotion** | Amazon ECR | Store and promote security-validated container images | ✅ Implemented |
+| **Deployment Security** | Amazon EKS | Deploy validated container images into the Kubernetes environment | ✅ Implemented |
+| **Runtime Monitoring** | Prometheus | Collect application and Kubernetes metrics from the running environment | ✅ Implemented |
+| **Visualization** | Grafana | Visualize application, Kubernetes, and infrastructure metrics | ✅ Implemented |
+| **Runtime/Application Security** | OWASP ZAP | Dynamic Application Security Testing (DAST) against the deployed application | ⏳ Next Milestone |
+
+### Security Control Flow
+
+```text
+Source Code
+    │
+    ▼
+SonarCloud SAST
+    │
+    ▼
+SonarCloud Quality Gate
+    │
+    ▼
+Snyk SCA
+    │
+    ▼
+Docker Image Build
+    │
+    ▼
+Production Image Verification
+    │
+    ▼
+Trivy Container Scan
+    │
+    ▼
+Trivy HIGH/CRITICAL Quality Gate
+    │
+    ├── FAIL ──► Stop Pipeline
+    │
+    ▼ PASS
+Application Health Check
+    │
+    ▼
+Amazon ECR
+    │
+    ▼
+ECR Image Verification
+    │
+    ▼
+Amazon EKS
+    │
+    ▼
+Kubernetes Deployment
+    │
+    ▼
+Kubernetes Rollout Verification
+    │
+    ▼
+Running Application
+    │
+    ├───────────────┬─────────────────┐
+    │               │                 │
+    ▼               ▼                 ▼
+Prometheus       Grafana         OWASP ZAP
+Metrics          Visualization   DAST
+    │                                 │
+    │                                 └──► Next Security Milestone
+    ▼
+Application & Kubernetes
+Observability
+```
+
+### Defense-in-Depth Security Model
+
+The project implements security controls at different points in the application delivery lifecycle:
+
+1. SonarCloud analyzes the source code before the application progresses through the pipeline.
+2. Snyk analyzes third-party dependencies for known vulnerabilities.
+3. Trivy scans the built container image for operating-system and application dependency vulnerabilities.
+4. Trivy HIGH/CRITICAL Quality Gate acts as a release control point and prevents non-compliant images from being promoted to Amazon ECR.
+5. Amazon ECR stores the validated container image used for deployment.
+6. Amazon EKS deploys the validated image into the Kubernetes environment.
+7. Prometheus and Grafana provide monitoring and observability of the running application and Kubernetes environment.
+8. OWASP ZAP will provide the next runtime security layer by dynamically testing the deployed application for potential web-application security vulnerabilities.
+
+> Security principle: Security controls are applied throughout the software delivery lifecycle rather than being limited to a single stage of the pipeline.
+
+> Important: Trivy and OWASP ZAP address different security concerns. Trivy evaluates the container image before deployment and promotion, while OWASP ZAP performs dynamic security testing against the running application after deployment to Amazon EKS.
+
+---
+
+## Release Promotion Model
+
+The release promotion model defines how application changes progress through testing, security validation, container publishing, Kubernetes deployment, monitoring, and runtime security testing.
+
+```text
+Source Code
+     │
+     ▼
+Unit Tests
+     │
+     ▼
+SonarCloud SAST
+     │
+     ▼
+SonarCloud Quality Gate
+     │
+     ▼
+Snyk SCA
+     │
+     ▼
+Docker Build
+     │
+     ▼
+Production Image Verification
+     │
+     ▼
+Trivy Container Scan
+     │
+     ▼
+Trivy HIGH/CRITICAL Quality Gate
+     │
+     ├── FAIL ──► Pipeline Stops
+     │
+     ▼
+Application Health Check
+     │
+     ▼
+Amazon ECR
+     │
+     ▼
+ECR Image Verification
+     │
+     ▼
+Amazon EKS Deployment
+     │
+     ▼
+Kubernetes Rollout Verification
+     │
+     ▼
+Prometheus Monitoring
+     │
+     ▼
+Grafana Visualization
+     │
+     ▼
+OWASP ZAP DAST
+     │
+     └── Next Milestone
+```
+
+---
+
+## Why OWASP ZAP DAST Is the Next Milestone
+
+OWASP ZAP is the next milestone because the application is now successfully deployed and accessible as a running web application.
+
+Earlier security stages focus primarily on source code, dependencies, and the container image:
+
+```text
+SonarCloud
+   │
+   └── Source Code Security
+
+Snyk
+   │
+   └── Dependency Security
+
+Trivy
+   │
+   └── Container Security
+```
+> These controls are important, but they do not replace testing against the actual running application.
+
+OWASP ZAP introduces the next layer:
+
+```text
+Running Amazon EKS Application
+             │
+             ▼
+          OWASP ZAP
+             │
+             ▼
+Dynamic Application Security Testing
+```
+
+DAST will allow the project to test the application from an external/runtime perspective and identify potential web application security issues that may only become visible when the application is actually running.
+
+The next milestone therefore completes another major part of the DevSecOps security lifecycle:
+
+```text
+Code Security
+      │
+      ▼
+Dependency Security
+      │
+      ▼
+Container Security
+      │
+      ▼
+Runtime Application Security
+      │
+      ▼
+OWASP ZAP DAST
+```
+
+The implementation of DAST will also be performed against the deployed Amazon EKS application rather than against an undeployed development artifact.
 
 ---
 
 ## AWS Infrastructure Provisioned
 
-The AWS infrastructure for this project has been provisioned using Terraform and currently includes:
+The AWS infrastructure for this project is provisioned and managed using Terraform. It includes the following resources:
 
 - Amazon VPC
-- Public and Private Subnets
+- Public Subnets
+- Private Subnets
 - Internet Gateway
 - NAT Gateway
 - Route Tables
@@ -329,46 +1344,53 @@ The AWS infrastructure for this project has been provisioned using Terraform and
 - Jenkins IAM Instance Profile
 - Jenkins Elastic IP
 
-The EKS cluster and ECR repository provide the infrastructure required for the next stages of the application delivery workflow.
+The Amazon ECR repository provides the container image registry, while Amazon EKS provides the Kubernetes platform for deploying and orchestrating the application.
+
+The Jenkins EC2 instance provides the CI/CD automation environment used to build, test, scan, publish, and deploy the application.
 
 ---
 
 ## Technology Stack
 
 | Layer | Technology |
-| ----- | ---------- |
-| **Programming Language** | Node.js |
-| **Backend Framework** | Express.js |
-| **Monitoring Library** | Prometheus Client |
-| **Unit Testing** | Jest, Supertest |
-| **Containerization** | Docker |
-| **Infrastructure as Code** | Terraform |
-| **Cloud Provider** | Amazon Web Services (AWS) |
-| **Container Registry** | Amazon Elastic Container Registry (Amazon ECR) |
-| **Container Orchestration** | Amazon Elastic Kubernetes Service (Amazon EKS) |
-| **Continuous Integration / Deployment** | Jenkins |
-| **SAST** | SonarCloud |
-| **SCA / Dependency Scanning** | Snyk |
-| **Container Security** | Trivy |
-| **Container Security Quality Gate** | Trivy HIGH/CRITICAL Gate |
-| **DAST** | OWASP ZAP *(Upcoming)* |
-| **Monitoring** | Prometheus *(Upcoming)* |
-| **Visualization** | Grafana *(Upcoming)* |
-| **Version Control** | Git |
-| **Repository Hosting** | GitHub |
+|---|---|
+| Programming Language | Node.js |
+| Backend Framework | Express.js |
+| Monitoring Library | prom-client |
+| Unit Testing | Jest, Supertest |
+| Containerization | Docker |
+| Infrastructure as Code | Terraform |
+| Cloud Provider | Amazon Web Services (AWS) |
+| Container Registry | Amazon Elastic Container Registry (Amazon ECR) |
+| Container Orchestration | Amazon Elastic Kubernetes Service (Amazon EKS) |
+| Continuous Integration / Continuous Deployment | Jenkins |
+| Static Application Security Testing (SAST) | SonarCloud |
+| Software Composition Analysis (SCA) | Snyk |
+| Container Security | Trivy |
+| Container Security Quality Gate | Trivy HIGH/CRITICAL Gate |
+| Monitoring | Prometheus |
+| Visualization | Grafana |
+| Dynamic Application Security Testing (DAST) | OWASP ZAP — Next Milestone |
+| Version Control | Git |
+| Repository Hosting | GitHub |
 
 ---
 
 ## Project Structure
 
-The project consists of four major components:
+The repository is organized into application code, infrastructure provisioning, Kubernetes deployment configuration, CI/CD automation, documentation, and project evidence.
 
-- Application source code
-- Infrastructure as Code
-- Project documentation
-- Supporting screenshots
-
-As additional phases are completed, the repository will expand with Kubernetes manifests, Jenkins pipeline definitions, monitoring resources, and additional DevSecOps automation.
+```text
+end-to-end-node-ci-cd-devsecops/
+├── app/                  # Node.js application source code and tests
+├── infra/                # Terraform AWS infrastructure configuration
+├── k8s/                  # Kubernetes deployment, Service, HPA, and monitoring manifests
+├── docs/                 # Phase-by-phase project documentation
+├── screenshots/          # Implementation and verification evidence
+├── Jenkinsfile           # Jenkins CI/CD and DevSecOps pipeline definition
+├── .gitignore            # Git ignore configuration
+└── README.md             # Project overview and documentation index
+```
 
 ---
 
@@ -406,7 +1428,14 @@ end-to-end-node-ci-cd-devsecops/
 │   ├── eks.tf
 │   ├── jenkins.tf
 │   ├── outputs.tf
-│   └── ...
+│   
+│
+├── k8s/
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── hpa.yaml
+│   ├── servicemonitor.yaml
+│   
 │
 ├── screenshots/
 │   ├── 01-project-initialization/
@@ -422,19 +1451,14 @@ end-to-end-node-ci-cd-devsecops/
 ├── Jenkinsfile
 └── README.md
 ```
-The Phase 8 screenshot directory documents the Jenkins CI/CD and DevSecOps implementation, including Jenkinsfile configuration, tool resolution, security integrations, Docker image creation, Trivy scanning, security quality gating, ECR publishing, and image verification.
-
-> **Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented.**
 
 ---
 
 ## Project Workflow
 
-This project is developed using an incremental engineering approach, where each phase builds upon the previous one to deliver a complete end-to-end DevSecOps platform.
+This project follows an incremental engineering approach in which each phase builds upon the previous phase to deliver a complete end-to-end DevSecOps platform.
 
-Rather than implementing all components simultaneously, the solution is constructed in logical stages, allowing each layer to be designed, tested, validated, and documented before progressing to the next.
-
-### Implementation Workflow
+Each layer is designed, implemented, tested, validated, and documented before progressing to the next stage.
 
 ```text
 Application Development
@@ -458,199 +1482,184 @@ Jenkins Server Provisioning
 Jenkins Installation & Configuration
         │
         ▼
-Jenkins CI/CD Pipeline
+Jenkins CI/CD & DevSecOps Pipeline
         │
-        ▼
-SonarCloud SAST
-        │
-        ▼
-SonarCloud Quality Gate
-        │
-        ▼
-Snyk SCA
-        │
-        ▼
-Docker Image Build
-        │
-        ▼
-Production Image Verification
-        │
-        ▼
-Trivy Container Scan
-        │
-        ▼
-Trivy Security Quality Gate
-        │
-        ├── FAIL ──► Stop Pipeline
-        │
-        ▼
-Application Health Check
-        │
-        ▼
-Amazon ECR Authentication
-        │
-        ▼
-Amazon ECR Image Push
-        │
-        ▼
-Amazon ECR Image Verification
-        │
-        ▼
-Amazon EKS Deployment
-        │
-        ▼
-Kubernetes Rollout Verification
-        │
-        ▼
-OWASP ZAP DAST
-        │
-        ▼
-Prometheus
-        │
-        ▼
-Grafana
+        ├── SonarCloud SAST
+        ├── SonarCloud Quality Gate
+        ├── Snyk SCA
+        ├── Docker Image Build
+        ├── Production Image Verification
+        ├── Trivy Container Scan
+        └── Trivy Security Quality Gate
+                 │
+                 ▼
+        Application Health Check
+                 │
+                 ▼
+        Amazon ECR Publishing
+                 │
+                 ▼
+        Amazon EKS Deployment
+                 │
+                 ▼
+        Kubernetes Rollout Verification
+                 │
+                 ▼
+        Kubernetes Service / Load Balancer
+                 │
+                 ▼
+        Application Health Verification
+                 │
+                 ▼
+        Prometheus Monitoring
+                 │
+                 ▼
+        Grafana Visualization
 ```
-
-### Security Gate Decision
-
-The Trivy stage acts as a release control point between Docker image creation and Amazon ECR promotion.
-
-```text
-Docker Image Build
-        │
-        ▼
-Trivy Container Scan
-        │
-        ▼
-HIGH/CRITICAL Vulnerability Evaluation
-        │
-        ├───────────────┐
-        │               │
-        ▼               ▼
-      PASS             FAIL
-        │               │
-        ▼               ▼
-Amazon ECR        Pipeline Stops
-   Push           Image Not Promoted
-        │
-        ▼
-ECR Image Verification
-```
-
-> This ensures that a Docker image does not proceed to Amazon ECR when it violates the configured container-security quality policy.
-
-
-### Implementation Phases
-
-| Phase | Objective |
-|-------|-----------|
-| **Application Development** | Develop the Node.js monitoring application and establish the project foundation. |
-| **Application Refactoring** | Improve application structure, maintainability, and production readiness. |
-| **Unit Testing** | Validate application functionality through automated testing. |
-| **Docker Containerization** | Package the application into a portable and reproducible container image. |
-| **Terraform Infrastructure** | Provision AWS infrastructure using Infrastructure as Code. |
-| **Jenkins Server Provisioning** | Deploy a dedicated Jenkins automation server on Amazon EC2. |
-| **Jenkins Installation & Configuration** | Configure Jenkins, Docker, AWS CLI, kubectl, Helm, Trivy, and required tools. |
-| **CI/CD Pipeline** | Automate application build, testing, security scanning, image creation, publishing, and deployment. |
-| **DevSecOps Security Scanning** | Integrate SonarCloud, Snyk, Trivy, and OWASP ZAP throughout the delivery lifecycle. |
-| **Amazon ECR Publishing** | Promote security-validated container images to Amazon ECR and verify successful publication. |
-| **Amazon EKS Deployment** | Deploy validated container images to Amazon EKS. |
-| **Kubernetes Rollout Verification** | Verify successful Kubernetes application rollout and availability. |
-| **Prometheus Monitoring** | Collect infrastructure and application metrics. |
-| **Grafana Dashboards** | Visualize system health and performance. |
-
-This phased implementation approach ensures that every component of the platform is independently validated before introducing the next layer of functionality. The result is a reproducible, secure, and production-oriented DevSecOps environment that follows Infrastructure as Code (IaC), Continuous Integration/Continuous Deployment (CI/CD), and cloud-native best practices.
 
 ---
 
-## Project Phases
+## Implementation Phases
 
-The project is being implemented incrementally, with each phase building upon the previous one to create a complete cloud-native DevSecOps platform. The following table summarizes the implementation progress and the primary objective of each phase.
+| Phase | Objective | Status |
+|---|---|---|
+| Application Development | Develop the Node.js monitoring application and establish the project foundation. | ✅ Completed |
+| Application Refactoring | Improve application structure, maintainability, and production readiness. | ✅ Completed |
+| Unit Testing | Validate application functionality through automated testing. | ✅ Completed |
+| Docker Containerization | Package the application into a portable and reproducible container image. | ✅ Completed |
+| Terraform Infrastructure | Provision AWS infrastructure using Infrastructure as Code (IaC). | ✅ Completed |
+| Jenkins Server Provisioning | Deploy a dedicated Jenkins automation server on Amazon EC2. | ✅ Completed |
+| Jenkins Installation & Configuration | Configure Jenkins and supporting DevOps tools. | ✅ Completed |
+| Jenkins CI/CD & DevSecOps Pipeline | Automate application testing, security scanning, image publishing, and deployment. | ✅ Completed |
+| Amazon ECR Publishing | Publish security-validated container images to Amazon ECR. | ✅ Completed |
+| Amazon EKS Deployment | Deploy validated container images to Amazon EKS manually and through Jenkins automation. | ✅ Completed |
+| Kubernetes Rollout & Service Verification | Verify application rollout, Pods, Services, LoadBalancer, and application availability. | ✅ Completed |
+| Kubernetes Autoscaling | Configure and verify Horizontal Pod Autoscaler (HPA) functionality and metrics. | ✅ Completed |
+| Prometheus Monitoring | Collect application and Kubernetes metrics using Prometheus and ServiceMonitor. | ✅ Completed |
+| Grafana Dashboards | Visualize application and Kubernetes monitoring data through Grafana. | ✅ Completed |
+| OWASP ZAP DAST | Perform dynamic security testing against the running application. | ⏳ Next |
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| **Phase 1 – Project Initialization** | Established the project structure, repository, and development environment. | ✅ Completed |
-| **Phase 2 – Application Refactoring** | Refactored the Node.js application to improve maintainability and production readiness. | ✅ Completed |
-| **Phase 3 – Unit Testing** | Implemented automated unit tests to validate application functionality. | ✅ Completed |
-| **Phase 4 – Docker Containerization** | Containerized the application using Docker for consistent and portable deployments. | ✅ Completed |
-| **Phase 5 – AWS Infrastructure with Terraform** | Provisioned AWS infrastructure including networking, IAM, Amazon ECR, Amazon EKS, and supporting resources. | ✅ Completed |
-| **Phase 6 – Jenkins Server Setup** | Provisioned the Jenkins automation server on Amazon EC2 with secure networking, IAM integration, and Elastic IP configuration. | ✅ Completed |
-| **Phase 7 – Jenkins Installation & Configuration** | Installed and configured Jenkins, Docker, AWS CLI, kubectl, Helm, Trivy, and supporting tools. | ✅ Completed |
-| **Phase 8 – Jenkins CI/CD & DevSecOps Pipeline** | Built the Jenkins CI/CD and DevSecOps pipeline integrating automated testing, SonarCloud, Snyk, Trivy, Docker image creation, Amazon ECR publishing, and image verification. | 🚧 In Progress |
-| **Phase 9 – Amazon EKS Deployment** | Deploy the validated containerized application to Amazon EKS using Kubernetes manifests. | ⏳ Planned |
-| **Phase 10 – Prometheus & Grafana Monitoring** | Implement monitoring, metrics collection, and visualization using Prometheus and Grafana. | ⏳ Planned |
-
-### Project Progress
-
-| Status | Meaning |
-|--------|---------|
-| ✅ | Completed |
-| 🚧 | In Progress |
-| ⏳ | Planned |
-
-The project follows a phased implementation strategy to ensure that each component is designed, tested, and documented before progressing to the next stage. This incremental approach improves maintainability, simplifies troubleshooting, and demonstrates the complete lifecycle of building a production-ready DevSecOps platform on AWS.
+The project follows a phased implementation approach in which each component is designed, implemented, tested, and validated before progressing to the next stage. This approach produces a reproducible and production-oriented DevSecOps environment built around Infrastructure as Code (IaC), CI/CD automation, container security, Kubernetes orchestration, and observability.
 
 ---
 
-### Latest Milestone
+## Current Pipeline Flow
 
-The latest Phase 8 milestone is the successful implementation of Amazon ECR image publishing and verification following the Trivy container security quality gate.
-
-The pipeline has now successfully implemented and validated:
-
-- SonarCloud SAST
-- SonarCloud Quality Gate
-- Snyk Software Composition Analysis
-- Docker Image Build
-- Production Image Verification
-- Trivy Container Security Scanning
-- Trivy HIGH/CRITICAL Security Quality Gate
-- Application Health Check
-- Amazon ECR Authentication
-- Amazon ECR Image Tagging
-- Amazon ECR Image Publishing
-- Amazon ECR Image Verification
-- Successful Jenkins Pipeline Execution
-- Amazon ECR Release Flow
-
-The current release sequence is:
+The current Jenkins CI/CD and DevSecOps pipeline has successfully implemented and validated the following stages:
 
 ```text
-Docker Image Build
-        │
-        ▼
-Production Image Verification
-        │
-        ▼
-Trivy Container Scan
-        │
-        ▼
-HIGH/CRITICAL Security Quality Gate
-        │
-        ├── FAIL ──► Pipeline Stops
-        │
-        ▼
-Application Health Check
-        │
-        ▼
-Amazon ECR Authentication
-        │
-        ▼
-Amazon ECR Image Tagging
-        │
-        ▼
-Amazon ECR Image Push
-        │
-        ▼
-Amazon ECR Image Verification
-        │
-        ▼
-Jenkins SUCCESS
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout Source Code                 ✅
+   │
+   ├── Install Dependencies                 ✅
+   │
+   ├── Unit Testing                         ✅
+   │      └── Jest: 3 Tests Passed
+   │
+   ├── SonarCloud SAST                      ✅
+   │      └── Quality Gate: PASSED
+   │
+   ├── Snyk SCA                             ✅
+   │      ├── Dependency Analysis
+   │      ├── Vulnerability Detection
+   │      └── Project Monitoring
+   │
+   ├── Docker Build                         ✅
+   │      └── node-monitoring-app:${BUILD_NUMBER}
+   │
+   ├── Production Image Verification        ✅
+   │      ├── Node.js Version
+   │      ├── npm Removed
+   │      └── npx Removed
+   │
+   ├── Trivy Container Security Scan        ✅
+   │      ├── Alpine OS Package Scanning
+   │      ├── Node.js Dependency Analysis
+   │      ├── HIGH Severity Check
+   │      ├── CRITICAL Severity Check
+   │      └── HIGH/CRITICAL Security Gate
+   │
+   ├── Application Health Check             ✅
+   │      └── /health → ok
+   │
+   ├── Amazon ECR Authentication             ✅
+   │
+   ├── Amazon ECR Image Tagging              ✅
+   │
+   ├── Amazon ECR Image Push                 ✅
+   │
+   ├── Amazon ECR Image Verification         ✅
+   │
+   ├── Amazon EKS Deployment                 ✅
+   │
+   ├── Kubernetes Rollout Verification      ✅
+   │
+   ├── Kubernetes Service Verification      ✅
+   │
+   ├── EKS Application Health Check         ✅
+   │
+   ├── HPA Verification                     ✅
+   │
+   ├── Prometheus ServiceMonitor             ✅
+   │
+   ├── Prometheus Metrics Collection        ✅
+   │
+   ├── Grafana Monitoring                   ✅
+   │
+   └── OWASP ZAP DAST                       ⏳ Next Milestone
 ```
 
-#### Amazon ECR Security Promotion Model
+---
 
-The ECR implementation establishes a controlled image-promotion workflow.
+## Current Phase 8 Status
+
+| Pipeline Component | Status |
+|---|---|
+| Jenkinsfile Configuration | ✅ Completed |
+| Tool Initialization | ✅ Completed |
+| Checkout Source Code | ✅ Completed |
+| Install Dependencies | ✅ Completed |
+| Unit Testing | ✅ Completed |
+| SonarCloud Analysis | ✅ Passed |
+| SonarCloud Quality Gate | ✅ Passed |
+| Snyk SCA Integration | ✅ Completed |
+| Snyk SCA Pipeline Execution | ✅ Completed |
+| Snyk Dependency Vulnerability Analysis | ✅ Completed |
+| Docker Build | ✅ Passed |
+| Docker Image Creation | ✅ Completed |
+| Production Image Verification | ✅ Completed |
+| Trivy Container Scan | ✅ Completed |
+| Trivy Container Vulnerability Analysis | ✅ Completed |
+| Trivy HIGH/CRITICAL Quality Gate | ✅ Passed |
+| Trivy Release Gate Enforcement | ✅ Completed |
+| Application Health Check | ✅ Passed |
+| Amazon ECR Authentication | ✅ Completed |
+| Amazon ECR Image Tagging | ✅ Completed |
+| Amazon ECR Image Push | ✅ Passed |
+| Amazon ECR Image Verification | ✅ Completed |
+| Amazon EKS Deployment | ✅ Completed |
+| Kubernetes Rollout Verification | ✅ Passed |
+| Kubernetes Service Verification | ✅ Passed |
+| EKS Application Health Check | ✅ Passed |
+| HPA Verification | ✅ Passed |
+| Prometheus ServiceMonitor | ✅ Passed |
+| Prometheus Metrics Collection | ✅ Passed |
+| Grafana Monitoring | ✅ Completed |
+| OWASP ZAP DAST | ⏳ Next Milestone |
+
+> **Latest completed milestone:** Amazon EKS deployment and runtime monitoring.
+
+> **Next milestone:** OWASP ZAP Dynamic Application Security Testing (DAST).
+
+---
+
+## Release Promotion Logic
+
+The pipeline uses sequential validation and security gates to ensure that a container image is tested and security-validated before being promoted and deployed.
 
 ```text
 Source Code
@@ -685,134 +1694,42 @@ Trivy HIGH/CRITICAL Quality Gate
 Application Health Check
     │
     ▼
-Amazon ECR
+Amazon ECR Authentication
+    │
+    ▼
+Amazon ECR Image Push
     │
     ▼
 ECR Image Verification
     │
     ▼
-Amazon EKS
+Amazon EKS Deployment
+    │
+    ▼
+Kubernetes Rollout Verification
+    │
+    ▼
+Kubernetes Service / Load Balancer
+    │
+    ▼
+Prometheus Monitoring
+    │
+    ▼
+Grafana Visualization
+    │
+    ▼
+OWASP ZAP DAST
 ```
 
-> Security principle: A container image should be promoted to Amazon ECR only after successfully passing the configured container-security quality gate.
+> Each security control addresses a different layer of the application delivery lifecycle, creating multiple validation points before and after deployment.
 
-#### Outcome
+The Trivy HIGH/CRITICAL quality gate provides an automated release control that can stop the Jenkins pipeline when the configured vulnerability policy is violated.
 
-The Amazon ECR stage has been successfully implemented and validated.
+After successfully passing the security gates, Jenkins authenticates with Amazon ECR, tags and publishes the validated image, verifies the published image, and deploys the image to Amazon EKS.
 
-The pipeline now:
+The deployed application is then validated through Kubernetes rollout and service checks, application health verification, HPA verification, Prometheus monitoring, and Grafana visualization.
 
-1. Authenticates Jenkins with Amazon ECR.
-2. Tags the validated Docker image for the configured ECR repository.
-3. Pushes the image to Amazon ECR.
-4. Verifies that the image was successfully published.
-5. Completes the Jenkins pipeline successfully.
-
-This establishes Amazon ECR as the trusted container-image registry between the CI/CD security validation stages and the upcoming Amazon EKS deployment stage.
-
----
-
-### Current Pipeline Flow
-
-The current Phase 8 Jenkins CI/CD and DevSecOps pipeline has successfully implemented and validated the following stages:
-
-```text
-GitHub
-   │
-   ▼
-Jenkins
-   │
-   ├── Checkout Source Code              ✅
-   │
-   ├── Install Dependencies              ✅
-   │
-   ├── Dependency Inspection             ✅
-   │
-   ├── Unit Testing                      ✅
-   │      └── Jest: 3 Tests Passed
-   │
-   ├── SonarCloud SAST                   ✅
-   │      └── Quality Gate: PASSED
-   │
-   ├── Snyk SCA                          ✅
-   │      ├── Dependency Analysis
-   │      ├── Vulnerability Detection
-   │      └── Project Monitoring
-   │
-   ├── Docker Build                      ✅
-   │      └── node-monitoring-app:${BUILD_NUMBER}
-   │
-   ├── Verify Production Image           ✅
-   │      ├── Node.js Version
-   │      ├── npm Removed
-   │      └── npx Removed
-   │
-   ├── Trivy Container Security Scan     ✅
-   │      ├── Alpine OS Package Scanning
-   │      ├── Node.js Application Dependency Analysis
-   │      ├── HIGH Severity Check
-   │      ├── CRITICAL Severity Check
-   │      └── HIGH/CRITICAL Security Gate
-   │             ├── Findings → Pipeline FAILS
-   │             └── No Findings → Pipeline CONTINUES
-   │
-   ├── Application Health Check           ✅
-   │      └── /health → ok
-   │
-   ├── Amazon ECR Authentication          ✅
-   │
-   ├── Amazon ECR Image Tagging           ✅
-   │
-   ├── Amazon ECR Image Push              ✅
-   │
-   ├── Amazon ECR Image Verification      ✅
-   │
-   ├── Amazon EKS Deployment              ⏳
-   │
-   ├── Rollout Verification               ⏳
-   │
-   └── OWASP ZAP DAST                    ⏳
-```
-
-The Jenkins pipeline has successfully implemented and validated the Trivy Container Security Scanning and HIGH/CRITICAL Security Quality Gate.
-
-The validated Docker image has subsequently been published to Amazon ECR and verified successfully.
-
----
-
-### Current Phase 8 Status
-
-| Pipeline Component | Status |
-|--------------------|--------|
-| **Jenkinsfile Configuration** | ✅ |
-| **Tool Initialization** | ✅ |
-| **Checkout Source Code** | ✅ |
-| **Install Dependencies** | ✅ |
-| **Unit Testing** | ✅ |
-| **SonarCloud Analysis** | ✅ PASSED |
-| **SonarCloud Quality Gate** | ✅ PASSED |
-| **Snyk SCA Integration** | ✅ |
-| **Snyk SCA Pipeline Execution** | ✅ |
-| **Snyk Dependency Vulnerability Analysis** | ✅ |
-| **Docker Build** | ✅ PASSED |
-| **Docker Image Creation** | ✅ |
-| **Production Image Verification** | ✅ |
-| **Trivy Container Scan** | ✅ |
-| **Trivy Container Vulnerability Analysis** | ✅ |
-| **Trivy HIGH/CRITICAL Quality Gate** | ✅ PASSED |
-| **Trivy Release Gate Enforcement** | ✅ |
-| **Application Health Check** | ✅ |
-| **Amazon ECR Authentication** | ✅ |
-| **Amazon ECR Image Tagging** | ✅ |
-| **Amazon ECR Image Push** | ✅ PASSED |
-| **Amazon ECR Image Verification** | ✅ |
-| **Amazon EKS Deployment** | ⏳ |
-| **Rollout Verification** | ⏳ |
-| **OWASP ZAP DAST** | ⏳ |
-
-> **Latest Milestone:** Amazon ECR image publishing and verification successfully implemented and validated.
-
-> **Next Milestone:** Amazon EKS application deployment.
+Next milestone: OWASP ZAP Dynamic Application Security Testing (DAST).
 
 ---
 
@@ -821,17 +1738,15 @@ The validated Docker image has subsequently been published to Amazon ECR and ver
 Detailed documentation for each implementation phase is available in the `docs/` directory.
 
 | Document | Description |
-|----------|-------------|
-| `01-project-initialization.md` | Project setup |
-| `02-application-refactoring.md` | Application restructuring |
-| `03-unit-testing.md` | Unit testing with Jest |
-| `04-containerization.md` | Docker image creation |
-| `05-terraform-infrastructure.md` | AWS networking, EKS, ECR, and IAM provisioning |
-| `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform, including IAM roles, instance profile, networking, Elastic IP, Terraform validation, verification, and SSH connectivity |
-| `07-jenkins-installation.md` | Installation and configuration of Jenkins and the supporting DevOps toolchain, including Java, Docker, AWS CLI, kubectl, Helm, and Trivy |
-| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including Jenkinsfile configuration, tool resolution, source-code checkout, dependency installation, unit testing, SonarCloud SAST, SonarCloud Quality Gate, Snyk SCA, Docker image creation, Trivy container vulnerability scanning, HIGH/CRITICAL quality gate enforcement, production image verification, Amazon ECR authentication, image publishing, ECR verification, and pipeline validation. |
-
-> **Additional documentation will be added as new pipeline stages and phases are completed.**
+|---|---|
+| `01-project-initialization.md` | Project setup and initial repository configuration |
+| `02-application-refactoring.md` | Application restructuring and production readiness improvements |
+| `03-unit-testing.md` | Automated unit testing with Jest and Supertest |
+| `04-containerization.md` | Docker containerization and production image verification |
+| `05-terraform-infrastructure.md` | AWS infrastructure provisioning with Terraform, including networking, IAM, Amazon ECR, and Amazon EKS |
+| `06-jenkins-server-setup.md` | Provisioning a dedicated Jenkins server on Amazon EC2 using Terraform |
+| `07-jenkins-installation.md` | Installation and configuration of Jenkins and supporting DevOps tools |
+| `08-jenkins-ci-cd-devsecops-pipeline.md` | Jenkins CI/CD and DevSecOps pipeline implementation, including SonarCloud SAST, Snyk SCA, Trivy container security, Amazon ECR publishing, Amazon EKS deployment, Kubernetes verification, HPA, Prometheus monitoring, and Grafana visualization |
 
 ---
 
@@ -851,34 +1766,30 @@ screenshots/
 └── 08-jenkins-ci-cd-devsecops-pipeline/
 ```
 
-The Phase 8 screenshot directory currently contains evidence for:
+The Phase 8 screenshot directory contains evidence of the implemented CI/CD, DevSecOps, deployment, and monitoring components, including:
 
-- Jenkins plugin configuration
-- Global tool configuration
-- Credentials configuration
-- SonarCloud configuration
-- Snyk configuration
-- Jenkins Pipeline job configuration
-- Jenkinsfile creation
-- Source-code checkout
-- Dependency installation
+- Jenkins plugin, tool, credential, and pipeline configuration
 - Unit testing
-- Jest test execution
-- SonarCloud SAST
-- SonarCloud Quality Gate
-- Snyk SCA
-- Docker image build
-- Production image verification
-- Trivy container scanning
-- Trivy HIGH/CRITICAL security gate
-- Application health check
-- Amazon ECR authentication
-- Amazon ECR image publishing
-- Amazon ECR image verification
+- SonarCloud SAST and Quality Gate
+- Snyk SCA and dependency analysis
+- Docker image creation and production image verification
+- Trivy container vulnerability scanning and security quality gates
+- Amazon ECR authentication, image publishing, and image verification
+- Manual Amazon EKS deployment
+- Automated Jenkins-based Amazon EKS deployment
+- Kubernetes Pods, Services, and rollout verification
+- AWS Load Balancer configuration and verification
+- Kubernetes HPA and metrics verification
+- Application health checks and endpoint verification
+- Prometheus ServiceMonitor discovery and metrics collection
+- Grafana monitoring and visualization
+- Final Amazon EKS application verification
+
+---
 
 ### CI/CD and DevSecOps Evidence
 
-The latest Jenkins CI/CD and DevSecOps implementations are documented through the following screenshots.
+Jenkins CI/CD and DevSecOps implementations are documented through the following screenshots.
 
 #### Unit Testing Evidence
 
@@ -951,7 +1862,7 @@ The Trivy Container Security Scanning implementation is documented through the f
 | `60-hardened-production-dockerfile.png` | Dockerfile showing the rebuilt production ready docker base image. |
 
 
-#### #### Amazon ECR Container Image Push Evidence
+#### Amazon ECR Container Image Push Evidence
 
 The Amazon ECR Container Image Push implementation is documented through the following screenshots:
 
@@ -965,9 +1876,32 @@ The Amazon ECR Container Image Push implementation is documented through the fol
 | `66-jenkins-ecr-image-verification.png`         | Jenkins Pipeline showing successful **Amazon ECR Image Verification** after the image push.                                                                    |
 | `67-final-jenkins-pipeline-success.png`         | Jenkins Pipeline showing the complete CI/CD pipeline executing successfully after Amazon ECR image publishing and verification.                                |
 
-> **Evidence Status:** Screenshots 61–67 provide documented evidence of the Amazon ECR authentication, Docker image tagging and push, ECR repository publication, CLI image verification, Jenkins ECR image verification, and final pipeline success.
 
-> Additional screenshots will be added as subsequent CI/CD and DevSecOps stages are implemented and validated.
+## Amazon EKS Deployment Evidence
+
+The Amazon EKS implementation is documented through the following screenshots.
+
+| Screenshot | Evidence |
+|---|---|
+| `68-eks-cluster.png` | Amazon EKS cluster verification showing the provisioned Kubernetes cluster. |
+| `69-eks-pods.png` | Kubernetes Pods running successfully in the EKS cluster. |
+| `70-eks-service-loadbalancer.png` | Kubernetes Service and LoadBalancer configuration exposing the application. |
+| `71-application-health.png` | Application health verification confirming the running application is healthy. |
+| `72-eks-application-loadbalancer.png` | AWS Load Balancer associated with the Kubernetes application Service. |
+| `73-eks-application-browser-health-check.png` | Browser-based verification of the deployed application's health endpoint. |
+| `74-eks-prometheus-metrics.png` | Prometheus-compatible application metrics exposed by the running Node.js application. |
+| `75-jenkins-ecr-eks-access-verification.png` | Jenkins verification of access to Amazon ECR and Amazon EKS. |
+| `76-jenkins-automated-eks-deployment.png` | Jenkins pipeline showing automated Amazon EKS application deployment. |
+| `77-jenkins-kubernetes-rollout-verification-passed.png` | Jenkins Kubernetes rollout verification showing successful application rollout. |
+| `78-jenkins-hpa-verification.png` | Jenkins verification of the Kubernetes Horizontal Pod Autoscaler. |
+| `79-jenkins-prometheus-servicemonitor-verification.png` | Jenkins verification of the Prometheus ServiceMonitor configuration. |
+| `80-jenkins-kubernetes-service-verification-passed.png` | Jenkins verification showing successful Kubernetes Service validation. |
+| `81-jenkins-eks-application-health-check-passed.png` | Jenkins EKS application health check showing successful application availability. |
+| `82-jenkins-eks-deployment-pipeline-success.png` | Jenkins pipeline showing successful automated EKS deployment and verification. |
+| `83-prometheus-servicemonitor-discovery.png` | Prometheus showing successful ServiceMonitor discovery. |
+| `84-grafana-kubernetes-monitoring.png` | Grafana dashboard visualizing Kubernetes monitoring data. |
+| `85-eks-application-health-endpoint.png` | Amazon EKS application health endpoint verification. |
+| `86-eks-application.png` | Final browser verification of the running application deployed on Amazon EKS. |
 
 
 #### Jenkinsfile — Unit Testing Stage
@@ -1134,254 +2068,233 @@ The Amazon ECR Container Image Push implementation is documented through the fol
 ![final-jenkins-pipeline-success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/67-final-jenkins-pipeline-success.png)
 
 
-#### Amazon ECR Container Image Push
+## Amazon EKS Deployment Evidence
 
-The Amazon ECR implementation now represents authenticated container image publishing and post-push image verification.
+### Manual Amazon EKS Deployment
 
-The container publishing workflow is:
+![eks-cluster](screenshots/08-jenkins-ci-cd-devsecops-pipeline/68-eks-cluster.png)
 
-```text
-Validated Docker Image
-        │
-        ▼
-Amazon ECR Authentication
-        │
-        ▼
-Docker Image Tagging
-        │
-        ▼
-Amazon ECR Image Push
-        │
-        ▼
-ECR Image Verification
-        │
-        ├── PASS ──► Continue Pipeline
-        │
-        └── FAIL ──► Stop Pipeline
+
+![eks-pods](screenshots/08-jenkins-ci-cd-devsecops-pipeline/69-eks-pods.png)
+
+
+![eks-service-loadbalancer](screenshots/08-jenkins-ci-cd-devsecops-pipeline/70-eks-service-loadbalancer.png)
+
+
+![application-health](screenshots/08-jenkins-ci-cd-devsecops-pipeline/71-application-health.png)
+
+
+![eks-application-loadbalancer](screenshots/08-jenkins-ci-cd-devsecops-pipeline/72-eks-application-loadbalancer.png)
+
+
+![eks-application-browser-health-check](screenshots/08-jenkins-ci-cd-devsecops-pipeline/73-eks-application-browser-health-check.png)
+
+
+![eks-prometheus-metrics](screenshots/08-jenkins-ci-cd-devsecops-pipeline/74-eks-prometheus-metrics.png)
+
+
+### Automated Amazon EKS Deployment
+
+![jenkins-ecr-eks-access-verification](screenshots/08-jenkins-ci-cd-devsecops-pipeline/75-jenkins-ecr-eks-access-verification.png)
+
+
+![jenkins-automated-eks-deployment](screenshots/08-jenkins-ci-cd-devsecops-pipeline/76-jenkins-automated-eks-deployment.png)
+
+
+![jenkins-kubernetes-rollout-verification-passed](screenshots/08-jenkins-ci-cd-devsecops-pipeline/77-jenkins-kubernetes-rollout-verification-passed.png)
+
+
+![jenkins-hpa-verification](screenshots/08-jenkins-ci-cd-devsecops-pipeline/78-jenkins-hpa-verification.png)
+
+
+![jenkins-prometheus-servicemonitor-verification](screenshots/08-jenkins-ci-cd-devsecops-pipeline/79-jenkins-prometheus-servicemonitor-verification.png)
+
+
+![jenkins-kubernetes-service-verification-passed](screenshots/08-jenkins-ci-cd-devsecops-pipeline/80-jenkins-kubernetes-service-verification-passed.png)
+
+
+![jenkins-eks-application-health-check-passed](screenshots/08-jenkins-ci-cd-devsecops-pipeline/81-jenkins-eks-application-health-check-passed.png)
+
+
+![jenkins-eks-deployment-pipeline-success](screenshots/08-jenkins-ci-cd-devsecops-pipeline/82-jenkins-eks-deployment-pipeline-success.png)
+
+
+![prometheus-servicemonitor-discovery](screenshots/08-jenkins-ci-cd-devsecops-pipeline/83-prometheus-servicemonitor-discovery.png)
+
+
+![grafana-kubernetes-monitoring](screenshots/08-jenkins-ci-cd-devsecops-pipeline/84-grafana-kubernetes-monitoring.png)
+
+
+![eks-application-health-endpoint](screenshots/08-jenkins-ci-cd-devsecops-pipeline/85-eks-application-health-endpoint.png)
+
+
+![eks-application](screenshots/08-jenkins-ci-cd-devsecops-pipeline/86-eks-application.png)
+
+
 ---
 
+## Outcome
+
+The project has progressed from source-code development to a running, secure, automated, and monitored Kubernetes application on Amazon EKS.
+
+The implemented solution successfully demonstrates:
+
+- Source-code management through GitHub
+- Automated CI/CD through Jenkins
+- Automated unit testing with Jest and Supertest
+- Static Application Security Testing (SAST) with SonarCloud
+- Software Composition Analysis (SCA) with Snyk
+- Container vulnerability scanning with Trivy
+- HIGH/CRITICAL security quality gating before image promotion
+- Container image publishing and verification through Amazon ECR
+- Manual Amazon EKS deployment validation
+- Automated Amazon EKS deployment through Jenkins
+- Kubernetes rollout and Service verification
+- AWS Load Balancer-based application exposure
+- Kubernetes Horizontal Pod Autoscaler (HPA) verification
+- Prometheus ServiceMonitor discovery and metrics collection
+- Grafana monitoring and visualization
+- Application health verification through the deployed environment
+
+The project therefore demonstrates an end-to-end DevSecOps delivery lifecycle that integrates **CI/CD automation, security controls, containerization, cloud-native deployment, autoscaling, and observability** across the application lifecycle.
+
+The next planned enhancement is **OWASP ZAP Dynamic Application Security Testing (DAST)** to extend security validation into the running application environment.
+
+---
 
 ## Prerequisites
 
-To build and run this project locally, ensure the following tools are installed:
+The following tools and services are required or recommended for working with this project.
+
+### Local Development
 
 - Git
 - Node.js
 - npm
-- Docker Desktop
 - Visual Studio Code
+- Docker Desktop
+
+### AWS & Infrastructure
+
 - AWS CLI
 - Terraform
 - kubectl
-- Minikube *(Optional for local Kubernetes testing)*
+- Helm
+- An AWS account with appropriate IAM permissions
+
+### Kubernetes
+
+- Amazon EKS access for cloud deployment
+- Minikube *(optional, for local Kubernetes testing)*
+
+### CI/CD & DevSecOps
+
 - Jenkins
+- SonarCloud account and project configuration
+- Snyk account and authentication
+- Trivy
+- OWASP ZAP *(required for the upcoming DAST milestone)*
+
+### Additional Requirements
+
+- GitHub repository
+- Amazon ECR repository
+- Amazon EKS cluster
+- Appropriate AWS IAM permissions for ECR, EKS, EC2, VPC, and related resources
 
 ---
 
 ## Running the Project Locally
 
-Clone the repository:
+### 1. Clone the Repository
 
-```bash
+
 git clone https://github.com/Jefferson-ohis1/end-to-end-node-ci-cd-devsecops.git
-```
+cd end-to-end-node-ci-cd-devsecops
 
-Navigate to the application directory:
 
-```bash
-cd end-to-end-node-ci-cd-devsecops/app
-```
+### 2. Install Application Dependencies
 
-Install dependencies:
-
-```bash
+cd app
 npm install
-```
 
-Run the application:
+### 3. Run the Application
 
-```bash
 npm start
-```
 
-Run unit tests:
+> The application will be available at: http://localhost:3000
 
-```bash
+### 4. Run Unit Tests
+
 npm test
-```
 
-Build the Docker image:
+### 5. Verify Application Endpoints
 
-```bash
-docker build -t node-monitoring-app:v1 .
-```
+Application: http://localhost:3000/
 
-Run the Docker container:
+Health endpoint: http://localhost:3000/health
 
-```bash
-docker run -d --name node-monitoring-container -p 3000:3000 node-monitoring-app:v1
-```
+Prometheus metrics: http://localhost:3000/metrics
 
-Open your browser:
+### 6. Build the Docker Image
 
-http://localhost:3000
+From the app/ directory: docker build -t node-monitoring-app:v1 .
 
----
+### 7. Run the Docker Container
 
-## CI/CD Pipeline Roadmap
+docker run -d \
+  --name node-monitoring-container \
+  -p 3000:3000 \
+  node-monitoring-app:v1
 
-The Jenkins CI/CD and DevSecOps pipeline is being implemented incrementally. Each pipeline stage is implemented, executed, verified, and documented using actual Jenkins Pipeline builds.
+### 8. Verify the Container
 
-The current pipeline progress is:
+Check the running container: docker ps
 
-```text
-GitHub
-   │
-   ▼
-Jenkins
-   │
-   ├── Checkout Source Code              ✅
-   │
-   ├── Install Dependencies              ✅
-   │
-   ├── Dependency Inspection             ✅
-   │
-   ├── Unit Testing                      ✅
-   │      └── Jest: 3 Tests Passed
-   │
-   ├── SonarCloud SAST                   ✅
-   │      └── Quality Gate: PASSED
-   │
-   ├── Snyk SCA                          ✅
-   │      ├── Dependency Analysis
-   │      ├── Vulnerability Detection
-   │      └── Project Monitoring
-   │
-   ├── Docker Build                      ✅
-   │      └── node-monitoring-app:${BUILD_NUMBER}
-   │
-   ├── Verify Production Image           ✅
-   │      ├── Node.js Version
-   │      ├── npm Removed
-   │      └── npx Removed
-   │
-   ├── Trivy Container Security Scan     ✅
-   │      ├── Alpine OS Package Scanning
-   │      ├── Node.js Application Dependency Analysis
-   │      ├── HIGH Severity Check
-   │      ├── CRITICAL Severity Check
-   │      └── HIGH/CRITICAL Security Gate
-   │             ├── Findings → Pipeline FAILS
-   │             └── No Findings → Pipeline CONTINUES
-   │
-   ├── Application Health Check           ✅
-   │      └── /health → ok
-   │
-   ├── Amazon ECR Authentication          ✅
-   │
-   ├── Amazon ECR Image Tagging           ✅
-   │
-   ├── Amazon ECR Image Push              ✅
-   │
-   ├── Amazon ECR Image Verification      ✅
-   │
-   ├── Amazon EKS Deployment              ⏳
-   │
-   ├── Rollout Verification               ⏳
-   │
-   └── OWASP ZAP DAST                    ⏳
-```
+Check the application health endpoint: http://localhost:3000/health
 
-### Release Promotion Logic
-
-The current security architecture ensures that the container image passes multiple validation and security controls before deployment:
-
-```text
-Source Code
-    │
-    ▼
-Unit Tests
-    │
-    ▼
-SonarCloud SAST
-    │
-    ▼
-SonarCloud Quality Gate
-    │
-    ▼
-Snyk SCA
-    │
-    ▼
-Docker Build
-    │
-    ▼
-Production Image Verification
-    │
-    ▼
-Trivy Container Scan
-    │
-    ▼
-Trivy HIGH/CRITICAL Quality Gate
-    │
-    ├── FAIL ──► Pipeline Stops
-    │
-    ▼
-Application Health Check
-    │
-    ▼
-Amazon ECR
-    │
-    ▼
-ECR Image Verification
-    │
-    ▼
-Amazon EKS
-    │
-    ▼
-Kubernetes Rollout Verification
-    │
-    ▼
-OWASP ZAP DAST
-```
-> This separation ensures that each security tool addresses a different layer of the application delivery lifecycle.
+Check the Prometheus metrics endpoint: http://localhost:3000/metrics
 
 
-> **Latest milestone:** Amazon ECR image publishing and verification successfully implemented.
+### 9. Stop and Remove the Container
 
-The Docker image is now subjected to automated vulnerability scanning before being promoted to Amazon ECR. The Trivy quality gate provides an automated security control that can stop the pipeline when the configured HIGH/CRITICAL vulnerability policy is violated.
+docker stop node-monitoring-container
+docker rm node-monitoring-container
 
-After successfully passing the security gate, Jenkins authenticates with Amazon ECR, tags the validated image, publishes it to the configured repository, and verifies the published image.
 
-> **Next milestone:** Amazon EKS application deployment.
-
-The next implementation stage is to deploy the security-validated Docker image from Amazon ECR to the provisioned Amazon EKS cluster.
+> Note: Local execution is intended for application development, unit testing, and Docker validation. Production deployment is performed through the Jenkins CI/CD pipeline to Amazon ECR and Amazon EKS.
 
 ---
 
+## Future Enhancements
 
-### Future Enhancements
+The following enhancements are planned for future iterations of the project:
 
-The following enhancements will be implemented as the project progresses:
+### Next Milestone
 
-- Deploy automatically to Amazon EKS
-- Implement Kubernetes rollout verification
 - Integrate OWASP ZAP Dynamic Application Security Testing (DAST)
-- Configure Prometheus monitoring
-- Configure Grafana dashboards
-- Add architecture diagrams
-- Add pipeline workflow diagrams
-- Implement GitHub Actions as an optional future enhancement
-- Add additional CI/CD security controls such as PR validation and secrets detection as future enhancements
+- Automate runtime security testing against the deployed Amazon EKS application
+- Evaluate and document OWASP ZAP security findings
+- Integrate DAST results into the Jenkins security workflow
+
+### Additional Enhancements
+
+- Add pull request validation and automated pre-merge checks
+- Add secrets detection and scanning
+- Introduce additional CI/CD security controls
+- Expand Prometheus and Grafana monitoring dashboards
+- Add additional application and Kubernetes observability
+- Evaluate GitHub Actions as an alternative or complementary CI/CD workflow
 
 ---
 
 ## Project Status
 
-Current Phase: Phase 8 – Jenkins CI/CD & DevSecOps Pipeline
+**Current Phase:** Phase 8 – Jenkins CI/CD & DevSecOps Pipeline
 
-Latest Completed Milestone: Amazon ECR Image Publishing and Verification.
+**Latest Completed Milestone:** Amazon EKS Application Deployment, Kubernetes Verification, HPA, and Prometheus/Grafana Monitoring
 
-Completed Security Controls:
+### Completed Security Controls
 
 - SonarCloud SAST
 - SonarCloud Quality Gate
@@ -1389,7 +2302,7 @@ Completed Security Controls:
 - Trivy Container Security Scanning
 - Trivy HIGH/CRITICAL Security Quality Gate
 
-Completed Container Promotion Controls:
+### Completed Container Promotion & Release Controls
 
 - Production Image Verification
 - Application Health Check
@@ -1398,18 +2311,83 @@ Completed Container Promotion Controls:
 - Amazon ECR Image Publishing
 - Amazon ECR Image Verification
 
+### Completed Kubernetes Controls
 
-Next Milestone: Amazon EKS Application Deployment.
-
-Upcoming:
-
-- Kubernetes Deployment
+- Manual Amazon EKS Deployment
+- Automated Amazon EKS Deployment through Jenkins
 - Kubernetes Rollout Verification
-- OWASP ZAP DAST
-- Prometheus Monitoring
-- Grafana Dashboards
+- Kubernetes Service Verification
+- AWS Load Balancer Verification
+- EKS Application Health Verification
+- Kubernetes HPA Verification
+- HPA Metrics Verification
 
-Target Architecture: AWS-based end-to-end CI/CD and DevSecOps platform using Jenkins, Docker, Terraform, Amazon ECR, Amazon EKS, SonarCloud, Snyk, Trivy, OWASP ZAP, Prometheus, and Grafana.
+### Completed Monitoring Controls
+
+- Prometheus ServiceMonitor Configuration
+- Prometheus ServiceMonitor Discovery
+- Prometheus Application Metrics
+- Kubernetes Metrics Collection
+- Grafana Kubernetes Monitoring and Visualization
+
+### Next Milestone
+
+#### OWASP ZAP Dynamic Application Security Testing (DAST)
+
+The application is currently deployed, externally accessible, and observable through Amazon EKS, Prometheus, and Grafana. This provides the runtime target required for the next security layer.
+
+OWASP ZAP will be integrated to perform dynamic security testing against the running application and extend the DevSecOps pipeline with runtime application security validation.
+
+
+---
+
+## Final Project Objective
+
+The objective of this project is to demonstrate how a modern cloud-native application can be developed, secured, containerized, deployed, monitored, and continuously delivered through an automated DevSecOps workflow on AWS.
+
+The implemented solution currently demonstrates the core delivery lifecycle:
+
+```text
+GitHub
+   ↓
+Jenkins
+   ↓
+Unit Testing
+   ↓
+SonarCloud SAST
+   ↓
+Snyk SCA
+   ↓
+Docker
+   ↓
+Trivy
+   ↓
+Amazon ECR
+   ↓
+Amazon EKS
+   ↓
+Kubernetes
+   ↓
+HPA
+   ↓
+Prometheus
+   ↓
+Grafana
+```
+
+The next planned security layer is:
+
+```text
+Running Amazon EKS Application
+            ↓
+       OWASP ZAP
+            ↓
+           DAST
+```
+
+> Integrating OWASP ZAP will extend the existing security controls beyond source-code, dependency, and container security into dynamic runtime application security testing.
+
+> The resulting platform will provide a broader end-to-end DevSecOps lifecycle that combines CI/CD automation, security quality gates, container security, cloud-native deployment, autoscaling, observability, and runtime security testing.
 
 ---
 

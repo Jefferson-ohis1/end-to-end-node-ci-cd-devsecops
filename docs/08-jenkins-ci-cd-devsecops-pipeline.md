@@ -1,82 +1,179 @@
-Phase 8 — Jenkins CI/CD & DevSecOps Pipeline
+# Phase 8 — Jenkins CI/CD & DevSecOps Pipeline
 
-Section 1
-Overview
+This phase implements and validates the project's end-to-end Jenkins CI/CD and DevSecOps workflow.
 
-Section 2
-Objectives
+The pipeline has progressed from source-code checkout and automated testing through SAST, SCA, container security, Amazon ECR image publishing, Amazon EKS deployment, Kubernetes rollout verification, autoscaling validation, and application monitoring with Prometheus and Grafana.
 
-Section 3
-Pipeline Architecture
-
-Section 4
-Required Jenkins Plugins
-
-Section 5
-Configure Global Tools
-
-Section 6
-Configure Credentials
-
-Section 7
-Integrate SonarCloud
-
-Section 8
-Integrate Snyk
-
-Section 9
-Create Jenkinsfile
-
-Section 10
-Build Docker Image
-
-Section 11
-Run Trivy Scan
-
-Section 12
-Push Image to Amazon ECR
-
-Section 13
-Deploy to Amazon EKS
-
-Section 14
-Run OWASP ZAP
-
-Section 15
-Verify Pipeline
-
-Section 16
-Commands Used
-
-Section 17
-Results
-
-Section 18
-Key Takeaways
-
-Section 19
-Next Step
+OWASP ZAP Dynamic Application Security Testing (DAST) remains the next security milestone and will be documented after implementation and validation.
 
 ---
 
-Section 1
-Overview
+## Table of Contents
 
-** to be updated
+- [Section 1 — Overview](#section-1--overview)
+- [Section 2 — Objectives](#section-2--objectives)
+- [Section 3 — Pipeline Architecture](#section-3--pipeline-architecture)
+- [Section 4 — Required Jenkins Plugins](#section-4--required-jenkins-plugins)
+- [Section 5 — Configure Global Tools](#section-5--configure-global-tools)
+- [Section 6 — Configure Credentials](#section-6--configure-credentials)
+- [Section 7 — Integrate SonarCloud](#section-7--integrate-sonarcloud)
+- [Section 8 — Integrate Snyk](#section-8--integrate-snyk)
+- [Section 9 — Jenkinsfile and Jenkins Pipeline Implementation](#section-9--jenkinsfile-and-jenkins-pipeline-implementation)
+- [section 9.1 — Create the Jenkins Pipeline Job](#section-9.1--create-the-jenkins-pipeline-job)
+- [Section 9.2 — Create the Jenkinsfile](#Section-9.2--create-the-jenkinsfile)
+- [Section 10 — Checkout Source Code](#Section-10--checkout-source-code)
+- [Section 11 — Install Dependencies](#Section-11--install-dependencies)
+- [Section 12 — Unit Testing](#Section-12--unit-testing)
+- [Section 13 — SonarCloud Static Application Security Testing (SAST) and Quality Gate](#Section-13--sonarcloud-static-application-security-testing-(sast)-and-quality-gate)
+- [Section 13.1 — Jenkinsfile SonarCloud Analysis Stage](#Section-13.1--jenkinsfile-sonarcloud-analysis-stage)
+- [Section 13.2 — SonarCloud Quality Gate Integration](#Section-13.2--sonarcloud-quality-gate-integration)
+- [Section 14 — Snyk Software Composition Analysis (SCA)](#Section-14--snyk-software-composition-analysis-(sca))
+- [Section 15 — Docker Image Build](#Section-15--docker-image-build)
+- [Section 16 — Trivy Container Security Scanning and Quality Gate](#Section-16--trivy-container-security-scanning-and-quality-gate)
+- [Section 17 — Amazon ECR Container Image Publishing](#Section-17--amazon-ecr-container-image-publishing)
+- [Section 18 — Amazon EKS Deployment](#Section-18--amazon-eks-deployment)
+- [Section 18.1 — Manual Amazon EKS Deployment](#Section-18.1--manual-amazon-eks-deployment)
+- [Section 18.2 — Automated Amazon EKS Deployment](#Section-18.2--automated-amazon-eks-deployment)
+- [Section 19 — Prometheus ServiceMonitor Discovery Verification](#Section-19--prometheus-serviceMonitor-discovery-verification)
+- [Section 20 — Grafana Kubernetes Monitoring Verification](#Section-20--grafana-kubernetes-monitoring-verification)
+- [section 21 — OWASP ZAP Dynamic Application Security Testing (DAST)](#section-21--owasp-zap-dynamic-application-security-testing-(dast))
+- [Section 22 — Results](#Section-22--results)
+- [Section 23 — Key Takeaways](#Section-23--key-takeaways)
+- [Section 24 — Next Step](#Section-24--next-step)
 
 ---
 
-Section 2
-Objectives
+## Section 1 — Overview
 
-** to be updated
+The objective of Phase 8 is to implement a complete Jenkins-based CI/CD and DevSecOps pipeline for the Node.js monitoring application.
+
+The pipeline integrates automated testing, source-code security analysis, dependency security analysis, container security scanning, image promotion to Amazon ECR, deployment to Amazon EKS, Kubernetes verification, autoscaling validation, and application monitoring.
+
+The implemented pipeline currently covers:
+
+- Source-code checkout from GitHub
+- Node.js dependency installation
+- Automated unit testing with Jest and Supertest
+- SonarCloud Static Application Security Testing (SAST)
+- SonarCloud Quality Gate evaluation
+- Snyk Software Composition Analysis (SCA)
+- Docker image creation
+- Production image verification
+- Trivy container vulnerability scanning
+- Trivy HIGH/CRITICAL security quality gating
+- Application health validation
+- Amazon ECR authentication
+- Amazon ECR image tagging and publishing
+- Amazon ECR image verification
+- Manual Amazon EKS deployment validation
+- Automated Amazon EKS deployment through Jenkins
+- Kubernetes rollout verification
+- Kubernetes Service verification
+- Kubernetes Horizontal Pod Autoscaler (HPA) verification
+- EKS application health verification
+- Prometheus ServiceMonitor configuration and discovery
+- Prometheus application and Kubernetes metrics collection
+- Grafana monitoring and visualization
+
+OWASP ZAP Dynamic Application Security Testing (DAST) is the next planned security layer and will be integrated after the current EKS deployment and monitoring implementation has been fully documented.
 
 ---
 
-Section 3
-Pipeline Architecture
+## Section 2 — Objectives
 
-** to be updated
+The objectives of Phase 8 are to:
+
+- Build an automated Jenkins CI/CD pipeline for the Node.js application.
+- Automate application dependency installation and unit testing.
+- Integrate SonarCloud SAST and Quality Gate validation.
+- Integrate Snyk SCA and dependency vulnerability analysis.
+- Build and verify a production Docker image.
+- Scan the container image using Trivy.
+- Enforce a HIGH/CRITICAL vulnerability security gate.
+- Prevent security-validated images from being promoted when the configured security policy fails.
+- Authenticate with Amazon ECR and publish validated container images.
+- Verify the published Amazon ECR image.
+- Deploy the validated application to Amazon EKS.
+- Support both manual and automated EKS deployment validation.
+- Verify Kubernetes application rollout and Pod readiness.
+- Verify Kubernetes Service and AWS Load Balancer availability.
+- Verify Kubernetes HPA configuration and operation.
+- Verify application health through the deployed EKS environment.
+- Integrate Prometheus ServiceMonitor discovery.
+- Collect application and Kubernetes metrics using Prometheus.
+- Visualize monitoring data through Grafana.
+- Establish a runtime application environment suitable for the next DAST security stage.
+
+---
+
+## Section 3 — Pipeline Architecture
+
+The implemented Phase 8 pipeline follows this release flow:
+
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout Source Code
+   ├── Install Dependencies
+   ├── Unit Testing
+   │      └── Jest / Supertest
+   ├── SonarCloud SAST
+   │      └── Quality Gate
+   ├── Snyk SCA
+   ├── Docker Build
+   ├── Production Image Verification
+   ├── Trivy Container Scan
+   │      └── HIGH/CRITICAL Security Gate
+   │             ├── FAIL ──► Pipeline Stops
+   │             └── PASS
+   ├── Application Health Check
+   ├── Amazon ECR Authentication
+   ├── Amazon ECR Image Tagging
+   ├── Amazon ECR Image Push
+   ├── Amazon ECR Image Verification
+   │
+   ▼
+Amazon EKS
+   │
+   ├── Kubernetes Deployment
+   ├── Kubernetes Rollout Verification
+   ├── Kubernetes Service Verification
+   ├── HPA Verification
+   └── EKS Application Health Check
+          │
+          ▼
+Prometheus
+   │
+   ├── ServiceMonitor Discovery
+   └── Metrics Collection
+          │
+          ▼
+Grafana
+   │
+   └── Monitoring Visualization
+```
+
+### Planned Runtime Security Extension
+
+The next Phase 8 security milestone will extend the pipeline with OWASP ZAP:
+
+```text
+Running Amazon EKS Application
+             │
+             ▼
+        OWASP ZAP
+             │
+             ▼
+            DAST
+             │
+             ├── Application Discovery
+             ├── Passive Security Analysis
+             ├── Active Security Testing
+             └── Security Findings Evaluation
+```
 
 ---
 
@@ -1113,9 +1210,9 @@ After completing this verification:
 
 ---
 
-## Section 9 — Jenkins Pipeline Implementation
+## Section 9 — Jenkinsfile and Jenkins Pipeline Implementation
 
-### 9.1 Create the Jenkins Pipeline Job
+### Section 9.1 Create the Jenkins Pipeline Job
 
 ### Overview
 
@@ -1386,7 +1483,7 @@ The next section focuses on creating the project's **Jenkinsfile**, where the co
 
 ---
 
-## Section 9.2 — Create the Jenkinsfile
+### 9.2 Create the Jenkinsfile
 
 ### Overview
 
@@ -1650,7 +1747,7 @@ The next section begins implementing the first stage of the pipeline: **Checkout
 
 ---
 
-## Section 9.3 — Checkout Source Code
+## Section 10 — Checkout Source Code
 
 ### Overview
 
@@ -1662,7 +1759,9 @@ This stage establishes the connection between the Jenkins Pipeline and the proje
 
 The implementation uses the Jenkins Pipeline `checkout scm` step, which retrieves the source code defined by the Pipeline job's configured Source Code Management (SCM) configuration.
 
+
 ---
+
 
 ## Objective
 
@@ -2335,7 +2434,7 @@ The next stage will implement **Section 9.4 — Install Dependencies**, where Je
 
 ---
 
-## Section 9.4 — Install Dependencies
+## Section 11 — Install Dependencies
 
 ### Overview
 
@@ -2868,7 +2967,7 @@ With dependency installation now validated, the Jenkins workspace is prepared fo
 
 ---
 
-## Section 9.5 — Unit Testing
+## Section 12 — Unit Testing
 
 ### Overview
 
@@ -3544,7 +3643,7 @@ Next: Static Code Analysis
 
 ---
 
-## Section 9.6 — SonarCloud Static Application Security Testing (SAST) and Quality Gate
+## Section 13 — SonarCloud Static Application Security Testing (SAST) and Quality Gate
 
 ### Overview
 
@@ -3625,7 +3724,7 @@ Finished: SUCCESS
 
 ---
 
-### 9.6.1 Why SonarCloud?
+### Why SonarCloud?
 
 Security and code quality should be evaluated early in the CI/CD lifecycle rather than waiting until the application reaches the deployment stages.
 
@@ -3646,7 +3745,7 @@ SonarCloud provides automated source-code analysis that complements the other se
 
 ---
 
-### 9.6.2 SonarCloud Project Configuration
+### SonarCloud Project Configuration
 
 A SonarCloud project was created and associated with the GitHub repository:
 
@@ -3673,7 +3772,7 @@ This approach keeps authentication information **outside the source-code reposit
 
 ---
 
-### 9.6.3 SonarQube Scanner Configuration
+###  SonarQube Scanner Configuration
 
 The SonarQube Scanner was configured in Jenkins under:
 
@@ -3697,7 +3796,7 @@ The Pipeline therefore does not depend on a manually installed system-wide `sona
 
 ---
 
-### 9.6.4 SonarCloud Server Configuration
+### SonarCloud Server Configuration
 
 The SonarCloud server was configured in Jenkins under the SonarQube server settings.
 
@@ -3719,7 +3818,7 @@ This allows Jenkins to inject the configured SonarCloud environment variables in
 
 ---
 
-### 9.6.5 Jenkinsfile SonarCloud Analysis Stage
+### Section 13.1 - Jenkinsfile SonarCloud Analysis Stage
 
 The SonarCloud analysis stage was added after the successful **Unit Testing** stage.
 
@@ -3762,7 +3861,7 @@ stage('SonarCloud Analysis') {
 
 ---
 
-### 9.6.6 Why Use the Jenkins-Managed Scanner?
+### Why Use the Jenkins-Managed Scanner?
 
 The initial implementation attempted to execute:
 
@@ -3804,7 +3903,7 @@ ${scannerHome}/bin/sonar-scanner
 
 ---
 
-### 9.6.7 Jenkinsfile Verification
+### Jenkinsfile Verification
 
 The completed Jenkinsfile was verified locally using:
 
@@ -3824,7 +3923,7 @@ The following screenshot documents the completed Jenkinsfile and the newly imple
 
 ---
 
-### 9.6.8 Jenkins Pipeline Execution
+### Jenkins Pipeline Execution
 
 After the Jenkinsfile was updated, committed, and pushed to GitHub, the Jenkins Pipeline was executed.
 
@@ -3862,7 +3961,7 @@ The SonarCloud Analysis stage appeared as an independent stage within the Jenkin
 
 ---
 
-### 9.6.9 SonarCloud Analysis Execution
+### SonarCloud Analysis Execution
 
 During the successful Pipeline execution, Jenkins loaded the configured SonarCloud environment:
 
@@ -3898,7 +3997,7 @@ The analysis successfully generated and uploaded the resulting report to SonarCl
 
 ---
 
-### 9.6.10 SonarCloud Quality Gate Integration
+### Section 13.2 - SonarCloud Quality Gate Integration
 
 The SonarCloud Quality Gate was integrated into the existing **SonarCloud Analysis** Jenkins stage.
 
@@ -3953,7 +4052,7 @@ This confirms that the analysis satisfied the Quality Gate criteria configured f
 
 ---
 
-### 9.6.11 Quality Gate Success Verification
+### Quality Gate Success Verification
 
 The Quality Gate result was verified directly from the Jenkins console.
 
@@ -3986,7 +4085,7 @@ This screenshot provides the final execution evidence that the SonarCloud Qualit
 
 ---
 
-### 9.6.12 How the SonarCloud Quality Gate Works
+### How the SonarCloud Quality Gate Works
 
 The implemented workflow can be summarized as follows:
 
@@ -4042,7 +4141,7 @@ The Quality Gate evaluation therefore occurs inside the SonarCloud Analysis Jenk
 
 ---
 
-### 9.6.13 SonarCloud Project Dashboard
+### SonarCloud Project Dashboard
 
 After Jenkins successfully uploaded the analysis report, the SonarCloud project dashboard was accessed to verify that the analysis reached the configured project.
 
@@ -4054,7 +4153,7 @@ This confirms that Jenkins successfully communicated with the configured SonarCl
 
 ---
 
-### 9.6.14 SonarCloud Project Overview and Results
+### SonarCloud Project Overview and Results
 
 The SonarCloud project overview was also inspected to verify the results generated by the static analysis.
 
@@ -4068,7 +4167,7 @@ This establishes a quality and security control point before the application pro
 
 ---
 
-### 9.6.15 Overall Jenkins Pipeline Verification
+### Overall Jenkins Pipeline Verification
 
 The complete Jenkins Pipeline was reviewed after the SonarCloud integration was completed.
 
@@ -4122,7 +4221,7 @@ The Quality Gate was therefore successfully enforced within the SonarCloud Analy
 
 ---
 
-### 9.6.16 SonarCloud Quality Gate Validation Summary
+### SonarCloud Quality Gate Validation Summary
 
 The SonarCloud Quality Gate implementation was successfully validated through an actual Jenkins Pipeline execution.
 
@@ -4168,7 +4267,7 @@ The SonarCloud Quality Gate implementation was successfully validated through an
 
 ---
 
-### 9.6.17 SonarCloud Integration Benefits
+### SonarCloud Integration Benefits
 
 The integration provides several important benefits to the overall DevSecOps Pipeline:
 
@@ -4186,7 +4285,7 @@ The integration provides several important benefits to the overall DevSecOps Pip
 
 ---
 
-### 9.6.18 Section 9.6 Validation Summary
+### Validation Summary
 
 The SonarCloud SAST and Quality Gate integration was successfully implemented and validated through an actual Jenkins Pipeline execution.
 
@@ -4245,7 +4344,7 @@ Jenkins Pipeline:                SUCCESS
 
 ---
 
-### 9.6.19 Current Phase 8 Pipeline Status
+### Current Phase 8 Pipeline Status
 
 Following the successful SonarCloud SAST and Quality Gate integration, the current Phase 8 Pipeline status is:
 
@@ -4306,6 +4405,7 @@ With **SonarCloud SAST and Quality Gate enforcement** successfully implemented, 
 
 #### Current Pipeline Progress
 
+```text
 GitHub
    │
    ▼
@@ -4322,15 +4422,17 @@ Jenkins
    │
    ▼
 Snyk SCA                         ⏳
+```
 
 The next section will therefore be:
 
-> **Section 9.7 — Snyk Software Composition Analysis (SCA)**
+> **Section 14 — Snyk Software Composition Analysis (SCA)**
 
 Snyk will extend the DevSecOps pipeline by analyzing the application's **third-party dependencies** for known security vulnerabilities and providing **Software Composition Analysis (SCA)** as part of the Jenkins CI/CD workflow.
 
-******************
-### 9.6.15 Section 9.6 Validation Summary
+---
+
+### Validation Summary
 
 The **SonarCloud SAST integration** was successfully implemented and validated through an actual Jenkins Pipeline execution.
 
@@ -4382,7 +4484,7 @@ The project now has a functioning **SonarCloud SAST stage** within the Jenkins C
 
 ---
 
-### 9.6.16 Current Phase 8 Pipeline Status
+### Current Phase 8 Pipeline Status
 
 Following the successful SonarCloud integration, the current Phase 8 Pipeline status is:
 
@@ -4394,7 +4496,7 @@ Following the successful SonarCloud integration, the current Phase 8 Pipeline st
 | **Install Dependencies** | ✅ |
 | **Unit Testing** | ✅ |
 | **SonarCloud Analysis** | ✅ |
-| **Quality Gate** | ⏳ |
+| **Quality Gate** | ✅ |
 | **Snyk SCA** | ⏳ |
 | **Docker Build** | ⏳ |
 | **Trivy Container Scan** | ⏳ |
@@ -4405,21 +4507,20 @@ Following the successful SonarCloud integration, the current Phase 8 Pipeline st
 
 > **Latest Milestone**
 >
-> The Jenkins Pipeline has successfully implemented and validated **SonarCloud Static Application Security Testing (SAST)**. The application source code was analyzed successfully, the analysis report was uploaded to SonarCloud, and the Jenkins Pipeline completed with a final status of **`SUCCESS`**.
+> The Jenkins Pipeline has successfully implemented and validated **SonarCloud Static Application Security Testing (SAST)** and quality gate. The application source code was analyzed successfully, the analysis report was uploaded to SonarCloud, and the Jenkins Pipeline completed with a final status of **`SUCCESS`**.
 
 ---
 
 ## Next Step
 
-With the **SonarCloud Analysis** stage successfully implemented, the next stage is the **SonarCloud Quality Gate**.
+With the **SonarCloud Analysis** stage successfully implemented, the next stage is the **Snyk Software Composition Analysis (SCA)**.
 
-The Quality Gate will evaluate the results produced by SonarCloud and provide an automated quality and security decision that can be incorporated into the Jenkins Pipeline before the application proceeds to the subsequent **Snyk SCA** stage.
+The Quality Gate has evaluated the results produced by SonarCloud and provide an automated quality and security decision that was incorporated into the Jenkins Pipeline before the application proceeds to the subsequent **Snyk SCA** stage.
+
+---
 
 
-*************
-
-**********************************************************************
-### 9.6.10 SonarCloud Analysis Result
+### SonarCloud Analysis Result
 
 The most important confirmation from the Jenkins console was:
 
@@ -4455,7 +4556,7 @@ This confirms that the SonarCloud integration was successfully executed as part 
 
 ---
 
-## Section 9.7 — Snyk Software Composition Analysis (SCA)
+## Section 14 — Snyk Software Composition Analysis (SCA)
 
 ### Overview
 
@@ -4521,7 +4622,7 @@ The Jenkins console confirmed that the Snyk stage successfully executed the depe
 
 ---
 
-### 9.7.1 Why Snyk?
+### Why Snyk?
 
 Software Composition Analysis is an important component of a modern DevSecOps pipeline because application dependencies can contain publicly known security vulnerabilities.
 
@@ -4549,7 +4650,7 @@ Snyk provides automated visibility into these dependencies and their associated 
 
 ---
 
-### 9.7.2 Snyk Jenkins Plugin Installation
+### Snyk Jenkins Plugin Installation
 
 The Snyk Jenkins integration was enabled through the Snyk Security Plugin.
 
@@ -4567,7 +4668,7 @@ This plugin provides the Jenkins integration required for executing Snyk securit
 
 ---
 
-### 9.7.3 Snyk API Credential Configuration
+### Snyk API Credential Configuration
 
 Snyk requires authentication when Jenkins communicates with the Snyk platform.
 
@@ -4596,7 +4697,7 @@ This follows the principle of keeping security-sensitive credentials outside app
 
 ---
 
-### 9.7.4 Snyk Tool Configuration
+### Snyk Tool Configuration
 
 The Snyk CLI was configured as a Jenkins-managed tool.
 
@@ -4614,7 +4715,7 @@ This provides centralized tool management and improves Pipeline portability acro
 
 ---
 
-### 9.7.5 Jenkinsfile Snyk SCA Stage
+### Jenkinsfile Snyk SCA Stage
 
 The Snyk SCA stage was introduced after the successful SonarCloud Analysis and Quality Gate stages.
 
@@ -4648,7 +4749,7 @@ The Snyk configuration is positioned after SonarCloud analysis and Quality Gate 
 
 ---
 
-### 9.7.6 Snyk SCA Pipeline Stage
+### Snyk SCA Pipeline Stage
 
 After the Jenkinsfile was committed and pushed to GitHub, Jenkins automatically retrieved the updated Pipeline configuration.
 
@@ -4682,7 +4783,7 @@ This establishes Snyk as the dependency-security control point following SonarCl
 
 ---
 
-### 9.7.7 Snyk Dependency Analysis
+### Snyk Dependency Analysis
 
 During the successful Jenkins execution, the Snyk CLI was invoked against the application's dependency manifest.
 
@@ -4727,7 +4828,7 @@ Together, these controls provide broader application security coverage.
 
 ---
 
-### 9.7.8 Snyk JSON and HTML Reporting
+### Snyk JSON and HTML Reporting
 
 The Snyk Pipeline was configured to generate a JSON report from the dependency analysis.
 
@@ -4752,7 +4853,7 @@ The generated report can therefore be retained as part of the Jenkins build evid
 
 ---
 
-### 9.7.9 Snyk Project Monitoring
+### Snyk Project Monitoring
 
 In addition to performing the immediate dependency test, the Pipeline was configured to monitor the project within Snyk.
 
@@ -4791,7 +4892,7 @@ New Vulnerability Notifications
 
 ---
 
-### 9.7.10 Snyk SCA Successful Execution
+### Snyk SCA Successful Execution
 
 The Snyk SCA stage successfully completed during the Jenkins Pipeline execution.
 
@@ -4829,7 +4930,7 @@ This confirms that the Snyk integration was successfully executed as part of the
 
 ---
 
-### 9.7.11 Snyk SCA Verification Summary
+### Snyk SCA Verification Summary
 
 The Snyk Software Composition Analysis integration was successfully implemented and validated through an actual Jenkins Pipeline execution.
 
@@ -4873,7 +4974,7 @@ The Snyk Software Composition Analysis integration was successfully implemented 
 
 ---
 
-### 9.7.12 SonarCloud and Snyk Security Coverage
+### SonarCloud and Snyk Security Coverage
 
 With both SonarCloud and Snyk now integrated, the Jenkins Pipeline provides two complementary security analysis mechanisms.
 
@@ -4923,7 +5024,7 @@ This layered approach strengthens the overall DevSecOps security model.
 
 ---
 
-### 9.7.13 DevSecOps Security Workflow
+### DevSecOps Security Workflow
 
 The implementation now provides the following security workflow:
 
@@ -4963,7 +5064,7 @@ Subsequent Security and Deployment Stages
 
 ---
 
-### 9.7.14 Section 9.7 Validation Summary
+### Validation Summary
 
 The Snyk Software Composition Analysis integration was successfully implemented and validated through an actual Jenkins Pipeline execution.
 
@@ -5001,7 +5102,7 @@ Jenkins Pipeline:            **SUCCESS**
 
 ---
 
-### 9.7.15 Current Phase 8 Pipeline Status
+### Current Phase 8 Pipeline Status
 
 Following the successful implementation of Snyk SCA, the current Phase 8 DevSecOps Pipeline status is:
 
@@ -5042,7 +5143,7 @@ Finished: SUCCESS
 > The Jenkins Pipeline will build and tag the Docker image using the Jenkins build number, providing a traceable container artifact for subsequent security scanning and deployment.
 
 > The next section will therefore be:  
-> **Section 9.8 — Docker Image Build**
+> **Section 15 — Docker Image Build**
 
 > Following the successful Docker Image Build, the next security control will be **Trivy Container Security Scanning**.
 
@@ -5085,9 +5186,9 @@ Jenkins
 
 ---
 
-## Section 9.8 — Docker Image Build
+## Section 15 — Docker Image Build
 
-### 9.8.1 Overview
+### Overview
 
 Following the successful implementation of SonarCloud Static Application Security Testing (SAST), SonarCloud Quality Gate enforcement, and Snyk Software Composition Analysis (SCA), the next stage of the Jenkins CI/CD Pipeline was container image creation.
 
@@ -5147,7 +5248,7 @@ The successful Jenkins execution confirmed that the application could be package
 
 ---
 
-### 9.8.2 Dockerfile Configuration
+### Dockerfile Configuration
 
 The Node.js Monitoring Application uses a Dockerfile located inside the app/ directory.
 
@@ -5192,7 +5293,7 @@ This helps reduce the size of the final image and minimizes unnecessary packages
 
 ---
 
-### 9.8.3 Jenkinsfile Docker Build Stage
+### Jenkinsfile Docker Build Stage
 
 The Docker image build was integrated into the Jenkinsfile as a dedicated pipeline stage.
 
@@ -5230,7 +5331,7 @@ The screenshot confirms that Docker image creation is now part of the automated 
 
 ---
 
-### 9.8.4 Docker Build Pipeline Stage
+### Docker Build Pipeline Stage
 
 After the Jenkinsfile was committed and pushed to GitHub, Jenkins retrieved the updated pipeline configuration and executed the Docker Build stage.
 
@@ -5267,7 +5368,7 @@ This establishes the containerization step immediately after the source-code and
 
 ---
 
-### 9.8.5 Docker Image Build Execution
+### Docker Image Build Execution
 
 During the Jenkins execution, the following Docker command was executed:
 
@@ -5324,7 +5425,7 @@ This screenshot provides direct evidence that the Docker image was successfully 
 
 ---
 
-### 9.8.6 Docker Image Tagging
+### Docker Image Tagging
 
 The Docker image generated by Jenkins was tagged using the Jenkins build number.
 
@@ -5366,7 +5467,7 @@ was created.
 
 ---
 
-### 9.8.7 Docker Image Created on Jenkins
+### Docker Image Created on Jenkins
 
 Following the successful Docker build, the resulting container image was available on the Jenkins host.
 
@@ -5386,7 +5487,7 @@ The screenshot provides evidence that the Docker image exists on the Jenkins env
 
 ---
 
-### 9.8.8 Docker Build Validation
+### Docker Build Validation
 
 The Docker Build milestone was validated through an actual Jenkins Pipeline execution.
 
@@ -5426,7 +5527,7 @@ The Docker Build milestone therefore satisfies the following validation criteria
 
 ---
 
-### 9.8.9 Docker Build Warning
+### Docker Build Warning
 
 During the Docker build, the Docker daemon displayed the following notice:
 
@@ -5450,7 +5551,7 @@ The BuildKit/buildx migration can be addressed as a future pipeline enhancement 
 
 ---
 
-### 9.8.10 Docker Image Build Evidence Summary
+### Docker Image Build Evidence Summary
 
 The Docker Image Build milestone was supported by the following implementation and execution evidence:
 
@@ -5463,7 +5564,7 @@ The Docker Image Build milestone was supported by the following implementation a
 
 ---
 
-### 9.8.11 Docker Build Security Position
+### Docker Build Security Position
 
 The Docker Build stage represents an important transition in the DevSecOps pipeline.
 
@@ -5498,7 +5599,7 @@ Amazon ECR
 
 ---
 
-### 9.8.12 Current Phase 8 Pipeline Status
+### Current Phase 8 Pipeline Status
 
 Following the successful Docker Image Build implementation, the Phase 8 DevSecOps Pipeline status is:
 
@@ -5581,13 +5682,13 @@ Finished: SUCCESS
 
 > The next section will therefore be:
 
-> Section 9.9 — Trivy Container Security Scanning and Quality Gate
+> Section 16 — Trivy Container Security Scanning and Quality Gate
 
 ---
 
-## Section 9.9 — Trivy Container Security Scanning and Quality Gate
+## Section 16 Trivy Container Security Scanning and Quality Gate
 
-### 9.9.1 Overview
+### Overview
 
 Following the successful Docker Image Build stage, the next security control implemented in the Phase 8 Jenkins CI/CD and DevSecOps Pipeline was Trivy Container Security Scanning.
 
@@ -5664,7 +5765,7 @@ This is important because vulnerabilities may exist not only in the application 
 
 ---
 
-## 9.9.2 Trivy Installation and Environment Validation
+### Trivy Installation and Environment Validation
 
 Trivy was installed on the Jenkins host and verified before integrating it into the Jenkins pipeline.
 
@@ -5694,7 +5795,7 @@ The Jenkins environment therefore contained the required tooling for container s
 
 ---
 
-### 9.9.3 Initial Trivy Container Scan Configuration
+### Initial Trivy Container Scan Configuration
 
 The initial Trivy implementation was added to the Jenkinsfile as a dedicated container-security stage.
 
@@ -5734,7 +5835,7 @@ This first implementation was important because it established visibility into v
 
 ---
 
-### 9.9.4 Jenkinsfile — Initial Trivy Container Scan
+### Jenkinsfile — Initial Trivy Container Scan
 
 The following screenshot provides evidence of the original Trivy container scanning stage implemented in the Jenkinsfile.
 
@@ -5756,7 +5857,7 @@ At this stage, Trivy was primarily being used for vulnerability discovery and re
 
 ---
 
-### 9.9.5 Jenkins Pipeline — Initial Trivy Container Scan Execution
+### Jenkins Pipeline — Initial Trivy Container Scan Execution
 
 The initial Trivy stage was executed through Jenkins.
 
@@ -5789,7 +5890,7 @@ The initial scan also demonstrated that Trivy could successfully inspect the pro
 
 ---
 
-### 9.9.6 Initial Trivy Vulnerability Results
+### Initial Trivy Vulnerability Results
 
 The original Trivy scan produced vulnerability findings within the generated container image.
 
@@ -5839,7 +5940,7 @@ This led to the next improvement: converting Trivy into an automated security qu
 
 ---
 
-### 9.9.7 Trivy Vulnerability Remediation and Production Image Hardening
+### Trivy Vulnerability Remediation and Production Image Hardening
 
 The initial Trivy scan demonstrated that the production container image contained security vulnerabilities requiring remediation before the image could be considered suitable for further delivery.
 
@@ -5968,7 +6069,7 @@ The remediation was therefore applied at the container-image construction layer,
 
 ---
 
-### 9.9.8 From Vulnerability Reporting to Security Quality Gate
+### From Vulnerability Reporting to Security Quality Gate
 
 The initial Trivy implementation provided visibility into vulnerabilities present in the original production image. Following remediation and reconstruction of the production image, the pipeline was further enhanced with an explicit HIGH/CRITICAL security quality gate to prevent vulnerable images from progressing automatically through subsequent delivery stages.
 
@@ -6016,8 +6117,7 @@ This introduced automated security enforcement into the container stage.
 
 ---
 
-
-### 9.9.9 Dockerfile Security Remediation
+### Dockerfile Security Remediation
 
 The original production image was based on an older Node.js Alpine image and contained npm and npx in the final runtime image.
 
@@ -6131,7 +6231,7 @@ The Dockerfile and runtime configuration were remediated, the production image w
 
 ---
 
-### 9.9.10 Jenkins Node.js Runtime Upgrade
+### Jenkins Node.js Runtime Upgrade
 
 The Dockerfile remediation was accompanied by an update to the Node.js runtime configured in Jenkins.
 
@@ -6199,7 +6299,7 @@ This reduces the possibility of building and testing the application against one
 
 ---
 
-### 9.9.11 Jenkinsfile Security Remediation and Production Image Verification
+### Jenkinsfile Security Remediation and Production Image Verification
 
 The Jenkinsfile was also updated to validate the production image before it reached the Trivy security gate.
 
@@ -6283,7 +6383,7 @@ This is an important improvement because the security controls are validated aga
 
 ---
 
-### 9.9.12 Trivy HIGH/CRITICAL Security Gate Configuration
+### Trivy HIGH/CRITICAL Security Gate Configuration
 
 Following the Dockerfile security remediation and Node.js runtime upgrade, the production image was rebuilt and subjected to a new Trivy security scan. The Jenkinsfile was subsequently updated to enforce HIGH and CRITICAL severity thresholds
 
@@ -6435,7 +6535,7 @@ This is what transforms Trivy from a passive vulnerability-reporting tool into a
 
 ---
 
-### 9.9.13 Jenkinsfile — Trivy Security Quality Gate
+### Jenkinsfile — Trivy Security Quality Gate
 
 The following screenshot provides evidence of the updated Trivy security-gate implementation in the Jenkinsfile.
 
@@ -6477,7 +6577,7 @@ This configuration ensures that container security is actively enforced before t
 
 ---
 
-### 9.9.14 Jenkins Pipeline — Trivy Quality Gate Execution
+### Jenkins Pipeline — Trivy Quality Gate Execution
 
 After updating the Jenkinsfile, the pipeline was executed again.
 
@@ -6514,7 +6614,7 @@ The execution demonstrates that the pipeline was no longer merely running an unr
 
 ---
 
-### 9.9.15 Trivy Security Gate Result
+### Trivy Security Gate Result
 
 The successful security-gate implementation was subsequently validated through Jenkins.
 
@@ -6570,7 +6670,7 @@ This represents the successful clean-image path through the newly enforced Trivy
 
 ---
 
-### 9.9.16 Trivy Quality Gate — Detailed Interpretation
+### Trivy Quality Gate — Detailed Interpretation
 
 The updated implementation should be distinguished from the original Trivy configuration.
 
@@ -6644,7 +6744,7 @@ Automated Security Quality Gate
 
 ---
 
-### 9.9.17 Trivy Quality Gate and Jenkins Pipeline Continuation
+### Trivy Quality Gate and Jenkins Pipeline Continuation
 
 Because the validated container image contained no HIGH or CRITICAL vulnerabilities according to the configured gate, Trivy returned a successful exit status.
 
@@ -6681,7 +6781,7 @@ Application Health Check
 
 ---
 
-### 9.9.18 Application Health Check After Trivy Gate
+### Application Health Check After Trivy Gate
 
 After successfully passing the Trivy security gate, Jenkins proceeded to the application health-check stage.
 
@@ -6730,7 +6830,7 @@ This demonstrates that the container passed both a security validation and an ap
 
 ---
 
-### 9.9.19 Final Jenkins Pipeline Result
+### Final Jenkins Pipeline Result
 
 The successful Trivy security-gate execution was followed by successful completion of the Jenkins pipeline.
 
@@ -6791,7 +6891,7 @@ This provides end-to-end evidence that the Trivy quality gate successfully integ
 
 ---
 
-### 9.9.20 Trivy Quality Gate Behavior
+### Trivy Quality Gate Behavior
 
 The current Trivy implementation provides two possible pipeline outcomes.
 
@@ -6859,7 +6959,7 @@ Therefore, the Trivy stage now functions as an actual automated security quality
 
 ---
 
-### 9.9.21 Why the Trivy Quality Gate Is Important
+### Why the Trivy Quality Gate Is Important
 
 The Trivy quality gate prevents a container image containing HIGH or CRITICAL vulnerabilities from automatically progressing through the CI/CD pipeline.
 
@@ -6911,7 +7011,7 @@ Each tool therefore addresses a different part of the application delivery lifec
 ---
 
 
-### 9.9.22 Trivy Quality Gate Validation
+### Trivy Quality Gate Validation
 
 The Trivy quality gate was validated through actual Jenkins Pipeline execution.
 
@@ -6950,7 +7050,7 @@ The screenshots therefore document the complete evolution from vulnerability vis
 
 ---
 
-### 9.9.23 Complete Trivy Evidence Chain
+### Complete Trivy Evidence Chain
 
 The eight screenshots provide a continuous evidence chain for the Trivy implementation.
 
@@ -7012,7 +7112,7 @@ Security Policy Improvement
 
 ---
 
-### 9.9.24 Trivy Container Security Position
+### Trivy Container Security Position
 
 The addition of Trivy with HIGH/CRITICAL exit-code enforcement significantly strengthens the Phase 8 DevSecOps pipeline.
 
@@ -7114,7 +7214,7 @@ The pipeline therefore implements multiple security controls rather than relying
 
 ---
 
-### 9.9.25 Trivy Container Security Gate Result
+### Trivy Container Security Gate Result
 
 The Trivy Container Security Gate was successfully implemented and validated through Jenkins.
 
@@ -7176,7 +7276,7 @@ The final security-gate result can therefore be summarized as:
 
 ---
 
-### 9.9.26 Updated Phase 8 Pipeline Status
+### Updated Phase 8 Pipeline Status
 
 Following the implementation of the Trivy HIGH/CRITICAL security gate, the current Phase 8 pipeline progression is:
 
@@ -7232,7 +7332,7 @@ Jenkins
    └── OWASP ZAP DAST                     ⏳
 ```
 
-### 9.9.27 Next Pipeline Stage
+### Next Pipeline Stage
 
 The Trivy Container Security Gate has now been successfully implemented and validated.
 
@@ -7267,13 +7367,13 @@ Jenkins
    └── Amazon ECR                       ⏳
 ```
 
-> Next Step: The next stage of the Phase 8 DevSecOps Pipeline is Section 9.10 — Amazon ECR Container Image Push.
+> Next Step: The next stage of the Phase 8 DevSecOps Pipeline is Section 17 — Amazon ECR Container Image Publishing.
 
 The Docker image that has successfully passed the application, dependency, SAST, container-security, and health-validation stages can now be authenticated against Amazon ECR, tagged with the appropriate ECR repository URI, and pushed to the container registry.
 
 ---
 
-## 9.10 — Amazon ECR Container Image Push
+## Section 17 — Amazon ECR Container Image Publishing
 
 After successfully completing the Docker build, production-image verification, Trivy HIGH/CRITICAL security gate, and application health check, the next stage of the CI/CD pipeline pushes the validated Docker image to Amazon Elastic Container Registry (Amazon ECR).
 
@@ -7311,7 +7411,7 @@ Jenkins Pipeline SUCCESS
 
 ---
 
-### 9.10.1 — Amazon ECR Configuration
+### Amazon ECR Configuration
 
 The Jenkins pipeline uses the following ECR configuration:
 
@@ -7357,7 +7457,7 @@ node-devsecops-repository:3
 
 ---
 
-### 9.10.2 — Amazon ECR Container Image Push Stage
+### Amazon ECR Container Image Push Stage
 
 The following Jenkins stage authenticates Docker with Amazon ECR, tags the locally validated image, and pushes the image to the ECR repository.
 
@@ -7420,7 +7520,7 @@ stage('Amazon ECR Container Image Push') {
 
 ---
 
-### 9.10.3 — Authenticate Docker with Amazon ECR
+### Authenticate Docker with Amazon ECR
 
 The pipeline obtains a temporary Amazon ECR authentication token using the AWS CLI:
 
@@ -7462,7 +7562,7 @@ Docker authentication to Amazon ECR succeeded.
 
 ---
 
-### 9.10.4 — Tag Docker Image for Amazon ECR
+### Tag Docker Image for Amazon ECR
 
 Before pushing the image, the locally built Docker image is tagged with the full ECR repository URI:
 
@@ -7488,7 +7588,7 @@ Docker image tagged successfully.
 
 ----
 
-### 9.10.5 — Push Docker Image to Amazon ECR
+### Push Docker Image to Amazon ECR
 
 The tagged image is pushed to Amazon ECR using:
 
@@ -7525,7 +7625,7 @@ The image digest provides an immutable content identifier for the pushed contain
 
 ---
 
-### 9.10.6 — Verify Image in Amazon ECR
+### Verify Image in Amazon ECR
 
 After the push succeeds, the pipeline performs an explicit verification step.
 
@@ -7598,7 +7698,7 @@ imagePushedAt: 2026-08-19T23:30:43.116000+00:00
 
 ---
 
-### 9.10.7 — ECR Verification Result
+### ECR Verification Result
 
 The Jenkins console reported:
 
@@ -7641,7 +7741,7 @@ Deployment
 
 ---
 
-### 9.10.8 — Final Jenkins Pipeline Result
+### Final Jenkins Pipeline Result
 
 Following successful ECR image verification, Jenkins executed the post-build cleanup actions:
 
@@ -7667,7 +7767,7 @@ Finished: SUCCESS
 
 ---
 
-### 9.10.9 — Security and Quality Controls
+### Security and Quality Controls
 
 The Amazon ECR push occurs after the application's major pre-deployment quality and security controls have passed.
 
@@ -7688,7 +7788,7 @@ The Amazon ECR push occurs after the application's major pre-deployment quality 
 
 ---
 
-### 9.10.10 — Implementation Outcome
+### Implementation Outcome
 
 The Amazon ECR integration successfully established an automated container image promotion workflow from Jenkins to AWS.
 
@@ -7731,7 +7831,7 @@ The Amazon ECR Container Image Push and ECR Image Verification stages are theref
 
 ---
 
-### 9.10.11 — Updated Phase 8 Pipeline Status
+### Updated Phase 8 Pipeline Status
 
 Following the successful implementation of the Amazon ECR Container Image Push and ECR Image Verification stages, the current Phase 8 pipeline progression is:
 
@@ -7834,7 +7934,7 @@ Jenkins Pipeline SUCCESS
 
 ---
 
-### 9.10.12 — Next Pipeline Stage
+### Next Pipeline Stage
 
 The Amazon ECR Container Image Push and ECR Image Verification stages have now been successfully implemented and validated.
 
@@ -7855,14 +7955,14 @@ Kubernetes Rollout Verification
 OWASP ZAP DAST
 ```
 
-> Next Step: The next stage of the Phase 8 DevSecOps Pipeline is ## Section 9.11 — Amazon EKS Deployment.
+> Next Step: The next stage of the Phase 8 DevSecOps Pipeline is ## Section 18 — Amazon EKS Deployment.
 
 > The validated container image is now securely stored in Amazon ECR and has been successfully verified using the AWS CLI. It has therefore passed the required security, health, and registry verification controls and is ready for deployment to Amazon EKS.
 
 ---
 
 
-## 9.11 — Amazon EKS Deployment
+## Section 18 — Amazon EKS Deployment
 
 After successfully building, scanning, publishing, and verifying the Docker image in Amazon ECR, the next stage of the project was to deploy the verified container image to Amazon Elastic Kubernetes Service (Amazon EKS).
 
@@ -7901,7 +8001,7 @@ Amazon EKS Cluster
 
 ---
 
-### 9.11.1 — Manual Amazon EKS Deployment
+### Section 18.1 Manual Amazon EKS Deployment
 
 The Amazon EKS cluster was provisioned using Terraform and successfully validated before deploying the application.
 
@@ -7949,7 +8049,7 @@ Both nodes were in the Ready state and were running Kubernetes version v1.33.13.
 
 ---
 
-### 9.11.1.1 — Deploy Kubernetes Application
+### Deploy Kubernetes Application
 
 The application Kubernetes resources were manually deployed using the existing Kubernetes manifests:
 
@@ -7987,7 +8087,7 @@ node-monitoring-app-854fc9cf97-lq4cv   1/1     Running   0          ...
 
 ---
 
-### 9.11.1.2 — Kubernetes Deployment Verification
+### Kubernetes Deployment Verification
 
 The deployment was verified using:
 
@@ -8008,7 +8108,7 @@ The pods were distributed across the two EKS worker nodes, providing basic workl
 
 ---
 
-### 9.11.1.3 — ECR Image Integration
+### ECR Image Integration
 
 The Kubernetes deployment used the Docker image previously published and verified by the Jenkins pipeline in Amazon ECR:
 
@@ -8050,7 +8150,7 @@ Amazon EKS
 
 ---
 
-### 9.11.1.4 — Kubernetes LoadBalancer Service
+### Kubernetes LoadBalancer Service
 
 The application was exposed through a Kubernetes Service configured with:
 
@@ -8072,7 +8172,7 @@ The Service routes external traffic on port 80 to the Node.js application runnin
 
 ---
 
-### 9.11.2 — Manual Application Verification
+### Manual Application Verification
 
 After the application pods and LoadBalancer Service were successfully deployed, the application was externally verified through the AWS Load Balancer endpoint.
 
@@ -8084,7 +8184,7 @@ http://a4035e0ea37ef42c49a7fa1bd28f419c-1789020279.us-east-1.elb.amazonaws.com
 
 ---
 
-### 9.11.2.1 — Kubernetes Application Health Verification
+### Kubernetes Application Health Verification
 
 The application health endpoint was verified using:
 
@@ -8110,7 +8210,7 @@ http://a4035e0ea37ef42c49a7fa1bd28f419c-1789020279.us-east-1.elb.amazonaws.com/h
 
 ---
 
-### 9.11.2.2 — Application LoadBalancer Verification
+### Application LoadBalancer Verification
 
 The application's root endpoint was accessed through the AWS Load Balancer:
 
@@ -8134,7 +8234,7 @@ STATUS: RUNNING
 
 ---
 
-### 9.11.2.3 — Prometheus Metrics Verification
+### Prometheus Metrics Verification
 
 The application's Prometheus metrics endpoint was performed using a browser-based verification:
 
@@ -8150,7 +8250,7 @@ This confirms that the application's monitoring endpoint remained functional aft
 
 ---
 
-### 9.11.2.4 — EKS Deployment Verification Summary
+### EKS Deployment Verification Summary
 
 The manual implementation successfully validated the complete application deployment path:
 
@@ -8204,49 +8304,878 @@ The successful manual deployment establishes a known-good baseline for the next 
 
 ---
 
-### 9.11.3 — Automated Amazon EKS Deployment
+### Section 18.2 — Automated Amazon EKS Deployment
 
-Status: Planned / Next Implementation
+After successfully validating the manual Amazon EKS deployment, the next objective was to automate the Kubernetes deployment process through Jenkins.
 
-The next iteration will automate the Amazon EKS deployment through the Jenkins CI/CD pipeline.
+The automated implementation was designed to eliminate the need for manually executing Kubernetes deployment commands and to integrate Amazon EKS deployment directly into the existing Jenkins CI/CD pipeline.
 
-The Jenkins pipeline will be extended to automatically:
+The implementation was completed incrementally by:
 
-1. Configure access to the Amazon EKS cluster.
-2. Deploy the Kubernetes manifests.
-3. Deploy the verified Amazon ECR image.
-4. Monitor the Kubernetes rollout.
-5. Verify application pod readiness.
-6. Verify the Kubernetes Service.
-7. Perform an automated application health check.
-8. Fail the pipeline if the deployment or health verification fails.
+1. Provisioning the required Kubernetes manifests.
+2. Configuring the application Deployment manifest to consume the verified Amazon ECR image.
+3. Configuring the Kubernetes LoadBalancer Service.
+4. Configuring the Horizontal Pod Autoscaler (HPA).
+5. Configuring the Prometheus ServiceMonitor.
+6. Updating the Jenkinsfile with automated Amazon EKS deployment stages.
+7. Committing and pushing the changes to GitHub.
+8. Executing a Jenkins Build Now.
+9. Verifying the Kubernetes deployment, HPA, ServiceMonitor, Service, and application health.
+10. Verifying Prometheus discovery and Grafana monitoring after deployment.
 
-The target automated flow will be:
+The resulting workflow is:
 
 ```text
-Docker Build
-     │
-     ▼
-Security Scanning
-     │
-     ▼
-Amazon ECR Push
-     │
-     ▼
-ECR Image Verification
-     │
-     ▼
-Amazon EKS Deployment
-     │
-     ▼
-Kubernetes Rollout Verification
-     │
-     ▼
-Application Health Verification
-     │
-     ├── PASS ──► Pipeline SUCCESS
-     │
-     └── FAIL ──► Pipeline FAILURE
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout Source Code
+   │
+   ├── Install Dependencies
+   │
+   ├── Dependency Inspection
+   │
+   ├── Unit Testing
+   │
+   ├── SonarCloud SAST
+   │
+   ├── Snyk SCA
+   │
+   ├── Docker Build
+   │
+   ├── Production Image Verification
+   │
+   ├── Trivy Security Gate
+   │
+   ├── Application Health Check
+   │
+   ├── Amazon ECR Image Push
+   │
+   ├── Verify ECR Image
+   │
+   ├── Configure Amazon EKS Access
+   │
+   ├── Amazon EKS Deployment
+   │      │
+   │      ├── deployment.yaml
+   │      ├── service.yaml
+   │      ├── service-monitor.yaml
+   │      └── hpa.yaml
+   │
+   ├── Kubernetes Rollout Verification
+   │
+   ├── Kubernetes HPA Verification
+   │
+   ├── HPA Metrics Verification
+   │
+   ├── Prometheus ServiceMonitor Verification
+   │
+   ├── Kubernetes Service Verification
+   │
+   └── EKS Application Health Check
+   │
+   ▼
+Amazon EKS
+   │
+   ├── Node 1
+   │    └── node-monitoring-app
+   │
+   └── Node 2
+        └── node-monitoring-app
+             │
+             ├── Service
+             │    └── AWS Load Balancer
+             │
+             ├── HPA
+             │
+             └── ServiceMonitor
+                    │
+                    ▼
+                Prometheus
+                    │
+                    ▼
+                 Grafana
 ```
 
-The automated implementation and its evidence will be documented in this section after Jenkins-based EKS deployment has been implemented and successfully validated.
+---
+
+### Kubernetes Manifest Provisioning
+
+The automated EKS deployment required four Kubernetes manifests:
+
+```text
+k8s/
+├── deployment.yaml
+├── service.yaml
+├── service-monitor.yaml
+└── hpa.yaml
+```
+
+Each manifest has a specific responsibility within the Kubernetes deployment architecture.
+
+| Manifest | Purpose |
+|---|---|
+| `deployment.yaml` | Defines the application Deployment, replicas, container configuration, and ECR image |
+| `service.yaml` | Exposes the application through a Kubernetes LoadBalancer Service |
+| `service-monitor.yaml` | Configures Prometheus monitoring for the application |
+| `hpa.yaml` | Configures automatic horizontal pod scaling based on resource utilization |
+
+This separation follows the Kubernetes resource model and allows each component to be independently managed while still being deployed as part of the Jenkins pipeline.
+
+---
+
+### Kubernetes Deployment Manifest
+
+The deployment.yaml manifest defines the Kubernetes Deployment for the Node.js monitoring application.
+
+The deployment is responsible for maintaining the desired number of application replicas and running the container image retrieved from Amazon ECR.
+
+The image reference is intentionally represented by an IMAGE_PLACEHOLDER value in the source manifest.
+
+During the Jenkins pipeline, the placeholder is replaced dynamically with the ECR image generated for the current Jenkins build:
+
+```text
+615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-repository:${BUILD_NUMBER}
+```
+
+The Jenkins pipeline performs this replacement using:
+
+```bash
+sed -i "s|IMAGE_PLACEHOLDER|${ECR_IMAGE}|g" \
+    k8s/deployment.yaml
+```
+
+This creates a direct relationship between the Jenkins build number and the container image deployed to Amazon EKS.
+
+The deployment process therefore follows:
+
+```text
+Jenkins Build
+      │
+      ▼
+BUILD_NUMBER
+      │
+      ▼
+Amazon ECR Image Tag
+      │
+      ▼
+ECR Image
+      │
+      ▼
+IMAGE_PLACEHOLDER replacement
+      │
+      ▼
+Kubernetes Deployment
+```
+
+This approach provides deployment traceability between the CI/CD pipeline, Amazon ECR, and the Kubernetes workload.
+
+---
+
+### Kubernetes Service Manifest
+
+The service.yaml manifest defines the Kubernetes Service used to expose the application.
+
+The Service is configured as:
+
+```text
+Type: LoadBalancer
+```
+
+The Service provides stable network access to the application pods and allows Amazon EKS to provision an AWS Load Balancer.
+
+The resulting traffic flow is:
+
+```text
+Internet
+   │
+   ▼
+AWS Load Balancer
+   │
+   ▼
+Kubernetes LoadBalancer Service
+   │
+   ▼
+node-monitoring-app Pods
+   │
+   ▼
+Node.js Application
+```
+
+The Service was subsequently verified automatically by Jenkins using:
+
+```bash
+kubectl get service node-monitoring-app
+```
+
+---
+
+### Horizontal Pod Autoscaler Manifest
+
+The hpa.yaml manifest was introduced to provide automatic scaling capability for the application workload.
+
+The Horizontal Pod Autoscaler monitors the application workload and allows Kubernetes to adjust the number of application replicas according to the configured resource utilization thresholds.
+
+The Jenkins pipeline verifies the HPA using:
+
+```bash
+kubectl get hpa node-monitoring-app
+```
+
+and:
+
+```bash
+kubectl describe hpa node-monitoring-app
+```
+
+The pipeline also performs HPA metrics verification using:
+
+```bash
+kubectl top pods
+```
+
+followed by:
+
+```bash
+kubectl get hpa node-monitoring-app
+```
+
+and:
+
+```bash
+kubectl describe hpa node-monitoring-app
+```
+
+This provides both configuration-level and runtime-level verification of the autoscaling configuration.
+
+#### Jenkins verification evidence
+
+![Jenkins HPA Verification](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/78-jenkins-hpa-verification.png)
+
+
+---
+
+### Prometheus ServiceMonitor Manifest
+
+The service-monitor.yaml manifest was introduced to integrate the application with the Prometheus monitoring stack running inside the EKS cluster.
+
+The ServiceMonitor identifies the Kubernetes Service associated with the Node.js application and configures Prometheus to scrape the application's /metrics endpoint.
+
+The resulting monitoring architecture is:
+
+```text
+node-monitoring-app
+        │
+        ▼
+Kubernetes Service
+        │
+        ▼
+ServiceMonitor
+        │
+        ▼
+Prometheus
+        │
+        ▼
+Application Metrics
+        │
+        ▼
+Grafana
+```
+
+The Jenkins pipeline verifies the ServiceMonitor using:
+
+```bash
+kubectl get servicemonitor node-monitoring-app
+```
+
+and:
+
+```bash
+kubectl describe servicemonitor node-monitoring-app
+```
+
+#### Jenkins verification evidence
+
+![Jenkins prometheus servicemonitor verification](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/79-jenkins-prometheus-servicemonitor-verification.png)
+
+
+> This verifies that the Kubernetes ServiceMonitor resource was successfully created and configured.
+
+---
+
+### Jenkinsfile Integration
+
+After provisioning the Kubernetes manifests, the Jenkinsfile was updated to automate the Amazon EKS deployment process.
+
+The first EKS-specific stage configures Jenkins access to the EKS cluster:
+
+```text
+stage('Configure Amazon EKS Access') {
+    steps {
+        sh '''
+            aws eks update-kubeconfig \
+                --region "${AWS_REGION}" \
+                --name node-devsecops-cluster
+
+            kubectl get nodes
+
+            echo "Amazon EKS access verification PASSED"
+        '''
+    }
+}
+```
+
+This stage ensures that the Jenkins execution environment has an active Kubernetes configuration before attempting the deployment.
+
+
+#### Jenkins EKS Access Verification
+
+![Jenkins EKS Access Verification](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/75-jenkins-ecr-eks-access-verification.png)
+
+---
+
+### Automated Kubernetes Manifest Deployment
+
+The Amazon EKS Deployment stage was then added to the Jenkins pipeline.
+
+The stage dynamically identifies the ECR image associated with the current Jenkins build and deploys the Kubernetes resources.
+
+The deployment sequence is:
+
+```bash
+echo "Deploying image:"
+echo "${ECR_IMAGE}"
+
+sed -i "s|IMAGE_PLACEHOLDER|${ECR_IMAGE}|g" \
+    k8s/deployment.yaml
+
+kubectl apply -f k8s/deployment.yaml
+
+kubectl apply -f k8s/service.yaml
+
+kubectl apply -f k8s/service-monitor.yaml
+
+kubectl apply -f k8s/hpa.yaml
+```
+
+The Jenkins pipeline subsequently verifies the resources:
+
+```text
+kubectl get deployment node-monitoring-app 
+kubectl get service node-monitoring-app 
+kubectl get servicemonitor node-monitoring-app 
+kubectl get hpa node-monitoring-app
+```
+
+This transformed the deployment process from a manual sequence of kubectl commands into an automated CI/CD deployment stage.
+
+#### Jenkins Automated EKS Deployment
+
+![Jenkins Automated EKS Deployment](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/76-jenkins-automated-eks-deployment.png)
+
+
+---
+
+
+### Kubernetes Rollout Verification
+
+After applying the Kubernetes manifests, Jenkins verifies that the Deployment successfully rolls out.
+
+The pipeline executes:
+
+```bash
+kubectl rollout status \
+    deployment/node-monitoring-app \
+    --timeout=180s
+```
+
+The Deployment and Pod status are then inspected:
+
+```text
+kubectl get deployment node-monitoring-app
+kubectl get pods -o wide
+```
+
+The rollout verification ensures that the application replicas become available successfully before the pipeline proceeds.
+
+#### Jenkins Kubernetes Rollout Verification Passed
+
+![Jenkins Kubernetes Rollout Verification Passed](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/77-jenkins-kubernetes-rollout-verification-passed.png)
+
+
+---
+
+
+### Automated HPA Verification
+
+Jenkins then verifies the Horizontal Pod Autoscaler configuration.
+
+The pipeline executes:
+
+```bash
+kubectl get hpa node-monitoring-app
+```
+
+followed by:
+
+```bash
+kubectl describe hpa node-monitoring-app
+```
+
+The HPA metrics are also inspected using:
+
+```bash
+kubectl top pods
+```
+
+This confirms that the HPA resource is present and that Kubernetes metrics are available for the workload.
+
+#### Jenkins HPA Verification
+
+![Jenkins HPA Verification](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/78-jenkins-hpa-verification.png)
+
+---
+
+### Automated Prometheus ServiceMonitor Verification
+
+The Jenkins pipeline verifies the ServiceMonitor created during the deployment stage.
+
+The verification commands are:
+
+```bash
+kubectl get servicemonitor node-monitoring-app
+```
+
+and:
+
+```bash
+kubectl describe servicemonitor node-monitoring-app
+```
+
+This confirms that the monitoring configuration has been successfully deployed alongside the application.
+
+#### Jenkins Prometheus Servicemonitor Verification
+
+![Jenkins Prometheus Servicemonitor Verification](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/79-jenkins-prometheus-servicemonitor-verification.png)
+
+
+---
+
+### Kubernetes Service Verification
+
+The Kubernetes Service is verified after deployment using:
+
+```bash
+kubectl get service node-monitoring-app
+```
+
+This confirms that the application Service exists and that the LoadBalancer configuration has been successfully applied.
+
+#### Jenkins Kubernetes Service Verification Passed
+
+![Jenkins Kubernetes Service Verification](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/80-jenkins-kubernetes-service-verification-passed.png)
+
+---
+
+### Automated EKS Application Health Check
+
+The final application validation stage verifies that the deployed application is reachable through the AWS Load Balancer.
+
+Jenkins first retrieves the LoadBalancer hostname:
+
+```bash
+LOAD_BALANCER_HOST=$(kubectl get service node-monitoring-app \
+    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+```
+
+The pipeline then repeatedly tests:
+
+```text
+/health
+```
+
+until the endpoint becomes available.
+
+The health check is performed using:
+
+```bash
+curl --fail --silent --show-error \
+    --connect-timeout 10 \
+    "http://${LOAD_BALANCER_HOST}/health"
+```
+
+If the endpoint responds successfully, Jenkins reports:
+
+EKS application health check PASSED.
+
+This provides an end-to-end validation of the automated deployment:
+
+```text
+Jenkins
+   │
+   ▼
+Amazon ECR
+   │
+   ▼
+Amazon EKS
+   │
+   ▼
+Kubernetes Deployment
+   │
+   ▼
+Kubernetes Service
+   │
+   ▼
+AWS Load Balancer
+   │
+   ▼
+Node.js Application
+   │
+   ▼
+/health
+   │
+   ▼
+PASSED
+```
+
+#### Jenkins EKS Application Health Check Passed
+
+![Jenkins EKS Application Health Check](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/81-jenkins-eks-application-health-check-passed.png)
+
+
+---
+
+
+### Jenkins Pipeline Execution Result
+
+After the Kubernetes manifests and Jenkinsfile changes were committed and pushed to GitHub, a new Jenkins Build Now execution was performed.
+
+The pipeline successfully completed the automated EKS deployment stages, including:
+
+| Pipeline Control | Result |
+|---|---|
+| EKS Access Configuration | ✅ PASSED |
+| Amazon EKS Deployment | ✅ PASSED |
+| Kubernetes Rollout Verification | ✅ PASSED |
+| HPA Verification | ✅ PASSED |
+| HPA Metrics Verification | ✅ PASSED |
+| Prometheus ServiceMonitor Verification | ✅ PASSED |
+| Kubernetes Service Verification | ✅ PASSED |
+| EKS Application Health Check | ✅ PASSED |
+| Jenkins Pipeline | ✅ SUCCESS |
+
+The successful pipeline execution demonstrates that the application can now progress from the validated Amazon ECR image to a running Kubernetes workload through Jenkins automation.
+
+#### Jenkins EKS Deployment Pipeline Success
+
+![Jenkins EKS Deployment Pipeline Success](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/82-jenkins-eks-deployment-pipeline-success.png)
+
+
+---
+
+
+## Section 19 — Prometheus ServiceMonitor Discovery Verification
+
+The Jenkins console verifies that the Kubernetes ServiceMonitor resource was successfully created.
+
+However, resource creation alone does not prove that Prometheus has successfully discovered and scraped the application.
+
+Therefore, Prometheus was separately accessed through the Prometheus UI to verify the actual target discovery.
+
+The Prometheus target discovery showed:
+
+```text
+serviceMonitor/default/node-monitoring-app/0
+
+2 / 2 up
+```
+
+The application endpoints were reported as:
+
+```text
+http://10.0.3.148:3000/metrics 
+http://10.0.4.162:3000/metrics
+```
+
+Both targets reported:
+
+```text
+up
+```
+
+with the following job label:
+
+```text
+job="node-monitoring-app"
+```
+
+This provides direct evidence that Prometheus successfully discovered both application pods through the ServiceMonitor and is actively scraping their /metrics endpoints.
+
+The resulting monitoring flow is:
+
+```text
+node-monitoring-app Pod 1 ──► /metrics ──► Prometheus ──► UP
+node-monitoring-app Pod 2 ──► /metrics ──► Prometheus ──► UP
+```
+
+#### Prometheus Servicemonitor Discovery
+
+![Prometheus Servicemonitor Discovery](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/83-prometheus-servicemonitor-discovery.png)
+
+> This verification is separate from the Jenkins ServiceMonitor verification and confirms the complete monitoring path from Kubernetes ServiceMonitor configuration to active Prometheus scraping.
+
+---
+
+## Section 20 — Grafana Kubernetes Monitoring Verification
+
+After confirming that Prometheus successfully discovered and scraped the application targets, Grafana was accessed to verify the monitoring integration.
+
+Grafana was successfully connected to the Prometheus data source and provided access to Prometheus metrics through the Explore interface.
+
+The monitoring architecture is therefore:
+
+```text
+Node.js Application
+        │
+        │ /metrics
+        ▼
+Kubernetes Service
+        │
+        ▼
+ServiceMonitor
+        │
+        ▼
+Prometheus
+        │
+        ▼
+Grafana
+```
+
+The Grafana verification provides visual evidence that the Kubernetes monitoring stack is operational and that Prometheus is available as a metrics data source.
+
+
+#### Grafana Kubernetes/Prometheus monitoring verification
+
+![Grafana Kubernetes Monitoring](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/84-grafana-kubernetes-monitoring.png)
+
+
+---
+
+
+### EKS Application Health Endpoint Verification
+
+In addition to the automated Jenkins health check, the deployed application was independently verified through its AWS Load Balancer endpoint.
+
+The application /health endpoint was accessed through the browser:
+
+```text
+http://<AWS-LOAD-BALANCER>/health
+```
+
+The endpoint returned the expected healthy response:
+
+```text
+ok
+```
+
+This provides independent browser-based evidence that the application deployed through Jenkins is externally reachable and healthy.
+
+
+#### Browser-based /health verification
+
+![EKS Application Health Endpoint](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/85-eks-application-health-endpoint.png)
+
+---
+
+
+### EKS Application External Accessibility Verification
+
+The application root endpoint was also accessed through the AWS Load Balancer.
+
+The deployed Node.js application successfully displayed its application interface:
+
+```text
+🚀 DevOps Monitoring App
+```
+
+This Node.js app exposes Prometheus metrics.
+
+```text
+STATUS: RUNNING
+```
+
+This confirms that the automated Jenkins deployment resulted in a functional application that is externally accessible through the Kubernetes LoadBalancer and AWS networking layer.
+
+The complete request path is:
+
+```text
+Internet
+   │
+   ▼
+AWS Load Balancer
+   │
+   ▼
+Kubernetes Service
+   │
+   ▼
+node-monitoring-app Pods
+   │
+   ▼
+Node.js Application
+   │
+   ▼
+Application Interface
+```
+
+#### Externally accessible EKS application
+
+![EKS Application](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/86-eks-application.png)
+
+---
+
+
+### Automated Amazon EKS Deployment Verification Summary
+
+The automated implementation successfully established a complete Jenkins-to-EKS deployment workflow.
+
+| Verification | Result |
+|---|---|
+| Jenkins EKS Access | ✅ |
+| Amazon EKS Deployment | ✅ |
+| Kubernetes Deployment | ✅ |
+| Application Rollout | ✅ |
+| Application Replicas | ✅ |
+| Kubernetes HPA | ✅ |
+| HPA Metrics | ✅ |
+| Prometheus ServiceMonitor | ✅ |
+| Prometheus Target Discovery | ✅ 2/2 UP |
+| Kubernetes LoadBalancer Service | ✅ |
+| AWS Load Balancer | ✅ |
+| Automated `/health` Check | ✅ |
+| Browser `/health` Verification | ✅ |
+| Application Root Endpoint | ✅ |
+| Grafana Prometheus Integration | ✅ |
+| Jenkins Pipeline | ✅ SUCCESS |
+
+
+#### Automated Deployment Result
+
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Unit Testing                   ✅
+   ├── SonarCloud SAST                ✅
+   ├── Snyk SCA                       ✅
+   ├── Docker Build                   ✅
+   ├── Trivy Security Gate            ✅
+   ├── Application Health Check       ✅
+   ├── Amazon ECR Push                ✅
+   ├── ECR Image Verification         ✅
+   │
+   ├── Configure EKS Access           ✅
+   ├── EKS Deployment                 ✅
+   │      │
+   │      ├── Deployment              ✅
+   │      ├── Service                 ✅
+   │      ├── ServiceMonitor          ✅
+   │      └── HPA                     ✅
+   │
+   ├── Rollout Verification           ✅
+   ├── HPA Verification               ✅
+   ├── HPA Metrics Verification       ✅
+   ├── ServiceMonitor Verification    ✅
+   ├── Service Verification           ✅
+   └── EKS Health Check               ✅
+           │
+           ▼
+       Amazon EKS
+           │
+           ├── Application Pods       ✅
+           ├── LoadBalancer           ✅
+           └── Monitoring             ✅
+                  │
+                  ├── Prometheus      ✅
+                  └── Grafana         ✅
+```
+
+
+#### Automated Amazon EKS Deployment: SUCCESS ✅
+
+The successful implementation establishes a fully automated deployment path from source control through Jenkins, Amazon ECR, Amazon EKS, Kubernetes workload verification, application health validation, and Kubernetes monitoring.
+
+The manual Amazon EKS deployment therefore served as the known-good baseline, while the automated implementation now provides repeatable CI/CD-driven Kubernetes deployment.
+
+---
+
+
+### Automated Amazon EKS Deployment Conclusion
+
+The automated Amazon EKS deployment stage has been successfully implemented and verified.
+
+The Jenkins pipeline can now automatically:
+
+- Authenticate against the Amazon EKS cluster.
+- Dynamically identify the ECR image generated by the current build.
+- Update the Kubernetes Deployment with the correct ECR image.
+- Deploy the Kubernetes Deployment.
+- Deploy the LoadBalancer Service.
+- Deploy the Horizontal Pod Autoscaler.
+- Deploy the Prometheus ServiceMonitor.
+- Verify the Kubernetes rollout.
+- Verify HPA configuration and metrics.
+- Verify the Prometheus ServiceMonitor.
+- Verify the Kubernetes Service.
+- Obtain the AWS Load Balancer endpoint.
+- Test the deployed application's /health endpoint.
+- Fail the pipeline if the EKS application does not become healthy.
+
+This represents the successful completion of the Automated Amazon EKS Deployment stage of the Phase 8 DevSecOps pipeline.
+
+---
+
+### Next Step —  OWASP ZAP Dynamic Application Security Testing (DAST)
+
+With automated Amazon EKS deployment now successfully implemented and verified, the next stage of the CI/CD pipeline is Dynamic Application Security Testing (DAST) using OWASP ZAP.
+
+The next stage will integrate OWASP ZAP with the deployed application to perform runtime security testing against the externally accessible application endpoint.
+
+The planned workflow is:
+
+```text
+Jenkins
+   │
+   ▼
+Automated Amazon EKS Deployment
+   │
+   ▼
+EKS Application
+   │
+   ▼
+AWS Load Balancer
+   │
+   ▼
+OWASP ZAP DAST
+   │
+   ├── Spider / Discover Application
+   │
+   ├── Passive Security Analysis
+   │
+   ├── Active Security Testing
+   │
+   └── Security Findings
+          │
+          ├── PASS ──► Continue Pipeline
+          │
+          └── FAIL ──► Stop Pipeline
+```
+
+The OWASP ZAP DAST stage remains the next planned CI/CD pipeline enhancement: OWASP ZAP DAST — ⏳
+
+---
+
+## Section 21 — OWASP ZAP Dynamic Application Security Testing (DAST)
