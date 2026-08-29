@@ -68,7 +68,7 @@ pipeline {
         stage('Unit Testing') {
             steps {
                 dir('app') {
-                    sh 'npm test'
+                    sh 'npm test -- --coverage'
                 }
             }
         }
@@ -82,11 +82,12 @@ pipeline {
                         withSonarQubeEnv('SonarCloud') {
                             sh """
                                 ${scannerHome}/bin/sonar-scanner \
-                                  -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
-                                  -Dsonar.organization=jefferson-ohis1 \
-                                  -Dsonar.sources=. \
-                                  -Dsonar.host.url=https://sonarcloud.io \
-                                  -Dsonar.qualitygate.wait=true
+                                -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
+                                -Dsonar.organization=jefferson-ohis1 \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=https://sonarcloud.io \
+                                -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                                -Dsonar.qualitygate.wait=true
                             """
                         }
                     }

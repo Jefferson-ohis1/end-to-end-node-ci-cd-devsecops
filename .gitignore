@@ -5,5 +5,7 @@ app/node_modules/
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
-crash.logapp/*.tar
+crash.log
+app/*.tar
 app/npm-audit.json
+app/coverage/
