@@ -1,6 +1,10 @@
 const express = require('express');
 const client = require('prom-client');
+const helmet = require('helmet');
+
 const app = express();
+
+app.use(helmet());
 
 // Collect default system metrics
 client.collectDefaultMetrics();
