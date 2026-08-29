@@ -513,6 +513,48 @@ pipeline {
                 '''
             }
         }
+
+        stage('OWASP ZAP Baseline DAST') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "OWASP ZAP Baseline DAST"
+                    echo "======================================"
+
+                    echo "Obtaining EKS LoadBalancer endpoint..."
+
+                    LOAD_BALANCER_HOST=$(kubectl get service node-monitoring-app \
+                        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+                    if [ -z "$LOAD_BALANCER_HOST" ]; then
+                        echo "ERROR: LoadBalancer endpoint was not found."
+                        exit 1
+                    fi
+
+                    TARGET_URL="http://${LOAD_BALANCER_HOST}"
+
+                    echo "ZAP Target:"
+                    echo "$TARGET_URL"
+
+                    echo "======================================"
+                    echo "Running OWASP ZAP Baseline Scan"
+                    echo "======================================"
+
+                    docker run --rm \
+                        -v "$(pwd):/zap/wrk/:rw" \
+                        zaproxy/zap-stable \
+                        zap-baseline.py \
+                        -t "$TARGET_URL" \
+                        -r zap-report.html \
+                        -J zap-report.json
+
+                    echo "======================================"
+                    echo "OWASP ZAP Baseline DAST PASSED"
+                    echo "======================================"
+                    echo "ZAP scan completed successfully."
+                '''
+            }
+        }
     }
 
     post {
