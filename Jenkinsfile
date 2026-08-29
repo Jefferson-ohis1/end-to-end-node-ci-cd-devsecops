@@ -541,6 +541,7 @@ pipeline {
                     echo "======================================"
 
                     docker run --rm \
+                        --user 0:0 \
                         -v "$(pwd):/zap/wrk/:rw" \
                         zaproxy/zap-stable \
                         zap-baseline.py \
