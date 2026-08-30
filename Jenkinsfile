@@ -565,9 +565,24 @@ pipeline {
                 docker rm -f node-monitoring-app-test-${BUILD_NUMBER} 2>/dev/null || true
                 docker rmi node-monitoring-app:${BUILD_NUMBER} 2>/dev/null || true
             '''
+        }
 
-            echo '✅ Kubernetes Deployment successful!'
-            echo '✅ Pipeline execution completed.'
+        success {
+            echo '✅ Pipeline execution completed successfully.'
+            echo '✅ All configured pipeline stages passed.'
+        }
+
+        failure {
+            echo '❌ Pipeline execution failed.'
+            echo '⚠️ Review the failed stage and console output for details.'
+        }
+
+        unstable {
+            echo '⚠️ Pipeline completed with an unstable result.'
+        }
+
+        aborted {
+            echo '⚠️ Pipeline execution was aborted.'
         }
     }
 }
