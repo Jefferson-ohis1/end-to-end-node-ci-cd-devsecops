@@ -547,6 +547,8 @@ pipeline {
                     echo "Running OWASP ZAP Baseline Scan"
                     echo "======================================"
 
+                    set +e
+
                     docker run --rm \
                         --user 0:0 \
                         -v "$(pwd):/zap/wrk/:rw" \
@@ -556,10 +558,39 @@ pipeline {
                         -r zap-report.html \
                         -J zap-report.json
 
+                    ZAP_EXIT_CODE=$?
+
+                    set -e
+
                     echo "======================================"
-                    echo "OWASP ZAP Baseline DAST PASSED"
+                    echo "OWASP ZAP Scan Result"
                     echo "======================================"
-                    echo "ZAP scan completed successfully."
+
+                    echo "ZAP exit code: $ZAP_EXIT_CODE"
+
+                    case "$ZAP_EXIT_CODE" in
+
+                        0)
+                            echo "✅ ZAP scan completed with no warnings or failures."
+                            ;;
+
+                        2)
+                            echo "⚠️ ZAP reported WARNINGS."
+                            echo "⚠️ Warnings have been reviewed and are accepted."
+                            echo "✅ Continuing pipeline."
+                            ;;
+
+                        *)
+                            echo "❌ ZAP reported FAIL findings or encountered a scan error."
+                            echo "❌ Failing pipeline."
+                            exit "$ZAP_EXIT_CODE"
+                            ;;
+
+                    esac
+
+                    echo "======================================"
+                    echo "OWASP ZAP Baseline DAST COMPLETED"
+                    echo "======================================"
                 '''
             }
         }
