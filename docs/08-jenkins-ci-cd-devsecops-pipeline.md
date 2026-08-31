@@ -9396,3 +9396,129 @@ OWASP ZAP Baseline DAST
 This establishes OWASP ZAP as a genuine runtime security control within the project's DevSecOps pipeline rather than simply treating the presence of any non-zero ZAP exit code as an undifferentiated failure.
 
 ---
+
+## OWASP ZAP DAST Controlled Security Quality Gate
+
+The OWASP ZAP Baseline DAST stage was updated to implement a controlled security quality gate.
+
+The pipeline now captures the ZAP exit code and applies explicit decision logic:
+
+```text
+OWASP ZAP Baseline DAST
+          │
+          ▼
+     ZAP Scan Results
+          │
+     ┌────┴────┐
+     │         │
+    FAIL      WARN
+  findings   findings
+     │         │
+     ▼         ▼
+Pipeline    Reviewed
+FAILURE     & Accepted
+               │
+               ▼
+      Continue Pipeline
+               │
+               ▼
+       Pipeline SUCCESS
+```
+
+### Controlled ZAP Quality-Gate Logic
+
+The updated Jenkins pipeline distinguishes between fail-level findings, warning-level findings, and successful scans.
+
+| ZAP Result | Pipeline Behavior |
+|---|---|
+| **Exit Code `0`** | Scan completed with no warnings or failures; pipeline continues |
+| **Exit Code `2`** | Warnings detected; warnings are reviewed and accepted; pipeline continues |
+| **Any other exit code** | Fail findings or scan error; pipeline fails |
+
+This prevents warning-level findings from unnecessarily blocking the delivery pipeline while ensuring that fail-level findings continue to enforce the security gate.
+
+
+### ZAP Scan Result
+
+The verified ZAP scan analyzed 6 application URLs and produced:
+
+| Result | Count |
+|---|---:|
+| **PASS** | **65** |
+| **WARN-NEW** | **2** |
+| **FAIL-NEW** | **0** |
+| **FAIL-INPROG** | **0** |
+| **WARN-INPROG** | **0** |
+| **INFO** | **0** |
+
+The two warning-level findings were:
+
+```text
+Non-Storable Content [10049]
+Timestamp Disclosure - Unix [10096]
+```
+
+Most importantly, no new fail-level findings were detected:
+
+```text
+FAIL-NEW: 0
+FAIL-INPROG: 0
+WARN-NEW: 2
+WARN-INPROG: 0
+PASS: 65
+```
+
+The ZAP process returned exit code 2, which the Jenkins pipeline correctly classified as a warning condition rather than a pipeline failure.
+
+### Controlled ZAP Quality Gate
+
+![owasp-zap-controlled-quality-gate](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/90-owasp-zap-controlled-quality-gate.png)
+
+
+The Jenkins console output demonstrates that:
+
+ZAP returned exit code 2
+Two warning-level findings were detected
+Zero fail-level findings were detected
+The warnings were reviewed and accepted
+The pipeline continued execution
+
+#### Successful Pipeline Completion
+
+![owasp-zap-pipeline-success](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/91-owasp-zap-pipeline-success.png)
+
+
+The pipeline completed successfully after the ZAP stage:
+
+```text
+✅ Pipeline execution completed successfully.
+✅ All configured pipeline stages passed.
+
+Finished: SUCCESS
+```
+
+### Security Gate Outcome
+
+The controlled DAST implementation provides the following behavior:
+
+```text
+ZAP Scan
+   │
+   ├── FAIL findings detected
+   │        │
+   │        └──► Pipeline FAILURE
+   │
+   ├── WARN findings detected
+   │        │
+   │        ├──► Review warnings
+   │        ├──► Accept reviewed warnings
+   │        └──► Continue Pipeline
+   │
+   └── No findings
+            │
+            └──► Continue Pipeline
+```
+
+Validation Status: ✅ Controlled OWASP ZAP DAST quality gate implemented and successfully verified.
+
+> Note: The two warning-level findings (WARN-NEW: 2) have not been represented as vulnerabilities that were remediated. They were reviewed and accepted under the current DAST quality-gate policy. Further remediation can be performed in a subsequent security-hardening iteration without changing the controlled gate behavior.
