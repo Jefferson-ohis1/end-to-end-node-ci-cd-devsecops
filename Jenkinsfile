@@ -466,16 +466,20 @@ pipeline {
 
                     echo "Waiting for LoadBalancer endpoint..."
 
-                    for i in {1..30}; do
+                    LOAD_BALANCER_HOST=""
+
+                    for i in $(seq 1 30); do
 
                         LOAD_BALANCER_HOST=$(kubectl get service node-monitoring-app \
-                            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+                            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' \
+                            2>/dev/null || true)
 
                         if [ -n "$LOAD_BALANCER_HOST" ]; then
                             break
                         fi
 
                         echo "LoadBalancer endpoint not available yet..."
+                        echo "Attempt $i of 30"
                         sleep 10
 
                     done
@@ -492,7 +496,9 @@ pipeline {
                     echo "Testing /health endpoint"
                     echo "======================================"
 
-                    for i in {1..12}; do
+                    for i in $(seq 1 12); do
+
+                        echo "Health check attempt $i of 12..."
 
                         if curl --fail --silent --show-error \
                             --connect-timeout 10 \
@@ -504,7 +510,8 @@ pipeline {
                         fi
 
                         echo
-                        echo "Health endpoint not ready yet. Retrying in 10 seconds..."
+                        echo "Health endpoint not ready yet."
+                        echo "Retrying in 10 seconds..."
                         sleep 10
 
                     done
@@ -514,7 +521,6 @@ pipeline {
                 '''
             }
         }
-
         stage('OWASP ZAP Baseline DAST') {
             steps {
                 sh '''
