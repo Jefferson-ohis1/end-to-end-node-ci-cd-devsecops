@@ -9407,7 +9407,7 @@ The pipeline now captures the ZAP exit code and applies explicit decision logic:
 OWASP ZAP Baseline DAST
           │
           ▼
-     ZAP Scan Results
+    ZAP Scan Results
           │
      ┌────┴────┐
      │         │
@@ -9435,8 +9435,8 @@ The updated Jenkins pipeline distinguishes between fail-level findings, warning-
 | **Exit Code `2`** | Warnings detected; warnings are reviewed and accepted; pipeline continues |
 | **Any other exit code** | Fail findings or scan error; pipeline fails |
 
-This prevents warning-level findings from unnecessarily blocking the delivery pipeline while ensuring that fail-level findings continue to enforce the security gate.
 
+This prevents warning-level findings from unnecessarily blocking the delivery pipeline while ensuring that fail-level findings continue to enforce the security gate.
 
 ### ZAP Scan Result
 
@@ -9451,16 +9451,18 @@ The verified ZAP scan analyzed 6 application URLs and produced:
 | **WARN-INPROG** | **0** |
 | **INFO** | **0** |
 
+
 The two warning-level findings were:
 
 ```text
 Non-Storable Content [10049]
+
 Timestamp Disclosure - Unix [10096]
 ```
 
 Most importantly, no new fail-level findings were detected:
 
-```text
+```
 FAIL-NEW: 0
 FAIL-INPROG: 0
 WARN-NEW: 2
@@ -9470,18 +9472,64 @@ PASS: 65
 
 The ZAP process returned exit code 2, which the Jenkins pipeline correctly classified as a warning condition rather than a pipeline failure.
 
-### Controlled ZAP Quality Gate
+
+### ZAP WARN-NEW Findings Assessment
+
+The two warning-level findings were reviewed to determine whether they represented actionable application vulnerabilities or intentional application behavior.
+
+```text
+10049 — Non-Storable Content
+```
+
+The application intentionally applies:
+
+```text
+Cache-Control: no-store
+```
+
+to its application and monitoring endpoints. This is an intentional security control that prevents response content from being stored by caches.
+
+The warning was therefore assessed as an accepted warning, rather than a vulnerability requiring remediation.
+
+```text
+10096 — Timestamp Disclosure - Unix
+```
+
+The timestamp disclosure finding was traced to the standard Prometheus metric:
+
+```text
+process_start_time_seconds
+
+exposed through the application's /metrics endpoint.
+```
+
+This metric provides process start-time information for application observability and monitoring. It is an intentional part of the application's Prometheus instrumentation and does not expose sensitive application data.
+
+The warning was therefore assessed as an accepted warning, rather than a vulnerability requiring remediation.
+
+Based on this assessment, both WARN-NEW findings are accepted under the current DAST quality-gate policy.
+
+The controlled gate continues to enforce the more important distinction:
+
+```text
+ZAP Exit Code 0 → Continue
+ZAP Exit Code 2 → Review & Accept Warnings → Continue
+Other Exit Code → Pipeline Failure
+```
+
+#### Controlled ZAP Quality Gate
 
 ![owasp-zap-controlled-quality-gate](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/90-owasp-zap-controlled-quality-gate.png)
 
 
 The Jenkins console output demonstrates that:
 
-ZAP returned exit code 2
-Two warning-level findings were detected
-Zero fail-level findings were detected
-The warnings were reviewed and accepted
-The pipeline continued execution
+- ZAP returned exit code 2
+- Two warning-level findings were detected
+- Zero fail-level findings were detected
+- The warnings were reviewed and accepted
+- The pipeline continued execution
+
 
 #### Successful Pipeline Completion
 
@@ -9492,6 +9540,7 @@ The pipeline completed successfully after the ZAP stage:
 
 ```text
 ✅ Pipeline execution completed successfully.
+
 ✅ All configured pipeline stages passed.
 
 Finished: SUCCESS
