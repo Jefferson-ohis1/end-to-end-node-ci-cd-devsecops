@@ -9179,3 +9179,220 @@ The OWASP ZAP DAST stage remains the next planned CI/CD pipeline enhancement: OW
 ---
 
 ## Section 21 — OWASP ZAP Dynamic Application Security Testing (DAST)
+
+### Objective
+
+The objective of this stage is to perform Dynamic Application Security Testing (DAST) against the deployed Node.js monitoring application running on Amazon EKS.
+
+OWASP ZAP Baseline DAST is executed against the externally accessible Kubernetes LoadBalancer endpoint after the application has been successfully deployed and verified.
+
+The DAST stage provides runtime security testing by analyzing the running application for common web application security weaknesses and security-header configuration issues.
+
+The pipeline follows this sequence:
+
+```text
+Amazon EKS Deployment
+        │
+        ▼
+Kubernetes Rollout Verification
+        │
+        ▼
+EKS Application Health Check
+        │
+        ▼
+Retrieve LoadBalancer Endpoint
+        │
+        ▼
+OWASP ZAP Baseline DAST
+        │
+        ├── PASS
+        ├── WARN
+        └── FAIL
+        │
+        ▼
+Jenkins Pipeline Result
+```
+
+---
+
+
+### ZAP Baseline Scan Execution
+
+After the Amazon EKS application was successfully deployed and the external LoadBalancer health check returned a successful response, the Jenkins pipeline obtained the Kubernetes LoadBalancer hostname and used it as the target for the OWASP ZAP Baseline scan.
+
+The target URL was:
+
+```text
+http://af74b7ec451784386a346cbb16462b25-1203477721.us-east-1.elb.amazonaws.com
+```
+
+The pipeline executed the OWASP ZAP Baseline scan using the zaproxy/zap-stable Docker image.
+
+The scan generated both HTML and JSON reports:
+
+```text
+zap-report.html
+zap-report.json
+```
+
+The scan successfully accessed multiple application endpoints, including:
+
+```text
+/
+ /health
+ /metrics
+ /robots.txt
+ /sitemap.xml
+```
+
+The ZAP scan completed successfully and evaluated the deployed application dynamically.
+
+#### OWASP ZAP DAST SCAN
+
+![owasp-zap-dast-scan](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/87-owasp-zap-dast-scan.png)
+
+> OWASP ZAP Baseline DAST execution against the Amazon EKS LoadBalancer endpoint.
+
+---
+
+### ZAP Security Results
+
+The completed ZAP Baseline scan reported 63 passed security checks, 4 warning-level findings, and 0 failing findings.
+
+The final ZAP summary was:
+
+```text
+FAIL-NEW:    0
+FAIL-INPROG: 0
+WARN-NEW:    4
+WARN-INPROG: 0
+INFO:        0
+IGNORE:      0
+PASS:        63
+```
+
+The scan therefore completed without identifying any findings classified as FAIL-NEW.
+
+The four warning categories reported by ZAP were:
+
+1. Storable and Cacheable Content [10049]
+2. CSP: Failure to Define Directive with No Fallback [10055]
+3. Timestamp Disclosure - Unix [10096]
+4. Cross-Origin-Embedder-Policy Header Missing or Invalid [90004]
+
+These findings are treated as security hardening observations at the current stage of the project and require review to determine whether application or HTTP security-header changes are appropriate.
+
+#### OWASP ZAP SECURITY RESULTS
+
+![owasp-zap-security-results](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/88-owasp-zap-security-results.png)
+
+> OWASP ZAP security results showing 63 passed checks, 4 warnings, and 0 failing findings.
+
+---
+
+### Jenkins Pipeline Result
+
+Although the OWASP ZAP scan completed successfully, the Jenkins pipeline did not finish successfully.
+
+The ZAP Baseline scan returned:
+
+```text
+exit code 2
+```
+
+The Jenkins pipeline therefore interpreted the ZAP result as a failed stage and terminated with:
+
+```text
+ERROR: script returned exit code 2
+Finished: FAILURE
+```
+
+The important distinction is that the ZAP scan execution itself was successful, but the current Jenkins pipeline behavior treats the non-zero ZAP exit code as a pipeline failure.
+
+The final pipeline output showed:
+
+```text
+FAIL-NEW: 0
+FAIL-INPROG: 0
+WARN-NEW: 4
+WARN-INPROG: 0
+INFO: 0
+IGNORE: 0
+PASS: 63
+
+ERROR: script returned exit code 2
+Finished: FAILURE
+```
+
+Therefore, this build should not be described as an OWASP ZAP security-gate pass.
+
+#### OWASP ZAP PIPELINE RESULT
+
+![owasp-zap-pipeline-result](../screenshots/08-jenkins-ci-cd-devsecops-pipeline/89-owasp-zap-pipeline-result.png)
+
+> Jenkins console output showing the ZAP result, exit code 2, and final pipeline FAILURE.
+
+---
+
+### DAST Findings Summary
+
+| Result | Count | Interpretation |
+|---|---:|---|
+| **PASS** | **63** | Security checks passed |
+| **WARN-NEW** | **4** | Low-risk/security hardening observations |
+| **FAIL-NEW** | **0** | No failing security findings |
+| **FAIL-INPROG** | **0** | No in-progress failures |
+| **INFO** | **0** | No informational findings |
+
+The ZAP results demonstrate that the deployed application passed the majority of the baseline security checks, with no findings classified as FAIL-NEW.
+
+The four warnings identify areas that may require additional security hardening. These will be reviewed before finalizing the DAST quality-gate behavior.
+
+---
+
+### Security Gate Interpretation
+
+The current OWASP ZAP implementation successfully performs dynamic security testing against the live application deployed on Amazon EKS.
+
+However, the current pipeline behavior is:
+
+```text
+OWASP ZAP Baseline DAST
+        │
+        ▼
+63 PASS / 4 WARN / 0 FAIL
+        │
+        ▼
+ZAP Exit Code 2
+        │
+        ▼
+Jenkins Stage Failure
+        │
+        ▼
+Pipeline FAILURE
+```
+
+Therefore, the current result is not a ZAP security-gate pass.
+
+The accurate interpretation is:
+
+> The OWASP ZAP Baseline DAST scan executed successfully and identified four warning-level findings with zero failing findings. The Jenkins stage returned exit code 2 because the baseline scan detected warnings, causing the overall pipeline to finish with FAILURE.
+
+This behavior is being intentionally documented before modifying the pipeline quality gate. The next step is to review the four ZAP warnings and determine which findings require application or security-header remediation and which should remain as accepted warnings.
+
+The desired final pipeline behavior is to ensure that genuine security failures cause the pipeline to stop while appropriately reviewed warning-level findings do not unnecessarily prevent a successful production delivery.
+
+```text
+OWASP ZAP Baseline DAST
+        │
+        ├── FAIL findings ─────► Pipeline FAILURE
+        │
+        └── Reviewed WARNINGS ─► Continue Pipeline
+                                      │
+                                      ▼
+                                Pipeline SUCCESS
+```
+
+This establishes OWASP ZAP as a genuine runtime security control within the project's DevSecOps pipeline rather than simply treating the presence of any non-zero ZAP exit code as an undifferentiated failure.
+
+---
