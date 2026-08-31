@@ -9571,3 +9571,617 @@ ZAP Scan
 Validation Status: ✅ Controlled OWASP ZAP DAST quality gate implemented and successfully verified.
 
 > Note: The two warning-level findings (WARN-NEW: 2) have not been represented as vulnerabilities that were remediated. They were reviewed and accepted under the current DAST quality-gate policy. Further remediation can be performed in a subsequent security-hardening iteration without changing the controlled gate behavior.
+
+
+---
+
+## Section 22 — Results
+
+The Jenkins CI/CD and DevSecOps pipeline has been implemented and validated as an end-to-end automated software delivery pipeline for the Node.js monitoring application.
+
+The completed implementation integrates source-code validation, application testing, static analysis, dependency security, container security, container image publishing, Kubernetes deployment, runtime verification, monitoring, and dynamic application security testing.
+
+### CI/CD and DevSecOps Implementation Results
+
+The following capabilities were successfully implemented:
+
+| Pipeline Capability | Tool / Technology | Result |
+|---|---|---|
+| **Source Code Management** | GitHub | ✅ Implemented |
+| **CI/CD Automation** | Jenkins | ✅ Implemented |
+| **Runtime Management** | Node.js | ✅ Implemented |
+| **Unit Testing** | Jest / Supertest | ✅ Passed |
+| **Static Application Security Testing (SAST)** | SonarCloud | ✅ Quality Gate Passed |
+| **Software Composition Analysis (SCA)** | Snyk | ✅ Integrated |
+| **Containerization** | Docker | ✅ Implemented |
+| **Container Security Scanning** | Trivy | ✅ Security Gate Implemented |
+| **Container Image Registry** | Amazon ECR | ✅ Image Published and Verified |
+| **Kubernetes Platform** | Amazon EKS | ✅ Implemented |
+| **Kubernetes Deployment** | Kubernetes Manifests | ✅ Automated |
+| **Application Health Verification** | Kubernetes / HTTP | ✅ Verified |
+| **Kubernetes LoadBalancer** | AWS LoadBalancer | ✅ Verified |
+| **Runtime Monitoring** | Prometheus | ✅ Implemented |
+| **Monitoring Visualization** | Grafana | ✅ Implemented |
+| **Dynamic Application Security Testing (DAST)** | OWASP ZAP | ✅ Implemented |
+| **DAST Quality-Gate Control** | Jenkins | ✅ Implemented |
+
+
+---
+
+
+### Security Control Results
+
+The pipeline now applies security controls at multiple stages of the software delivery lifecycle.
+
+```text
+Source Code
+     │
+     ▼
+SonarCloud SAST
+     │
+     ▼
+Snyk SCA
+     │
+     ▼
+Docker Build
+     │
+     ▼
+Trivy Container Security
+     │
+     ▼
+Security Quality Gate
+     │
+     ▼
+Amazon ECR
+     │
+     ▼
+Amazon EKS
+     │
+     ▼
+Application Health Verification
+     │
+     ▼
+OWASP ZAP DAST
+```
+
+The implementation demonstrates that security checks are integrated into the delivery workflow rather than being performed only as separate manual activities.
+
+---
+
+### Container Security Result
+
+Trivy was integrated as a container security quality gate.
+
+The pipeline was configured to distinguish acceptable scan results from HIGH and CRITICAL vulnerability findings. The Docker image was subsequently validated after the required Node.js runtime and image-security remediation work.
+
+The Trivy security gate therefore acts as a blocking control before the container image is promoted to Amazon ECR.
+
+---
+
+### Amazon ECR Result
+
+The pipeline successfully authenticated with Amazon ECR, tagged the generated Docker image, pushed the image to the ECR repository, and verified the published image.
+
+```text
+Docker Image
+     │
+     ▼
+Amazon ECR Authentication
+     │
+     ▼
+Image Tagging
+     │
+     ▼
+ECR Image Push
+     │
+     ▼
+ECR Image Verification
+     │
+     ▼
+Deployment
+```
+
+This establishes Amazon ECR as the container image registry within the Jenkins delivery workflow.
+
+---
+
+### Amazon EKS Deployment Result
+
+The Jenkins pipeline successfully automated deployment of the containerized Node.js application to Amazon EKS.
+
+The deployment process included:
+
+- Kubernetes manifest provisioning
+- Application Deployment
+- Kubernetes Service
+- Horizontal Pod Autoscaler
+- Prometheus ServiceMonitor
+- Kubernetes rollout verification
+- Service verification
+- Application health verification
+- LoadBalancer endpoint retrieval
+
+The deployed application was successfully exposed through an AWS LoadBalancer and verified through its application endpoints.
+
+---
+
+### Monitoring Result
+
+Prometheus instrumentation was integrated into the Node.js application through the /metrics endpoint.
+
+The application exposes runtime and Node.js process metrics for monitoring, including:
+
+```text
+process_cpu_seconds_total
+process_start_time_seconds
+process_resident_memory_bytes
+nodejs_eventloop_lag_seconds
+nodejs_heap_size_used_bytes
+http_requests_total
+```
+
+Prometheus monitoring was subsequently integrated into the Kubernetes environment through a ServiceMonitor configuration, while Grafana provides visualization of the collected metrics.
+
+---
+
+### OWASP ZAP DAST Result
+
+OWASP ZAP Baseline DAST was successfully integrated into the Jenkins pipeline and executed against the externally accessible Amazon EKS LoadBalancer endpoint.
+
+The controlled DAST implementation distinguishes between:
+
+```text
+Exit Code 0 → No warnings/failures → Continue
+
+Exit Code 2 → Reviewed warnings → Continue
+
+Other Exit Code → Scan failure / blocking condition → Pipeline FAILURE
+```
+
+The verified scan produced:
+
+| Result | Count |
+|---|---:|
+| PASS | 65 |
+| WARN-NEW | 2 |
+| FAIL-NEW | 0 |
+| FAIL-INPROG | 0 |
+| WARN-INPROG | 0 |
+| INFO | 0 |
+
+The two warning-level findings were reviewed:
+
+```text
+10049 — Non-Storable Content
+10096 — Timestamp Disclosure - Unix
+```
+
+Finding 10049 was associated with the application's intentional Cache-Control: no-store behavior.
+
+Finding 10096 was associated with the standard Prometheus process_start_time_seconds metric exposed through /metrics.
+
+Both findings were assessed as acceptable warnings under the current DAST policy. They were not classified as remediated vulnerabilities.
+
+Most importantly, the scan produced:
+
+```text
+FAIL-NEW: 0
+```
+
+and the controlled Jenkins quality gate allowed the pipeline to continue.
+
+---
+
+### Overall Pipeline Result
+
+The completed Jenkins pipeline demonstrates an end-to-end delivery workflow:
+
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout
+   ├── Install Dependencies
+   ├── Unit Testing
+   ├── SonarCloud SAST
+   ├── Snyk SCA
+   ├── Docker Build
+   ├── Trivy Security Gate
+   ├── Amazon ECR Push
+   ├── ECR Verification
+   ├── Amazon EKS Deployment
+   ├── Rollout Verification
+   ├── Service Verification
+   ├── Application Health Check
+   ├── Prometheus Monitoring
+   ├── Grafana Integration
+   └── OWASP ZAP DAST
+            │
+            ▼
+     Running EKS Application
+```
+
+The Jenkins implementation therefore establishes a functional end-to-end CI/CD and DevSecOps pipeline capable of taking application source code from GitHub through security validation, container publishing, Kubernetes deployment, runtime verification, monitoring, and DAST.
+
+Validation Status: ✅ Phase 8 Jenkins CI/CD and DevSecOps pipeline implemented and successfully validated.
+
+---
+
+## Section 23 — Key Takeaways
+
+The implementation of the Jenkins CI/CD and DevSecOps pipeline demonstrates how security, automation, containerization, cloud infrastructure, Kubernetes deployment, and observability can be integrated into a single software delivery lifecycle.
+
+---
+
+### Security Is Integrated Into the Delivery Lifecycle
+
+Security was incorporated throughout the pipeline rather than being treated as a final-stage activity.
+
+```text
+Code
+ │
+ ├── SAST ─────────► SonarCloud
+ │
+ ├── SCA ──────────► Snyk
+ │
+ ├── Container ────► Trivy
+ │
+ └── Runtime ──────► OWASP ZAP
+ ```
+
+ This provides multiple security control points before and after deployment.
+
+ ---
+
+ ### Security Quality Gates Can Be Context-Aware
+
+The project demonstrates that security tooling should distinguish between findings that require blocking the delivery process and findings that require review.
+
+SonarCloud and Trivy provide blocking quality-gate behavior for their configured security conditions, while the OWASP ZAP implementation distinguishes warning-level results from fail-level results.
+
+This creates a more practical DevSecOps model where security controls remain enforceable without unnecessarily blocking delivery because of reviewed observations.
+
+---
+
+### Containers Require Independent Security Validation
+
+Building a Docker image successfully does not mean that the image is secure.
+
+The project therefore introduced Trivy scanning before the image was published to Amazon ECR.
+
+This establishes the following principle:
+
+```text
+Build Image
+     │
+     ▼
+Security Scan
+     │
+     ├── Security Gate FAIL ──► Stop
+     │
+     └── Security Gate PASS ──► Continue
+```
+
+---
+
+### Deployment Verification Is as Important as Deployment
+
+The pipeline does not stop after executing a Kubernetes deployment.
+
+It verifies:
+
+- Deployment rollout
+- Pod availability
+- Kubernetes Service
+- LoadBalancer endpoint
+- Application health
+- Application endpoints
+- Prometheus metrics
+
+This provides evidence that the application is not merely deployed but operational.
+
+---
+
+### Observability Complements Security and Delivery
+
+Prometheus and Grafana extend the pipeline beyond deployment by providing runtime visibility into the application.
+
+The /metrics endpoint exposes application and Node.js runtime metrics, while Prometheus and Grafana provide the foundation for monitoring the deployed workload.
+
+This establishes the relationship:
+
+```text
+CI/CD
+  │
+  ▼
+Deployment
+  │
+  ▼
+Runtime Application
+  │
+  ├── Prometheus
+  │
+  └── Grafana
+```
+
+---
+
+### Jenkins Provides the Automation Control Plane
+
+Jenkins coordinates the major stages of the software delivery lifecycle.
+
+Instead of executing each security, build, registry, and deployment operation manually, Jenkins provides a repeatable automated workflow.
+
+The resulting pipeline can be represented as:
+
+```text
+Source
+  │
+  ▼
+Build
+  │
+  ▼
+Test
+  │
+  ▼
+Secure
+  │
+  ▼
+Package
+  │
+  ▼
+Publish
+  │
+  ▼
+Deploy
+  │
+  ▼
+Verify
+  │
+  ▼
+Monitor
+```
+
+---
+
+### Phase 8 Establishes the Jenkins-Based DevSecOps Foundation
+
+The completed implementation provides the core Jenkins-based DevSecOps foundation for the project.
+
+The next stage is therefore not to add another Jenkins security scanner, but to strengthen the repository-level governance and security controls surrounding the pipeline.
+
+Phase 8 Outcome: ✅ Jenkins-based end-to-end CI/CD and DevSecOps workflow implemented, integrated, and validated.
+
+---
+
+## Section 24 — Next Step
+
+The next phase is Phase 9 — DevSecOps Governance and Security Hardening.
+
+Phase 9 will extend the security model beyond the Jenkins pipeline by introducing repository-level controls and automated validation before changes reach the main delivery pipeline.
+
+---
+
+### DevSecOps Governance and Security Hardening
+
+Documentation:
+
+```text
+09-devsecops-governance-and-security-hardening.md
+```
+
+Primary Scope:
+
+```text
+Pull Request validation
+Secrets detection
+GitHub Webhook integration
+```
+
+The intended workflow is:
+
+```text
+Developer
+    │
+    ▼
+GitHub Repository
+    │
+    ▼
+Pull Request
+    │
+    ├── PR Validation
+    │
+    └── Secrets Detection
+             │
+        ┌────┴────┐
+        │         │
+       FAIL      PASS
+        │         │
+        ▼         ▼
+   Block Merge  Allow Merge
+                    │
+                    ▼
+             GitHub Webhook
+                    │
+                    ▼
+                 Jenkins
+                    │
+                    ▼
+              CI/CD Pipeline
+```
+
+The purpose of Phase 9 is to establish security controls before code enters the Jenkins delivery workflow.
+
+---
+
+### Future Phase Roadmap
+
+The remaining project phases are:
+
+| Phase | Documentation | Scope |
+|---|---|---|
+| **Phase 9** | `09-devsecops-governance-and-security-hardening.md` | PR validation, secrets detection, GitHub Webhook |
+| **Phase 10** | `10-github-actions-ci-cd.md` | GitHub Actions CI/CD implementation |
+| **Phase 11** | `11-complete-devsecops-platform.md` | Final integration, validation, architecture, and project conclusion |
+
+---
+
+### Phase 10 — GitHub Actions CI/CD
+
+Phase 10 will introduce GitHub Actions as an alternative CI/CD implementation.
+
+The objective is not to replace Jenkins immediately, but to demonstrate the ability to implement the same DevSecOps lifecycle using GitHub-native automation.
+
+The planned workflow will include:
+
+```text
+GitHub Actions
+     │
+     ├── Test
+     ├── Security
+     ├── Build
+     ├── Scan
+     ├── ECR
+     └── EKS
+```
+
+---
+
+### Phase 11 — Complete DevSecOps Platform
+
+Phase 11 will be the final integration and validation phase, rather than another technology implementation phase.
+
+It will consolidate the complete project into a final architecture and demonstrate the complete DevSecOps lifecycle.
+
+The final documentation will cover:
+
+- 11.1  Complete Architecture
+- 11.2  Complete DevSecOps Lifecycle
+- 11.3  Jenkins CI/CD Implementation
+- 11.4  GitHub Actions Implementation
+- 11.5  Pull Request Security Controls
+- 11.6  Secrets Detection
+- 11.7  GitHub Webhook Automation
+- 11.8  Amazon ECR Image Promotion
+- 11.9  Amazon EKS Deployment
+- 11.10 OWASP ZAP Runtime Security
+- 11.11 Prometheus Monitoring
+- 11.12 Grafana Visualization
+- 11.13 End-to-End Validation
+- 11.14 Security Control Summary
+- 11.15 Final Project Outcome
+
+The final architecture will bring together the controls implemented throughout the project:
+
+```text
+Developer
+    │
+    ▼
+GitHub Repository
+    │
+    ┌────────┴────────┐
+    │                 │
+Pull Request      Push / Merge
+    │                 │
+    ▼                 ▼
+PR Validation     GitHub Webhook
+    │                 │
+    ▼                 ▼
+Secrets Detection  Jenkins
+    │                 │
+    │                 ▼
+    │           CI/CD Pipeline
+    │                 │
+    │                 ├── Unit Tests
+    │                 ├── SonarCloud SAST
+    │                 ├── Snyk SCA
+    │                 ├── Docker Build
+    │                 ├── Trivy Scan
+    │                 ├── Security Gate
+    │                 ├── ECR Push
+    │                 ├── ECR Verification
+    │                 ├── EKS Deployment
+    │                 ├── Rollout Verification
+    │                 ├── Service Verification
+    │                 ├── Application Health
+    │                 └── OWASP ZAP
+    │                        │
+    │                        ▼
+    │                Running EKS Application
+    │                        │
+    │                   ┌──────┴──────┐
+    │                   ▼             ▼
+    │              Prometheus       Grafana
+    │               Monitoring    Visualization
+    │
+    ┌──────────────────────────────────────────┐
+    │                                          │
+    │              GitHub Actions              │
+    │                   │                      │
+    │                   ▼                      │
+    │          Alternative CI/CD               │
+    │                   │                      │
+    │                   ├── Test               │
+    │                   ├── Security           │
+    │                   ├── Build              │
+    │                   ├── Scan               │
+    │                   ├── ECR                │
+    │                   └── EKS                │
+    │                                          │
+    └──────────────────────────────────────────┘
+```
+
+---
+ 
+### Phase 8 → Phase 9 Transition
+
+Phase 8 has now established the core automated Jenkins delivery pipeline.
+
+The project can therefore progress from:
+
+```text
+Application CI/CD Automation
+            │
+            ▼
+Pipeline Security Controls
+            │
+            ▼
+Container Security
+            │
+            ▼
+Cloud Deployment
+            │
+            ▼
+Runtime Security & Monitoring
+```
+
+to: 
+
+```text
+Repository Governance
+            │
+            ▼
+Pull Request Security
+            │
+            ▼
+Secrets Detection
+            │
+            ▼
+Webhook Automation
+            │
+            ▼
+Alternative GitHub Actions CI/CD
+            │
+            ▼
+Complete DevSecOps Platform
+```
+
+Next Phase: Phase 9 — DevSecOps Governance and Security Hardening
+
+Next Documentation File: 09-devsecops-governance-and-security-hardening.md
+
+Phase 8 Status: ✅ Complete
+
+---
