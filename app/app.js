@@ -1,6 +1,7 @@
 const express = require('express');
 const client = require('prom-client');
 const helmet = require('helmet');
+const path = require('path');
 
 const app = express();
 
@@ -10,7 +11,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'"],
         imgSrc: ["'self'", "data:"],
         connectSrc: ["'self'"],
         fontSrc: ["'self'"],
@@ -31,18 +32,27 @@ app.use(
       },
     },
 
-    crossOriginEmbedderPolicy: false,
+    crossOriginEmbedderPolicy: {
+      policy: 'require-corp',
+    },
 
     crossOriginOpenerPolicy: {
-      policy: "same-origin",
+      policy: 'same-origin',
     },
 
     crossOriginResourcePolicy: {
-      policy: "same-origin",
+      policy: 'same-origin',
     },
   })
 );
 
+// Prevent intermediary caching of application responses.
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
+// Explicit Permissions-Policy header.
 app.use((req, res, next) => {
   res.setHeader(
     'Permissions-Policy',
@@ -51,16 +61,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Collect default system metrics
+// Serve static application assets.
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Collect default system metrics.
 client.collectDefaultMetrics();
 
-// Custom counter
+// Custom counter.
 const counter = new client.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
 });
 
-// Home route (UI)
+// Home route.
 app.get('/', (req, res) => {
   counter.inc();
 
@@ -69,50 +82,7 @@ app.get('/', (req, res) => {
     <html>
     <head>
       <title>DevOps Monitoring App</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          background: #0f172a;
-          color: #e5e7eb;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          margin: 0;
-        }
-        .card {
-          background: #020617;
-          padding: 30px;
-          border-radius: 10px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-          max-width: 500px;
-          text-align: center;
-        }
-        h1 {
-          color: #38bdf8;
-        }
-        .badge {
-          display: inline-block;
-          margin-top: 10px;
-          padding: 6px 12px;
-          border-radius: 999px;
-          background: #22c55e;
-          color: #022c22;
-          font-weight: bold;
-          font-size: 14px;
-        }
-        .links {
-          margin-top: 20px;
-        }
-        a {
-          color: #38bdf8;
-          text-decoration: none;
-          margin: 0 10px;
-        }
-        a:hover {
-          text-decoration: underline;
-        }
-      </style>
+      <link rel="stylesheet" href="/styles.css">
     </head>
     <body>
       <div class="card">
@@ -130,13 +100,30 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Health check
+// Health check.
 app.get('/health', (req, res) => res.send('ok'));
 
-// Prometheus metrics
+// Prometheus metrics.
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
+});
+
+// Explicit 404 handler using the application's security policy.
+app.use((req, res) => {
+  res.status(404).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>Not Found</title>
+    </head>
+    <body>
+      <h1>404 - Not Found</h1>
+      <p>The requested resource was not found.</p>
+    </body>
+    </html>
+  `);
 });
 
 module.exports = app;
