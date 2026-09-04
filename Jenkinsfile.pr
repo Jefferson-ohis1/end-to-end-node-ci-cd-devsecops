@@ -72,8 +72,26 @@ pipeline {
                 }
             }
         }
-    }
+        stage('Gitleaks Secrets Detection') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Gitleaks Secrets Detection"
+                    echo "======================================"
 
+                    docker run --rm \
+                        -v "$WORKSPACE:/repo:ro" \
+                        zricethezav/gitleaks:v8.28.0 \
+                        dir /repo \
+                        --redact \
+                        --exit-code 1
+
+                    echo "Gitleaks Secrets Detection PASSED."
+                    echo "No secrets detected."
+                '''
+            }
+        }
+    }
     post {
 
         always {
@@ -85,6 +103,7 @@ pipeline {
             echo '✅ Unit Testing PASSED.'
             echo '✅ SonarCloud SAST PASSED.'
             echo '✅ Snyk SCA PASSED.'
+            echo '✅ Gitleaks Secrets Detection PASSED.'
         }
 
         failure {
