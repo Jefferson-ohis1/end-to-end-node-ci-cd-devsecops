@@ -401,8 +401,30 @@ pipeline {
                     echo "HPA Metrics Verification"
                     echo "======================================"
 
-                    echo "Current Pod Metrics:"
-                    kubectl top pods
+                    echo "Waiting for Kubernetes resource metrics..."
+
+                    metrics_available=false
+
+                    for i in $(seq 1 12); do
+                        if kubectl top pods; then
+                            metrics_available=true
+                            echo "======================================"
+                            echo "Resource metrics are available."
+                            echo "======================================"
+                            break
+                        fi
+
+                        echo "Metrics not available yet. Attempt $i/12."
+                        sleep 5
+                    done
+
+                    if [ "$metrics_available" != "true" ]; then
+                        echo "======================================"
+                        echo "HPA Metrics Verification FAILED"
+                        echo "======================================"
+                        echo "Resource metrics were not available within 60 seconds."
+                        exit 1
+                    fi
 
                     echo "======================================"
                     echo "HPA Status"
@@ -422,7 +444,6 @@ pipeline {
                 '''
             }
         }        
-
         stage('Prometheus ServiceMonitor Verification') {
             steps {
                 sh '''
