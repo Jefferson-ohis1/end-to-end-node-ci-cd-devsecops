@@ -529,8 +529,7 @@ pipeline {
                     echo "HPA metrics verification completed."
                     echo "======================================"
                 '''
-              }
-           }
+            }
         }     
         stage('Prometheus ServiceMonitor Verification') {
             when {
