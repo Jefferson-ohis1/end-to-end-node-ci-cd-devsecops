@@ -4,6 +4,7 @@ pipeline {
 
     options {
         skipDefaultCheckout(true)
+        timestamps()
     }
 
     tools {
@@ -81,12 +82,12 @@ pipeline {
                     dir('app') {
                         withSonarQubeEnv('SonarCloud') {
                             sh """
-                                ${scannerHome}/bin/sonar-scanner \
-                                -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \
-                                -Dsonar.organization=jefferson-ohis1 \
-                                -Dsonar.sources=. \
-                                -Dsonar.host.url=https://sonarcloud.io \
-                                -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                                ${scannerHome}/bin/sonar-scanner \\
+                                -Dsonar.projectKey=Jefferson-ohis1_end-to-end-node-ci-cd-devsecops \\
+                                -Dsonar.organization=jefferson-ohis1 \\
+                                -Dsonar.sources=. \\
+                                -Dsonar.host.url=https://sonarcloud.io \\
+                                -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \\
                                 -Dsonar.qualitygate.wait=true
                             """
                         }
@@ -110,12 +111,40 @@ pipeline {
             }
         }
 
+        stage('Gitleaks Secrets Detection') {
+            steps {
+                sh '''
+                    echo "======================================"
+                    echo "Gitleaks Secrets Detection"
+                    echo "======================================"
+
+                    docker run --rm \\
+                        -v "$WORKSPACE:/repo:ro" \\
+                        zricethezav/gitleaks:v8.28.0 \\
+                        dir /repo \\
+                        --redact \\
+                        --exit-code 1
+
+                    echo "======================================"
+                    echo "Gitleaks Secrets Detection PASSED"
+                    echo "======================================"
+                    echo "No secrets detected."
+                '''
+            }
+        }
+
         stage('Docker Build') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 dir('app') {
                     sh '''
-                        docker build \
-                            -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                        docker build \\
+                            -t ${IMAGE_NAME}:${IMAGE_TAG} \\
                             .
                     '''
                 }
@@ -123,45 +152,57 @@ pipeline {
         }
 
         stage('Verify Production Image') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
                     echo "Node.js version inside production image"
                     echo "======================================"
 
-                    docker run --rm \
-                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                    docker run --rm \\
+                        ${IMAGE_NAME}:${IMAGE_TAG} \\
                         node --version
 
                     echo "======================================"
                     echo "Verify npm is removed"
                     echo "======================================"
 
-                    docker run --rm \
-                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                    docker run --rm \\
+                        ${IMAGE_NAME}:${IMAGE_TAG} \\
                         sh -c "command -v npm || echo 'npm removed'"
 
                     echo "======================================"
                     echo "Verify npx is removed"
                     echo "======================================"
 
-                    docker run --rm \
-                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                    docker run --rm \\
+                        ${IMAGE_NAME}:${IMAGE_TAG} \\
                         sh -c "command -v npx || echo 'npx removed'"
                 '''
             }
         }
 
         stage('Trivy Container Security Gate') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
                     echo "Trivy HIGH/CRITICAL Security Gate"
                     echo "======================================"
 
-                    trivy image \
-                        --severity HIGH,CRITICAL \
-                        --exit-code 1 \
+                    trivy image \\
+                        --severity HIGH,CRITICAL \\
+                        --exit-code 1 \\
                         ${IMAGE_NAME}:${IMAGE_TAG}
 
                     echo "======================================"
@@ -173,6 +214,12 @@ pipeline {
         }
 
         stage('Application Health Check') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -181,14 +228,12 @@ pipeline {
 
                     CONTAINER_NAME="node-monitoring-app-test-${BUILD_NUMBER}"
 
-                    # Remove any previous container with this name
                     docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
 
-                    # Start production container
-                    docker run -d \
-                        --name "$CONTAINER_NAME" \
-                        -p 3000:3000 \
-                        node-monitoring-app:${BUILD_NUMBER}
+                    docker run -d \\
+                        --name "$CONTAINER_NAME" \\
+                        -p 3000:3000 \\
+                        ${IMAGE_NAME}:${IMAGE_TAG}
 
                     echo "Waiting for application to start..."
                     sleep 5
@@ -206,6 +251,12 @@ pipeline {
         }
 
         stage('Amazon ECR Container Image Push') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -225,11 +276,11 @@ pipeline {
                     echo "Authenticating Docker to Amazon ECR"
                     echo "======================================"
 
-                    aws ecr get-login-password \
-                        --region "${AWS_REGION}" | \
-                    docker login \
-                        --username AWS \
-                        --password-stdin \
+                    aws ecr get-login-password \\
+                        --region "${AWS_REGION}" | \\
+                    docker login \\
+                        --username AWS \\
+                        --password-stdin \\
                         "${ECR_REGISTRY}"
 
                     echo "Docker authentication to Amazon ECR succeeded."
@@ -238,8 +289,8 @@ pipeline {
                     echo "Tagging Docker Image"
                     echo "======================================"
 
-                    docker tag \
-                        "${IMAGE_NAME}:${IMAGE_TAG}" \
+                    docker tag \\
+                        "${IMAGE_NAME}:${IMAGE_TAG}" \\
                         "${ECR_IMAGE}"
 
                     echo "Docker image tagged successfully."
@@ -260,6 +311,12 @@ pipeline {
         }
 
         stage('Verify ECR Image') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -269,9 +326,9 @@ pipeline {
                     echo "Checking ECR repository for image tag:"
                     echo "${IMAGE_TAG}"
 
-                    aws ecr describe-images \
-                        --repository-name "${ECR_REPOSITORY}" \
-                        --image-ids imageTag="${IMAGE_TAG}" \
+                    aws ecr describe-images \\
+                        --repository-name "${ECR_REPOSITORY}" \\
+                        --image-ids imageTag="${IMAGE_TAG}" \\
                         --region "${AWS_REGION}"
 
                     echo "======================================"
@@ -284,14 +341,20 @@ pipeline {
         }
 
         stage('Configure Amazon EKS Access') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
                     echo "Configure Amazon EKS Access"
                     echo "======================================"
 
-                    aws eks update-kubeconfig \
-                        --region "${AWS_REGION}" \
+                    aws eks update-kubeconfig \\
+                        --region "${AWS_REGION}" \\
                         --name node-devsecops-cluster
 
                     echo "Verifying EKS cluster access..."
@@ -304,6 +367,12 @@ pipeline {
         }
 
         stage('Amazon EKS Deployment') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -315,7 +384,7 @@ pipeline {
 
                     echo "Replacing Kubernetes image placeholder..."
 
-                    sed -i "s|IMAGE_PLACEHOLDER|${ECR_IMAGE}|g" \
+                    sed -i "s|IMAGE_PLACEHOLDER|${ECR_IMAGE}|g" \\
                         k8s/deployment.yaml
 
                     echo "Applying Kubernetes Deployment..."
@@ -347,14 +416,20 @@ pipeline {
         }
 
         stage('Kubernetes Rollout Verification') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
                     echo "Kubernetes Rollout Verification"
                     echo "======================================"
 
-                    kubectl rollout status \
-                        deployment/node-monitoring-app \
+                    kubectl rollout status \\
+                        deployment/node-monitoring-app \\
                         --timeout=180s
 
                     echo "======================================"
@@ -375,6 +450,12 @@ pipeline {
         }
 
         stage('Kubernetes HPA Verification') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -395,6 +476,12 @@ pipeline {
         }
 
         stage('HPA Metrics Verification') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -443,8 +530,14 @@ pipeline {
                     echo "======================================"
                 '''
             }
-        }        
+        }     
         stage('Prometheus ServiceMonitor Verification') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -462,9 +555,15 @@ pipeline {
                     echo "Prometheus ServiceMonitor verification completed."
                 '''
             }
-        }                
+        }
 
         stage('Kubernetes Service Verification') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -479,6 +578,12 @@ pipeline {
         }
 
         stage('EKS Application Health Check') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -491,8 +596,8 @@ pipeline {
 
                     for i in $(seq 1 30); do
 
-                        LOAD_BALANCER_HOST=$(kubectl get service node-monitoring-app \
-                            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' \
+                        LOAD_BALANCER_HOST=$(kubectl get service node-monitoring-app \\
+                            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' \\
                             2>/dev/null || true)
 
                         if [ -n "$LOAD_BALANCER_HOST" ]; then
@@ -521,8 +626,8 @@ pipeline {
 
                         echo "Health check attempt $i of 12..."
 
-                        if curl --fail --silent --show-error \
-                            --connect-timeout 10 \
+                        if curl --fail --silent --show-error \\
+                            --connect-timeout 10 \\
                             "http://${LOAD_BALANCER_HOST}/health"; then
 
                             echo
@@ -542,7 +647,14 @@ pipeline {
                 '''
             }
         }
+
         stage('OWASP ZAP Baseline DAST') {
+            when {
+                not {
+                    changeRequest()
+                }
+            }
+
             steps {
                 sh '''
                     echo "======================================"
@@ -551,7 +663,7 @@ pipeline {
 
                     echo "Obtaining EKS LoadBalancer endpoint..."
 
-                    LOAD_BALANCER_HOST=$(kubectl get service node-monitoring-app \
+                    LOAD_BALANCER_HOST=$(kubectl get service node-monitoring-app \\
                         -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 
                     if [ -z "$LOAD_BALANCER_HOST" ]; then
@@ -570,13 +682,13 @@ pipeline {
 
                     set +e
 
-                    docker run --rm \
-                        --user 0:0 \
-                        -v "$(pwd):/zap/wrk/:rw" \
-                        zaproxy/zap-stable \
-                        zap-baseline.py \
-                        -t "$TARGET_URL" \
-                        -r zap-report.html \
+                    docker run --rm \\
+                        --user 0:0 \\
+                        -v "$(pwd):/zap/wrk/:rw" \\
+                        zaproxy/zap-stable \\
+                        zap-baseline.py \\
+                        -t "$TARGET_URL" \\
+                        -r zap-report.html \\
                         -J zap-report.json
 
                     ZAP_EXIT_CODE=$?
