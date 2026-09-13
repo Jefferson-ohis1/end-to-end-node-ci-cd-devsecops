@@ -9,3 +9,4 @@ crash.log
 app/*.tar
 app/npm-audit.json
 app/coverage/
+*.tfplan
