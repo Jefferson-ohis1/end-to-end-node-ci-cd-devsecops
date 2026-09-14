@@ -1759,6 +1759,86 @@ These screenshots collectively document:
 
 ---
 
+# 9.16.1 — Post-Validation Documentation Merge and Administrative Bypass
+
+The first Phase 9 implementation Pull Request was validated while the Jenkins and AWS infrastructure was active. The end-to-end validation demonstrated the required Pull Request workflow, including Jenkins Multibranch discovery, Pull Request-aware execution, Gitleaks, Jest, SonarCloud, Snyk, GitHub status reporting, branch protection, and the successful merge of the Phase 9 implementation into `main`.
+
+The required Jenkins status check was:
+
+```text
+continuous-integration/jenkins/branch
+```
+
+The successful validation and resulting GitHub/Jenkins evidence were captured before the temporary AWS infrastructure was decommissioned.
+
+After the Phase 9 implementation Pull Request had been successfully merged, the AWS infrastructure—including the Jenkins EC2 instance—was intentionally destroyed as part of the project's temporary infrastructure lifecycle and cost-control process.
+
+The remaining Phase 9 documentation and evidence were then submitted through a second Pull Request containing documentation-only changes. This Pull Request updated:
+
+* `README.md`
+* `docs/09-devsecops-governance-and-security-hardening.md`
+* `.gitignore`
+* Phase 9 evidence screenshots
+
+Because the Jenkins infrastructure had already been intentionally decommissioned, Jenkins could not execute the new documentation-only Pull Request and GitHub could not receive a new:
+
+```text
+continuous-integration/jenkins/branch
+```
+
+status for that Pull Request. GitHub therefore displayed the required check as pending / waiting for a status to be reported.
+
+The repository's branch-protection configuration was **not disabled or removed** to accommodate the documentation-only Pull Request. The configured protection rule remained in place. The repository owner instead used GitHub's administrative **"Merge without waiting for requirements (bypass rules)"** option to merge the documentation-only Pull Request after confirming that the actual Phase 9 implementation and Jenkins Pull Request validation had already been successfully verified.
+
+This was an administrative exception for a **post-validation documentation-only merge**, not a replacement for the Phase 9 CI validation. The distinction is important:
+
+```text
+Phase 9 Implementation
+        │
+        ▼
+Jenkins Active
+        │
+        ▼
+Actual PR Validation
+        │
+        ▼
+Required Jenkins Status Verified
+        │
+        ▼
+Implementation PR Merged
+        │
+        ▼
+AWS / Jenkins Decommissioned
+        │
+        ▼
+Documentation-Only PR
+        │
+        ▼
+Jenkins Status Could Not Be Reported
+        │
+        ▼
+Branch Protection Remained Enabled
+        │
+        ▼
+Administrative Bypass Used
+        │
+        ▼
+Documentation PR Merged
+```
+
+The important governance distinction is therefore:
+
+* **CI validation:** Jenkins successfully performed the required Phase 9 Pull Request validation while the infrastructure was active.
+* **Branch protection:** GitHub continued to enforce the configured required Jenkins status check.
+* **Infrastructure lifecycle:** Jenkins was intentionally decommissioned after the implementation validation and evidence collection were complete.
+* **Administrative bypass:** The repository owner used a controlled GitHub administrative exception only for the later documentation-only Pull Request.
+
+> The documentation-only Pull Request therefore did not invalidate the earlier Phase 9 validation. Instead, it completed the repository documentation and evidence record after the live CI infrastructure had already served its intended validation purpose.
+
+> **Important:** The documentation should not describe this event as "Jenkins validation was skipped." The more accurate description is that the required Jenkins status **could not be reported because Jenkins had already been intentionally decommissioned**, and an administrative bypass was used for a documentation-only merge after the implementation itself had already been validated successfully.
+
+---
+
 # 9.17 — Phase 9 Verification Summary
 
 | Governance / Security Control                 | Status      |
@@ -1790,7 +1870,9 @@ These screenshots collectively document:
 | Deployment stages excluded from PR execution  | ✅           |
 | PR validation status reported to GitHub       | ✅           |
 | PR evidence screenshots captured              | ✅           |
-| Pull Request merged into `main`               | ✅           |
+| Phase 9 implementation PR merged into `main`  | ✅           |
+| Documentation-only PR merged after Jenkins decommission | ✅ |
+| Administrative bypass used for documentation-only merge | ✅ |
 | Final Phase 9 documentation prepared          | ✅           |
 
 ---
@@ -2148,20 +2230,11 @@ IAM Roles and Policies
 Associated AWS Resources
 ```
 
-The infrastructure was retained until the required Phase 9 implementation and evidence collection had been completed.
+The infrastructure was retained until the live Phase 9 implementation, Jenkins validation, branch-protection verification, Pull Request validation, and required evidence collection had been completed.
 
-After:
+The AWS infrastructure was then intentionally destroyed as part of the project's temporary infrastructure lifecycle and cost-control process.
 
-* Jenkins Multibranch Pipeline verification
-* GitHub webhook verification
-* Gitleaks validation
-* Branch protection verification
-* Actual Pull Request validation
-* Successful Pull Request merge
-* Screenshot evidence collection
-* Phase 9 documentation completion
-
-the AWS infrastructure was destroyed.
+The remaining Phase 9 documentation and evidence updates were completed afterward through a documentation-only Pull Request. This sequence is described in detail in Section 9.16.1.
 
 This completed the intended temporary infrastructure lifecycle:
 
@@ -2175,19 +2248,28 @@ Phase 8 Deployment Platform
 Phase 9 Governance Implementation
           │
           ▼
-Live Evidence Collection
+Live Jenkins / GitHub Validation
           │
           ▼
-Pull Request Validation
+Evidence Collection
           │
           ▼
-Documentation
+Implementation PR Merged
           │
           ▼
 Terraform Destroy
           │
           ▼
-AWS Infrastructure Removed
+AWS / Jenkins Removed
+          │
+          ▼
+Documentation-Only PR
+          │
+          ▼
+Administrative Bypass
+          │
+          ▼
+Final Documentation Merged
 ```
 
 > The destruction of the AWS environment does not invalidate the Phase 9 repository governance controls. GitHub repository configuration, branch protection, Pull Request history, commits, and captured evidence remain part of the project record.
@@ -2516,7 +2598,7 @@ Govern
 Control Future Changes
 ```
 
-All planned Phase 9 implementation controls were implemented, verified, evidenced, documented, and integrated into the repository workflow.
+All planned Phase 9 implementation controls were implemented, verified, and evidenced while the live infrastructure was active. The remaining documentation and evidence updates were subsequently completed and merged after the AWS/Jenkins infrastructure had been intentionally decommissioned.
 
 The AWS infrastructure used to perform the live validation was subsequently destroyed after evidence collection was completed.
 
