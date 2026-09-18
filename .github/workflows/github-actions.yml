@@ -9,8 +9,8 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: node-devsecops-repository
-  EKS_CLUSTER_NAME: node-devsecops-cluster
+  ECR_REPOSITORY: node-devsecops-phase10-repository
+  EKS_CLUSTER_NAME: node-devsecops-phase10-cluster
   IMAGE_NAME: node-monitoring-app
 
 jobs:
