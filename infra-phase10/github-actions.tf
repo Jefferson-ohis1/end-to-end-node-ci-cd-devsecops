@@ -3,8 +3,11 @@
 # ============================================================
 
 locals {
-  github_repository = "Jefferson-ohis1/end-to-end-node-ci-cd-devsecops"
-  github_branch     = "main"
+  github_owner         = "Jefferson-ohis1"
+  github_repository    = "end-to-end-node-ci-cd-devsecops"
+  github_owner_id      = "280539875"
+  github_repository_id = "1316644659"
+  github_branch        = "main"
 }
 
 resource "aws_iam_openid_connect_provider" "github_actions" {
@@ -49,7 +52,7 @@ resource "aws_iam_role" "github_actions" {
           }
 
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:${local.github_repository}:ref:refs/heads/${local.github_branch}"
+            "token.actions.githubusercontent.com:sub" = "repo:${local.github_owner}@${local.github_owner_id}/${local.github_repository}@${local.github_repository_id}:ref:refs/heads/${local.github_branch}"
           }
         }
       }
