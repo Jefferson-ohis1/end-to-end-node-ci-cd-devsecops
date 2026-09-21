@@ -130,9 +130,19 @@ jobs:
             --region "${AWS_REGION}" \
             --name "${EKS_CLUSTER_NAME}"
 
-      - name: Verify EKS nodes
+      - name: Verify Kubernetes deployment permissions
         run: |
-          kubectl get nodes -o wide
+          echo "=== Kubernetes identity ==="
+          kubectl auth whoami
+
+          echo "=== Deployment permission ==="
+          kubectl auth can-i create deployments -n default
+
+          echo "=== Service permission ==="
+          kubectl auth can-i create services -n default
+
+          echo "=== HPA permission ==="
+          kubectl auth can-i create horizontalpodautoscalers -n default
 
       - name: Render Kubernetes deployment manifest
         run: |
