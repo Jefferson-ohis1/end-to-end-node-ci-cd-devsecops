@@ -38,3 +38,49 @@ resource "aws_eks_cluster" "node_cluster" {
     Purpose   = "GitHub Actions CI/CD"
   }
 }
+
+
+# ============================================================
+# Phase 10 — EKS Managed Node Group
+# ============================================================
+
+resource "aws_eks_node_group" "node_group" {
+  cluster_name    = aws_eks_cluster.node_cluster.name
+  node_group_name = "${var.project_name}-phase10-node-group"
+  node_role_arn   = aws_iam_role.eks_node_role.arn
+
+  subnet_ids = [
+    aws_subnet.public_subnet_1.id,
+    aws_subnet.public_subnet_2.id
+  ]
+
+  capacity_type  = "ON_DEMAND"
+  instance_types = ["t3.small"]
+
+  scaling_config {
+    desired_size = 2
+    min_size     = 1
+    max_size     = 2
+  }
+
+  disk_size = 20
+
+  labels = {
+    workload = "application"
+    phase    = "phase10"
+  }
+
+  tags = {
+    Name      = "${var.project_name}-phase10-node-group"
+    Project   = var.project_name
+    Phase     = "Phase 10"
+    ManagedBy = "Terraform"
+    Purpose   = "GitHub Actions EKS deployment"
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_worker_node_policy,
+    aws_iam_role_policy_attachment.eks_cni_policy,
+    aws_iam_role_policy_attachment.eks_container_registry_pull_policy
+  ]
+}

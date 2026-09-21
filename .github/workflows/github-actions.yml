@@ -76,10 +76,25 @@ jobs:
         run: |
           aws sts get-caller-identity
 
+      - name: Set AWS account and ECR registry
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity \
+            --query Account \
+            --output text)
+
+          ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+          echo "AWS_ACCOUNT_ID=${ACCOUNT_ID}" >> "$GITHUB_ENV"
+          echo "ECR_REGISTRY=${ECR_REGISTRY}" >> "$GITHUB_ENV"
+
+          echo "AWS account: ${ACCOUNT_ID}"
+          echo "ECR registry: ${ECR_REGISTRY}"
+
       - name: Verify ECR repository
         run: |
           aws ecr describe-repositories \
-            --repository-names "${ECR_REPOSITORY}"
+            --repository-names "${ECR_REPOSITORY}" \
+            --region "${AWS_REGION}"
 
       - name: Verify EKS cluster
         run: |
@@ -88,3 +103,107 @@ jobs:
             --region "${AWS_REGION}" \
             --query 'cluster.status' \
             --output text
+
+      - name: Build Docker image for deployment
+        run: |
+          docker build \
+            -t "${IMAGE_NAME}:${GITHUB_SHA}" \
+            ./app
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Tag Docker image for ECR
+        run: |
+          docker tag \
+            "${IMAGE_NAME}:${GITHUB_SHA}" \
+            "${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push \
+            "${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
+
+      - name: Configure kubectl for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --region "${AWS_REGION}" \
+            --name "${EKS_CLUSTER_NAME}"
+
+      - name: Verify EKS nodes
+        run: |
+          kubectl get nodes -o wide
+
+      - name: Render Kubernetes deployment manifest
+        run: |
+          sed \
+            "s|IMAGE_PLACEHOLDER|${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}|g" \
+            k8s/deployment.yaml \
+            > /tmp/deployment-rendered.yaml
+
+          echo "Rendered image:"
+          grep "image:" /tmp/deployment-rendered.yaml
+
+      - name: Deploy application to EKS
+        run: |
+          kubectl apply -f /tmp/deployment-rendered.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/hpa.yaml
+
+      - name: Wait for deployment rollout
+        run: |
+          kubectl rollout status \
+            deployment/node-monitoring-app \
+            --timeout=180s
+
+      - name: Verify Kubernetes deployment
+        run: |
+          echo "=== Deployment ==="
+          kubectl get deployment node-monitoring-app
+
+          echo "=== Pods ==="
+          kubectl get pods \
+            -l app=node-monitoring-app \
+            -o wide
+
+          echo "=== Service ==="
+          kubectl get service node-monitoring-app
+
+          echo "=== HPA ==="
+          kubectl get hpa node-monitoring-app
+
+      - name: Verify application health
+        run: |
+          for i in {1..30}; do
+            SERVICE_HOST=$(kubectl get service node-monitoring-app \
+              -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+            if [ -z "${SERVICE_HOST}" ]; then
+              SERVICE_HOST=$(kubectl get service node-monitoring-app \
+                -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            fi
+
+            if [ -n "${SERVICE_HOST}" ]; then
+              echo "LoadBalancer endpoint: ${SERVICE_HOST}"
+
+              if curl \
+                --fail \
+                --silent \
+                --show-error \
+                --max-time 10 \
+                "http://${SERVICE_HOST}/health"; then
+
+                echo
+                echo "Application health check passed."
+                exit 0
+              fi
+            fi
+
+            echo "Waiting for application LoadBalancer and health endpoint..."
+            sleep 10
+          done
+
+          echo "Application health check failed."
+          kubectl get service node-monitoring-app
+          kubectl get pods -l app=node-monitoring-app -o wide
+          exit 1
