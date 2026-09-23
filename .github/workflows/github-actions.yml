@@ -130,9 +130,27 @@ jobs:
             --region "${AWS_REGION}" \
             --name "${EKS_CLUSTER_NAME}"
 
-      - name: Verify EKS nodes
+      - name: Verify EKS authorization
         run: |
-          echo "=== EKS nodes ==="
+          echo "=== Kubernetes identity ==="
+          kubectl auth whoami
+
+          echo "=== Nodes ==="
+          kubectl auth can-i list nodes
+
+          echo "=== APIService ==="
+          kubectl auth can-i get apiservices
+
+          echo "=== Default namespace deployment ==="
+          kubectl auth can-i create deployments -n default
+
+          echo "=== Default namespace service ==="
+          kubectl auth can-i create services -n default
+
+          echo "=== Default namespace HPA ==="
+          kubectl auth can-i create horizontalpodautoscalers -n default
+
+          echo "=== Attempting node listing ==="
           kubectl get nodes -o wide
 
       - name: Install Metrics Server v0.8.1
