@@ -130,6 +130,50 @@ jobs:
             --region "${AWS_REGION}" \
             --name "${EKS_CLUSTER_NAME}"
 
+      - name: Verify EKS nodes
+        run: |
+          echo "=== EKS nodes ==="
+          kubectl get nodes -o wide
+
+      - name: Install Metrics Server v0.8.1
+        run: |
+          kubectl apply \
+            -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.8.1/components.yaml
+
+      - name: Wait for Metrics Server rollout
+        run: |
+          kubectl rollout status \
+            deployment/metrics-server \
+            -n kube-system \
+            --timeout=180s
+
+      - name: Verify Metrics Server API
+        run: |
+          echo "=== Metrics APIService ==="
+          kubectl get apiservice v1beta1.metrics.k8s.io
+
+          AVAILABLE=$(kubectl get apiservice v1beta1.metrics.k8s.io \
+            -o jsonpath='{.status.conditions[?(@.type=="Available")].status}')
+
+          if [ "${AVAILABLE}" != "True" ]; then
+            echo "Metrics APIService is not available."
+            kubectl describe apiservice v1beta1.metrics.k8s.io
+            exit 1
+          fi
+
+          echo "=== Metrics API discovery ==="
+          kubectl get --raw "/apis/metrics.k8s.io/v1beta1" > /dev/null
+
+          echo "Metrics API is available."
+
+      - name: Verify node CPU and memory metrics
+        run: |
+          echo "=== Node metrics ==="
+          kubectl top nodes
+
+          echo "=== Pod metrics ==="
+          kubectl top pods -A
+
       - name: Verify Kubernetes deployment permissions
         run: |
           echo "=== Kubernetes identity ==="
