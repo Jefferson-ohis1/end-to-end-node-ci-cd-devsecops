@@ -1,26 +1,68 @@
-# Phase 10 — GitHub Actions CI/CD with AWS OIDC
+# Phase 10 — GitHub Actions CI/CD with AWS OIDC, ECR, EKS and Kubernetes Deployment
 
 ## Overview
 
-Phase 10 introduces **GitHub Actions CI/CD** into the Node.js DevSecOps project and establishes a secure authentication path from GitHub Actions to AWS using **OpenID Connect (OIDC)**.
+Phase 10 extends the Node.js DevSecOps project by introducing **GitHub Actions CI/CD** as an additional CI/CD platform alongside the previously implemented Jenkins pipeline.
 
-The primary objective of this phase was to establish and verify the GitHub Actions → AWS trust relationship before extending the workflow to perform application deployment.
+The phase establishes a secure GitHub Actions → AWS authentication model using **GitHub OpenID Connect (OIDC)** and extends that foundation into an end-to-end container deployment workflow using:
 
-The Phase 10 implementation was deliberately isolated from the previous AWS infrastructure in order to avoid recreating the Jenkins server, NAT infrastructure, worker resources, and other components that had already been destroyed after Phase 9.
+* GitHub Actions
+* GitHub OIDC
+* AWS IAM
+* Amazon ECR
+* Amazon EKS
+* Kubernetes
+* Docker
+* Kubernetes LoadBalancer
+* Horizontal Pod Autoscaling
+* Metrics Server
+* Helm
+* Terraform
 
-The initial Phase 10 workflow therefore focused on:
+The implementation was deliberately isolated from the AWS infrastructure used during earlier phases.
 
-* GitHub Actions CI execution
-* Docker image build verification
-* GitHub Actions OIDC authentication
-* AWS identity verification
-* Amazon ECR repository verification
-* Amazon EKS cluster verification
-* Secure IAM trust configuration
-* Evidence capture
-* Cost-conscious infrastructure teardown
+The Phase 10 AWS infrastructure was managed from:
 
-The ECR image push and EKS application deployment stages were intentionally deferred until the OIDC and AWS-access foundation had been successfully verified.
+```text
+infra-phase10/
+```
+
+This prevented the GitHub Actions implementation from recreating the Jenkins EC2 server, previous networking architecture, or other Phase 9 infrastructure.
+
+The Kubernetes platform dependency represented by Metrics Server is managed separately from the application CI/CD workflow through:
+
+```text
+infra-phase10-platform/
+```
+
+This separation is intentional.
+
+GitHub Actions is responsible for **application CI/CD**.
+
+The platform Terraform layer is responsible for **cluster-level Kubernetes platform infrastructure**.
+
+The resulting architecture is:
+
+```text
+                    PHASE 10
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+          ▼                         ▼
+  Application CI/CD          Cluster Platform
+          │                         │
+  GitHub Actions              EKS cluster
+          │                         │
+  GitHub OIDC → IAM          infra-phase10-platform
+          │                         │
+  ECR → EKS                  Helm → Metrics Server
+          │                         │
+  default namespace          Metrics API
+          │                         │
+  Deployment                 HPA dependency
+  Service
+  HPA
+```
 
 ---
 
@@ -30,124 +72,229 @@ The objectives of Phase 10 were to:
 
 1. Introduce GitHub Actions as an additional CI/CD platform.
 2. Build and test the Node.js application in GitHub Actions.
-3. Build the application Docker image in GitHub Actions.
-4. Configure GitHub Actions OIDC authentication with AWS.
-5. Avoid storing long-lived AWS access keys in GitHub.
-6. Configure a dedicated IAM role for GitHub Actions.
-7. Restrict the IAM trust relationship to the intended GitHub repository and branch.
-8. Configure Amazon ECR for the application image.
-9. Provision an isolated Amazon EKS control plane for deployment verification.
-10. Configure GitHub Actions access to the EKS cluster.
-11. Verify that GitHub Actions could authenticate successfully to AWS.
-12. Verify access to the intended ECR repository.
-13. Verify the intended EKS cluster.
-14. Capture implementation and verification evidence.
-15. Destroy the temporary AWS infrastructure after verification to control costs.
+3. Build the application Docker image.
+4. Authenticate GitHub Actions to AWS using OIDC.
+5. Avoid long-lived AWS access keys in GitHub Actions.
+6. Create a dedicated GitHub Actions IAM role.
+7. Restrict the IAM trust relationship to the intended GitHub repository and `main` branch.
+8. Configure Amazon ECR for application image storage.
+9. Provision an isolated Amazon EKS environment.
+10. Configure GitHub Actions Kubernetes authorization through an EKS Access Entry.
+11. Push commit-SHA-tagged Docker images to ECR.
+12. Authenticate GitHub Actions to EKS.
+13. Deploy the application to EKS.
+14. Expose the application through a Kubernetes LoadBalancer.
+15. Verify Kubernetes rollout and pod health.
+16. Verify the deployed application externally.
+17. Create and verify the Kubernetes HPA resource.
+18. Manage Metrics Server separately as Kubernetes platform infrastructure.
+19. Verify the Kubernetes Metrics API independently from the application deployment workflow.
+20. Establish the platform dependency required for CPU-based HPA metrics.
+21. Capture implementation and verification evidence.
+22. Destroy the temporary AWS environment after verification to control costs.
 
 ---
 
-# 2. Architecture
+# 2. Phase 10 Architecture
 
-The Phase 10 architecture separates CI execution, AWS authentication, AWS resource access, and Kubernetes authorization.
+Phase 10 uses two related but deliberately separated layers:
 
 ```text
-                         GitHub Repository
-                                │
-                                │ push to main
-                                ▼
-                    ┌──────────────────────┐
-                    │    GitHub Actions    │
-                    │                      │
-                    │  Checkout            │
-                    │  Node.js setup       │
-                    │  npm ci              │
-                    │  Jest tests          │
-                    │  Docker build        │
-                    └──────────┬───────────┘
-                               │
-                               │ GitHub OIDC token
-                               ▼
-                    ┌──────────────────────┐
-                    │ GitHub OIDC Provider │
-                    │ token.actions...     │
-                    └──────────┬───────────┘
-                               │
-                               │ AssumeRoleWithWebIdentity
-                               ▼
-              ┌────────────────────────────────┐
-              │ GitHub Actions IAM Role        │
-              │                                │
-              │ ECR permissions                │
-              │ EKS DescribeCluster            │
-              └───────────────┬────────────────┘
-                              │
-                  ┌───────────┴───────────┐
-                  │                       │
-                  ▼                       ▼
-        ┌──────────────────┐    ┌────────────────────────┐
-        │ Amazon ECR       │    │ Amazon EKS             │
-        │                  │    │                        │
-        │ Repository       │    │ Cluster                │
-        │                  │    │                        │
-        └──────────────────┘    │ EKS Access Entry       │
-                                │          ↓              │
-                                │ AmazonEKSEditPolicy     │
-                                │ namespace: default      │
-                                └────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Application CI/CD                        │
+│                                                             │
+│ GitHub Repository                                           │
+│        ↓                                                    │
+│ GitHub Actions                                              │
+│        ↓                                                    │
+│ GitHub OIDC                                                 │
+│        ↓                                                    │
+│ AWS IAM Role                                                │
+│        ↓                                                    │
+│ ECR                                                         │
+│        ↓                                                    │
+│ EKS application namespace                                   │
+│        ↓                                                    │
+│ Deployment + Service + HPA                                  │
+└─────────────────────────────────────────────────────────────┘
+
+                         │
+                         │ depends on
+                         ▼
+
+┌─────────────────────────────────────────────────────────────┐
+│                    Cluster Platform                         │
+│                                                             │
+│ Existing EKS cluster                                        │
+│        ↓                                                    │
+│ infra-phase10-platform/                                     │
+│        ↓                                                    │
+│ Terraform + Helm                                            │
+│        ↓                                                    │
+│ Metrics Server                                               │
+│        ↓                                                    │
+│ Kubernetes Metrics API                                      │
+│        ↓                                                    │
+│ HPA metrics dependency                                      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-The architecture intentionally separates:
+The application CI/CD workflow does **not** install Metrics Server.
 
-* **AWS authentication** — GitHub OIDC + IAM role
-* **AWS API authorization** — IAM permissions
-* **Kubernetes authorization** — EKS access entry + EKS access policy
+Metrics Server is a cluster-level platform component and is therefore managed separately.
 
-This separation is important because successfully assuming the IAM role does not, by itself, grant Kubernetes permissions.
+The GitHub Actions role remains deliberately scoped to application deployment in the `default` namespace.
 
 ---
 
-## Phase 10 workflow flow
+# 3. Authorization Model
+
+Phase 10 separates authentication and authorization into distinct layers.
 
 ```text
-Git push
-   │
-   ▼
 GitHub Actions
-   │
-   ├── Checkout repository
-   │
-   ├── Set up Node.js 24
-   │
-   ├── npm ci
-   │
-   ├── Jest tests
-   │
-   └── Docker image build
-            │
-            ▼
-       AWS OIDC
-            │
-            ▼
-     Assume IAM Role
-            │
-            ├── Verify AWS identity
-            │
-            ├── Verify ECR repository
-            │
-            └── Verify EKS cluster
+      │
+      │ OIDC token
+      ▼
+GitHub OIDC Provider
+      │
+      │ AssumeRoleWithWebIdentity
+      ▼
+AWS IAM Role
+      │
+      ├───────────────► Amazon ECR
+      │
+      └───────────────► EKS DescribeCluster
+                              │
+                              ▼
+                       EKS Access Entry
+                              │
+                              ▼
+                     AmazonEKSEditPolicy
+                              │
+                              ▼
+                      default namespace
 ```
 
-> **Phase 10 foundation:** The workflow successfully verified CI execution, Docker image creation, AWS OIDC authentication, ECR access, and EKS access.
->
-> **Deferred extension:** ECR image publishing and EKS application deployment will be added after the documented foundation is re-provisioned.
+The Kubernetes authorization scope is intentionally limited.
+
+The GitHub Actions role is not intended to administer the entire Kubernetes cluster.
+
+It is intended to deploy application resources such as:
+
+```text
+Deployment
+Service
+HorizontalPodAutoscaler
+```
+
+within:
+
+```text
+default
+```
 
 ---
 
-# 3. Isolated Phase 10 Terraform Infrastructure
+# 4. Cluster-Platform Separation
 
-The Phase 10 AWS infrastructure was intentionally placed in a separate Terraform directory:
+Metrics Server requires cluster-level Kubernetes functionality and is therefore treated as platform infrastructure rather than application deployment logic.
+
+The platform architecture is:
 
 ```text
+infra-phase10/
+    │
+    ├── VPC
+    ├── EKS
+    ├── ECR
+    ├── IAM
+    └── GitHub OIDC
+          │
+          ▼
+    Existing EKS cluster
+          │
+          ▼
+infra-phase10-platform/
+          │
+          ├── Terraform AWS data sources
+          ├── Terraform Helm provider
+          └── Metrics Server Helm release
+```
+
+> This separation avoids granting the application deployment role broad cluster-administrator permissions merely to install a platform component.
+
+---
+
+# 5. Phase 10 CI/CD Flow
+
+The GitHub Actions application pipeline follows this sequence:
+
+```text
+Git push to main
+        ↓
+Checkout repository
+        ↓
+Set up Node.js 24
+        ↓
+npm ci
+        ↓
+Jest tests
+        ↓
+Docker build
+        ↓
+Verify Docker image
+        ↓
+AWS OIDC authentication
+        ↓
+Verify AWS identity
+        ↓
+Verify ECR repository
+        ↓
+Verify EKS cluster
+        ↓
+Build deployment image
+        ↓
+ECR login
+        ↓
+Tag image with GITHUB_SHA
+        ↓
+Push image to ECR
+        ↓
+Configure kubectl for EKS
+        ↓
+Verify application deployment permissions
+        ↓
+Render Kubernetes deployment
+        ↓
+Deploy application
+        ↓
+Deploy LoadBalancer service
+        ↓
+Deploy HPA
+        ↓
+Wait for rollout
+        ↓
+Verify deployment/pods/service/HPA
+        ↓
+Verify application health
+```
+
+There is deliberately **no Metrics Server installation step** in this flow.
+
+Metrics Server is managed independently through the cluster-platform layer.
+
+---
+
+# 6. Repository Structure
+
+The relevant Phase 10 files are:
+
+```text
+.github/
+└── workflows/
+    └── github-actions.yml
+
 infra-phase10/
 ├── .terraform.lock.hcl
 ├── ecr.tf
@@ -159,29 +306,44 @@ infra-phase10/
 ├── terraform.tfvars
 ├── variables.tf
 └── vpc.tf
+
+infra-phase10-platform/
+├── .terraform.lock.hcl
+├── metrics-server.tf
+├── provider.tf
+└── variables.tf
+
+k8s/
+├── deployment.yaml
+├── service.yaml
+├── hpa.yaml
+└── service-monitor.yaml
+
+screenshots/
+└── 10-github-actions-ci-cd/
+    ├── 01-github-actions-terraform-plan.png
+    ├── 02-github-repository-secret-config.png
+    ├── 03-github-actions-success.png
+    ├── 04-aws-deployment-successful-job.png
+    ├── 05-github-actions-ecr-eks-success.png
+    ├── 06-ecr-sha-tagged-image.png
+    ├── 07-eks-deployment-and-pods.png
+    ├── 08-eks-loadbalancer-service.png
+    ├── 09-application-health.png
+    ├── 10-application-health-browser-render.png
+    ├── 11-hpa-created-metrics-unavailable.png
+    ├── 12-metrics-server-and-api-success.png
+    └── 13-metrics-server-pod-metrics.png
+
+docs/
+└── 10-github-actions-ci-cd.md
 ```
-
-This isolation prevented Phase 10 from depending on or recreating the previous Jenkins-based AWS environment.
-
-## Terraform components
-
-| Terraform file       | Purpose                                                                                                          |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `provider.tf`        | AWS provider and Terraform version configuration                                                                 |
-| `variables.tf`       | Reusable Phase 10 infrastructure variables                                                                       |
-| `terraform.tfvars`   | Project, region, CIDR, and Availability Zone values                                                              |
-| `vpc.tf`             | VPC, public subnets, Internet Gateway, route table, and routes                                                   |
-| `security-groups.tf` | EKS cluster security group                                                                                       |
-| `iam.tf`             | EKS cluster IAM role and associated IAM configuration                                                            |
-| `github-actions.tf`  | GitHub OIDC provider, GitHub Actions IAM role, ECR permissions, EKS API permission, and EKS access configuration |
-| `ecr.tf`             | Amazon ECR repository                                                                                            |
-| `eks.tf`             | Amazon EKS control plane                                                                                         |
 
 ---
 
-# 4. AWS Region and Naming
+# 7. AWS Configuration
 
-The Phase 10 infrastructure used:
+Phase 10 used:
 
 | Configuration           | Value                                        |
 | ----------------------- | -------------------------------------------- |
@@ -189,31 +351,10 @@ The Phase 10 infrastructure used:
 | Project                 | `node-devsecops`                             |
 | ECR Repository          | `node-devsecops-phase10-repository`          |
 | EKS Cluster             | `node-devsecops-phase10-cluster`             |
-| GitHub Actions IAM Role | `node-devsecops-phase10-github-actions-role` |
 | VPC CIDR                | `10.0.0.0/16`                                |
 | Availability Zones      | `us-east-1a`, `us-east-1b`                   |
-
-The VPC contained two public subnets and an Internet Gateway.
-
-No NAT Gateway or private subnet infrastructure was created for the initial Phase 10 verification environment.
-
-This was intentional because the initial objective was to validate GitHub Actions AWS authentication and AWS resource access without recreating unnecessary infrastructure.
-
----
-
-# 5. Amazon ECR
-
-Phase 10 provisioned the ECR repository:
-
-```text
-node-devsecops-phase10-repository
-```
-
-The repository was configured with:
-
-* Mutable image tags
-* Scan-on-push enabled
-* AES256 encryption
+| GitHub Actions IAM Role | `node-devsecops-phase10-github-actions-role` |
+| EKS Kubernetes Version  | `1.33`                                       |
 
 The ECR repository URI was:
 
@@ -221,34 +362,41 @@ The ECR repository URI was:
 615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-phase10-repository
 ```
 
-The initial Phase 10 workflow verified that the repository existed and that GitHub Actions could access it through the assumed IAM role.
+---
 
-No application image was pushed during this initial verification stage.
+# 8. Terraform Infrastructure
 
-The IAM role was nevertheless configured with the ECR permissions required for the planned publishing stage, including:
+The Phase 10 AWS infrastructure was intentionally isolated under:
 
 ```text
-ecr:GetAuthorizationToken
-ecr:BatchCheckLayerAvailability
-ecr:BatchGetImage
-ecr:CompleteLayerUpload
-ecr:DescribeImages
-ecr:DescribeRepositories
-ecr:InitiateLayerUpload
-ecr:ListImages
-ecr:PutImage
-ecr:UploadLayerPart
+infra-phase10/
 ```
 
-`ecr:GetAuthorizationToken` is granted against `*`, while the repository-specific ECR actions are scoped to the Phase 10 ECR repository.
+Terraform was used to provision:
 
-The ECR push stage is reserved for the next CI/CD extension.
+* VPC
+* Public subnets
+* Internet Gateway
+* Routing
+* EKS cluster
+* EKS managed node group
+* EKS security group
+* EKS IAM roles
+* GitHub OIDC provider
+* GitHub Actions IAM role
+* GitHub Actions ECR permissions
+* GitHub Actions EKS API permissions
+* EKS Access Entry
+* EKS Access Policy Association
+* ECR repository
+
+The infrastructure was provisioned temporarily for CI/CD verification and subsequently destroyed after evidence collection.
 
 ---
 
-# 6. Amazon EKS
+# 9. EKS Configuration
 
-Phase 10 provisioned an isolated EKS control plane:
+The Phase 10 EKS cluster was:
 
 ```text
 node-devsecops-phase10-cluster
@@ -256,30 +404,27 @@ node-devsecops-phase10-cluster
 
 Configuration included:
 
-* Kubernetes version `1.33`
-* Public API endpoint enabled
-* Private API endpoint disabled
+* Kubernetes `1.33`
+* Public API endpoint
 * Two Availability Zones
 * Two public subnets
-* Dedicated EKS security group
-* Dedicated EKS cluster IAM role
-* GitHub Actions EKS access entry
-* `AmazonEKSEditPolicy` association
-* Namespace scope limited to `default`
+* Managed node group
+* `t3.small` worker nodes
+* Desired nodes: `2`
+* Minimum nodes: `1`
+* Maximum nodes: `2`
+* EKS API authentication
+* EKS Access Entry authorization
 
-The initial workflow verified the EKS cluster status.
+The worker nodes were verified during the infrastructure/application verification phase using an authorized cluster identity separate from the GitHub Actions application deployment identity.
 
-The successful workflow returned:
+The GitHub Actions role was intentionally not granted cluster-scoped permission to list nodes because node inspection is not required for the application deployment workflow.
 
-```text
-ACTIVE
-```
-
-No application deployment was performed during the initial Phase 10 foundation verification.
+Importantly, **worker-node listing was not a required permission for the GitHub Actions application role**.
 
 ---
 
-# 7. GitHub Actions Workflow
+# 10. GitHub Actions Workflow
 
 The workflow is located at:
 
@@ -300,26 +445,36 @@ build-and-test
 aws-deployment
 ```
 
+The second job depends on the successful completion of the first:
+
+```text
+build-and-test
+       ↓
+aws-deployment
+```
+
+This prevents AWS deployment activity from occurring when the CI stage fails.
+
 ---
 
-## 7.1 Build and Test
+# 11. Build and Test Job
 
 The `build-and-test` job performs:
 
 1. Repository checkout
 2. Node.js 24 setup
-3. npm dependency installation
-4. Jest test execution
+3. Dependency installation
+4. Jest tests
 5. Docker image build
 6. Docker image verification
 
-The Docker image is tagged using the GitHub commit SHA:
+The Docker image is initially tagged:
 
 ```text
 node-monitoring-app:${GITHUB_SHA}
 ```
 
-Using the commit SHA provides a direct relationship between:
+The commit SHA provides traceability between:
 
 ```text
 Git commit
@@ -327,37 +482,19 @@ Git commit
 GitHub Actions run
     ↓
 Docker image
+    ↓
+ECR image
+    ↓
+EKS deployment
 ```
 
-This image-tagging approach will become useful when the image is subsequently pushed to ECR and deployed to EKS.
-
 ---
 
-## 7.2 AWS Deployment
+# 12. AWS OIDC Authentication
 
-The `aws-deployment` job depends on the successful completion of `build-and-test`.
+GitHub Actions does not use long-lived AWS access keys.
 
-Its initial purpose was AWS authentication and resource verification.
-
-The job performs:
-
-1. Repository checkout
-2. AWS OIDC authentication
-3. AWS identity verification
-4. ECR repository verification
-5. EKS cluster verification
-
-The job was named `AWS Deployment` because it represents the AWS side of the CI/CD workflow, although the initial implementation did not yet perform an application deployment.
-
----
-
-# 8. GitHub Actions AWS Authentication with OIDC
-
-The workflow does not use long-lived AWS access keys.
-
-Instead, GitHub Actions obtains an OIDC identity token and uses it to assume the dedicated AWS IAM role.
-
-The workflow uses:
+Instead, the workflow uses:
 
 ```yaml
 - name: Configure AWS credentials with OIDC
@@ -368,13 +505,13 @@ The workflow uses:
     role-session-name: GitHubActions-${{ github.run_id }}
 ```
 
-The role is supplied through the GitHub repository secret:
+The repository secret is:
 
 ```text
 AWS_GITHUB_ACTIONS_ROLE_ARN
 ```
 
-The role ARN was:
+The IAM role is:
 
 ```text
 arn:aws:iam::615300991839:role/node-devsecops-phase10-github-actions-role
@@ -384,184 +521,80 @@ The authentication flow is:
 
 ```text
 GitHub Actions
-      │
-      │ OIDC token
-      ▼
-GitHub OIDC Provider
-      │
-      │ Trust policy evaluation
-      ▼
-AWS IAM Role
-      │
-      ▼
+      ↓
+GitHub OIDC token
+      ↓
+AWS OIDC Provider
+      ↓
+IAM trust policy
+      ↓
+GitHub Actions IAM role
+      ↓
 Temporary AWS credentials
-      │
-      ├── AWS STS
-      ├── Amazon ECR
-      └── Amazon EKS
 ```
+
+This avoids storing long-lived AWS access keys in GitHub.
 
 ---
 
-# 9. GitHub Repository Secret
+# 13. GitHub OIDC Provider
 
-During the verified Phase 10 implementation, the repository contained the following GitHub Actions secret:
-
-```text
-AWS_GITHUB_ACTIONS_ROLE_ARN
-```
-
-Its purpose is to provide the workflow with the ARN of the AWS IAM role that GitHub Actions is permitted to assume.
-
-The secret contains the IAM role ARN rather than an AWS access key and secret key.
-
-This keeps long-lived AWS credentials out of the GitHub repository and workflow file.
-
-## GitHub repository secret configuration
-
-![GitHub repository secret configuration](../screenshots/10-github-actions-ci-cd/02-github-repository-secret-config.png)
-
-
-> The screenshot demonstrates the repository secret configuration. Secret values are not exposed in the documentation.
-
----
-
-# 10. GitHub OIDC Provider
-
-The AWS account was configured with the GitHub Actions OIDC provider:
+The AWS OIDC provider is:
 
 ```text
 token.actions.githubusercontent.com
 ```
 
-The provider allows AWS IAM to validate identity tokens issued by GitHub Actions.
-
-The OIDC provider was created specifically to support federated authentication from GitHub Actions.
-
-This removes the need to store long-lived AWS IAM access keys in GitHub Actions.
-
-The provider was configured with:
+The provider uses:
 
 ```text
 Audience:
 sts.amazonaws.com
 ```
 
-The IAM trust relationship also validates this audience claim.
+The IAM trust relationship validates the OIDC audience and the intended repository/branch subject.
 
 ---
 
-# 11. Immutable GitHub OIDC Subject Configuration
+# 14. Immutable GitHub Repository Identity
 
-GitHub's OIDC subject configuration was verified before the final IAM trust policy was applied.
+The Phase 10 trust relationship used immutable GitHub identifiers.
 
-The repository identifiers were:
+Repository owner:
 
 ```text
-GitHub owner:
 Jefferson-ohis1
-
-GitHub owner ID:
-280539875
+```
 
 Repository:
-end-to-end-node-ci-cd-devsecops
-
-Repository ID:
-1316644659
-```
-
-The GitHub OIDC customization configuration returned:
 
 ```text
-use_default: true
-use_immutable_subject: true
+end-to-end-node-ci-cd-devsecops
 ```
 
-with the subject claim prefix:
+The immutable subject prefix was:
 
 ```text
 repo:Jefferson-ohis1@280539875/end-to-end-node-ci-cd-devsecops@1316644659
 ```
 
-For the `main` branch, the expected immutable subject was:
+For the `main` branch, the subject was:
 
 ```text
 repo:Jefferson-ohis1@280539875/end-to-end-node-ci-cd-devsecops@1316644659:ref:refs/heads/main
 ```
 
-This configuration binds the AWS trust relationship to the GitHub owner ID, repository ID, repository, and intended branch rather than relying only on mutable repository naming.
+This restricts the IAM trust relationship to the intended repository and branch.
 
 ---
 
-# 12. IAM Trust Relationship
+# 15. IAM Permissions
 
-The GitHub Actions role is:
+The GitHub Actions role contains permissions required by the application CI/CD workflow.
 
-```text
-node-devsecops-phase10-github-actions-role
-```
+## ECR permissions
 
-Its trust relationship allows the GitHub Actions OIDC provider to assume the role only when the OIDC claims satisfy the configured conditions.
-
-The trust relationship validates both:
-
-* the OIDC audience; and
-* the immutable repository/branch subject.
-
-The relevant Terraform configuration is:
-
-```hcl
-Condition = {
-  StringEquals = {
-    "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-  }
-
-  StringLike = {
-    "token.actions.githubusercontent.com:sub" = "repo:${local.github_owner}@${local.github_owner_id}/${local.github_repository}@${local.github_repository_id}:ref:refs/heads/${local.github_branch}"
-  }
-}
-```
-
-With the Phase 10 values, the subject resolves to:
-
-```text
-repo:Jefferson-ohis1@280539875/end-to-end-node-ci-cd-devsecops@1316644659:ref:refs/heads/main
-```
-
-The deployed IAM trust relationship was independently verified with AWS CLI:
-
-```bash
-aws iam get-role \
-  --role-name node-devsecops-phase10-github-actions-role \
-  --query 'Role.AssumeRolePolicyDocument.Statement[0].Condition.StringLike."token.actions.githubusercontent.com:sub"' \
-  --output text
-```
-
-The returned value matched the intended immutable `main` branch subject.
-
-The resulting trust boundary is therefore limited to the intended GitHub repository and branch.
-
----
-
-# 13. GitHub Actions IAM Permissions
-
-The GitHub Actions IAM role contains two inline IAM policies:
-
-```text
-github_actions_ecr
-github_actions_eks
-```
-
-These policies serve different purposes.
-
----
-
-## 13.1 Amazon ECR permissions
-
-The ECR policy provides the permissions required for the current ECR verification and the planned image-publishing workflow.
-
-Repository-specific permissions include:
+Repository-specific ECR permissions include:
 
 ```text
 ecr:BatchCheckLayerAvailability
@@ -581,697 +614,1517 @@ The ECR authentication token permission is:
 ecr:GetAuthorizationToken
 ```
 
-and is granted against:
+The repository-specific operations are restricted to the Phase 10 ECR repository.
 
-```text
-*
-```
+## EKS API permissions
 
-The repository-specific permissions are scoped to:
-
-```text
-aws_ecr_repository.node_app_repository.arn
-```
-
-This means the role was prepared for the future ECR push stage without granting repository-wide access to unrelated ECR repositories.
-
----
-
-## 13.2 Amazon EKS API permission
-
-The IAM policy named:
-
-```text
-node-devsecops-phase10-github-actions-eks
-```
-
-grants:
+The IAM role also has:
 
 ```text
 eks:DescribeCluster
 ```
 
-against the Phase 10 EKS cluster ARN.
+against the Phase 10 EKS cluster.
 
-This permission was sufficient for the initial workflow's AWS CLI cluster verification:
+This permits AWS API-level cluster discovery.
 
-```bash
-aws eks describe-cluster
-```
-
-It is important to distinguish this IAM permission from Kubernetes API authorization.
+Kubernetes authorization is handled separately through the EKS Access Entry.
 
 ---
 
-## 13.3 Kubernetes authorization through EKS Access Entry
+# 16. EKS Access Entry
 
-GitHub Actions was also configured as an EKS access entry:
+GitHub Actions was configured as an EKS access entry.
 
-```text
-aws_eks_access_entry.github_actions
-```
-
-The principal is the GitHub Actions IAM role:
+The principal is:
 
 ```text
 arn:aws:iam::615300991839:role/node-devsecops-phase10-github-actions-role
 ```
 
-The access entry was associated with:
+The access policy association uses:
 
 ```text
-arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy
+AmazonEKSEditPolicy
 ```
 
-The policy association was restricted to the:
+with namespace scope:
 
 ```text
 default
 ```
 
-namespace.
-
-The resulting authorization model during the verified Phase 10 deployment was:
+The authorization chain is:
 
 ```text
 GitHub Actions
-      │
-      ▼
+      ↓
 AWS OIDC
-      │
-      ▼
-IAM Role
-      │
-      ├── IAM: eks:DescribeCluster
-      │
-      └── EKS Access Entry
-                │
-                ▼
-       AmazonEKSEditPolicy
-                │
-                ▼
-          default namespace
+      ↓
+IAM role
+      ↓
+EKS Access Entry
+      ↓
+AmazonEKSEditPolicy
+      ↓
+default namespace
 ```
 
-This separation will become important when EKS deployment is added to the workflow.
+This authorization model is deliberately scoped to application deployment rather than cluster administration.
 
 ---
 
-# 14. Terraform Validation
+# 17. GitHub Repository Secret Evidence
 
-Before deployment, the isolated Terraform configuration was initialized and validated.
-
-The Phase 10 infrastructure was managed from:
+The GitHub repository contains:
 
 ```text
-infra-phase10/
+AWS_GITHUB_ACTIONS_ROLE_ARN
 ```
 
-Terraform initialization installed the AWS provider successfully.
+The secret contains the IAM role ARN rather than an AWS access key.
 
-The infrastructure was then planned and applied.
+![GitHub repository secret configuration](../screenshots/10-github-actions-ci-cd/02-github-repository-secret-config.png)
 
-The initial Phase 10 deployment completed with:
-
-```text
-Apply complete! Resources: 20 added, 0 changed, 0 destroyed.
-```
-
-A subsequent Terraform plan confirmed that the configuration and deployed infrastructure were synchronized before the environment was eventually destroyed.
+The screenshot demonstrates the configured repository secret without exposing the secret value.
 
 ---
 
-# 15. Terraform Evidence
+# 18. Initial GitHub Actions Verification
 
-Terraform planning was used to establish the expected Phase 10 infrastructure before deployment.
-
-The captured evidence is retained under:
-
-```text
-screenshots/10-github-actions-ci-cd/
-```
-
-## Phase 10 Terraform infrastructure plan
-
-![Phase 10 Terraform plan](../screenshots/10-github-actions-ci-cd/01-github-actions-terraform-plan.png)
-
-
-The screenshot provides evidence of the infrastructure planning stage for the isolated Phase 10 environment.
-
----
-
-# 16. GitHub Actions Successful Run
-
-The GitHub Actions workflow was executed successfully against commit:
-
-```text
-9e4af46
-```
-
-The successful run demonstrated:
+The initial GitHub Actions foundation successfully verified:
 
 * GitHub Actions workflow execution
 * Repository checkout
 * Node.js environment setup
 * Dependency installation
-* Jest test execution
+* Jest tests execution
 * Docker image build
 * AWS OIDC authentication
 * AWS IAM role assumption
 * AWS identity verification
-* ECR repository verification
-* EKS cluster verification
-
-The overall workflow completed successfully.
-
-## Successful GitHub Actions CI/CD run
+* ECR repository access
+* EKS API access
 
 ![GitHub Actions successful run](../screenshots/10-github-actions-ci-cd/03-github-actions-success.png)
 
----
-
-# 17. AWS Deployment Job
-
-The second workflow job was:
-
-```text
-AWS Deployment
-```
-
-During the initial Phase 10 implementation, this job performed AWS authentication and infrastructure verification rather than application deployment.
-
-The successful job included:
-
-```text
-Configure AWS credentials with OIDC
-Verify AWS identity
-Verify ECR repository
-Verify EKS cluster
-```
-
-## Successful AWS Deployment job
-
-![AWS Deployment successful job](../screenshots/10-github-actions-ci-cd/04-aws-deployment-successful-job.png)
+The historical successful workflow evidence demonstrates the initial Phase 10 OIDC and AWS integration.
 
 ---
 
-# 18. AWS OIDC Authentication Verification
+# 19. AWS Deployment Job
 
-The workflow successfully assumed:
+The AWS deployment job subsequently evolved from simple AWS resource verification into the application deployment workflow.
 
-```text
-node-devsecops-phase10-github-actions-role
-```
-
-The GitHub Actions authentication log showed:
+The completed job performs:
 
 ```text
-Assuming role with OIDC
-Authenticated as assumedRoleId ...
-```
-
-The workflow then executed:
-
-```bash
-aws sts get-caller-identity
-```
-
-The resulting identity was an assumed-role session rather than a long-lived IAM user.
-
-The verified AWS account was:
-
-```text
-615300991839
-```
-
-The assumed-role ARN followed the form:
-
-```text
-arn:aws:sts::615300991839:assumed-role/node-devsecops-phase10-github-actions-role/GitHubActions-<run-id>
-```
-
-The successful authentication demonstrates that GitHub Actions exchanged its OIDC identity for temporary AWS credentials.
-
----
-
-# 19. ECR Verification
-
-The workflow executed:
-
-```bash
-aws ecr describe-repositories \
-  --repository-names "${ECR_REPOSITORY}"
-```
-
-The repository was successfully located:
-
-```text
-node-devsecops-phase10-repository
-```
-
-The repository configuration included:
-
-```text
-Image tag mutability: MUTABLE
-Scan on push: true
-Encryption: AES256
-```
-
-The repository existed and was accessible using the temporary credentials obtained through GitHub OIDC.
-
-No container image was pushed during the initial verification phase.
-
-The ECR permissions required for image publishing were nevertheless provisioned in preparation for the next workflow extension.
-
----
-
-# 20. EKS Verification
-
-The workflow executed:
-
-```bash
-aws eks describe-cluster \
-  --name "${EKS_CLUSTER_NAME}" \
-  --region "${AWS_REGION}" \
-  --query 'cluster.status' \
-  --output text
-```
-
-The returned cluster status was:
-
-```text
-ACTIVE
-```
-
-This confirmed that the GitHub Actions IAM role could successfully access the intended Phase 10 EKS cluster through the AWS API.
-
-The initial verification did **not** deploy Kubernetes resources.
-
-EKS application deployment will be added in the next extension after the Phase 10 infrastructure is re-provisioned.
-
-## EKS cluster verification from GitHub Actions
-
-The successful AWS deployment job screenshot contains the EKS verification step:
-
-![EKS verification](../screenshots/10-github-actions-ci-cd/04-aws-deployment-successful-job.png)
-
----
-
-# 21. Evidence Index
-
-All Phase 10 screenshots are stored under:
-
-```text
-screenshots/10-github-actions-ci-cd/
-```
-
-| Evidence                           | Screenshot                               |
-| ---------------------------------- | ---------------------------------------- |
-| Terraform infrastructure plan      | `01-github-actions-terraform-plan.png`   |
-| GitHub repository secret           | `02-github-repository-secret-config.png` |
-| Successful GitHub Actions workflow | `03-github-actions-success.png`          |
-| Successful AWS Deployment job      | `04-aws-deployment-successful-job.png`   |
-
-The evidence directory is intentionally kept separate from the documentation so screenshots can be referenced from the Markdown document without placing image files directly inside the `docs/` directory.
-
----
-
-# 22. Security Considerations
-
-Phase 10 incorporates several security-focused design decisions.
-
-## 22.1 No long-lived AWS credentials in GitHub Actions
-
-The workflow uses GitHub OIDC rather than storing:
-
-```text
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-```
-
-as long-lived repository credentials.
-
-Instead, GitHub Actions obtains temporary AWS credentials by assuming the dedicated IAM role.
-
----
-
-## 22.2 Dedicated IAM role
-
-GitHub Actions uses a dedicated role:
-
-```text
-node-devsecops-phase10-github-actions-role
-```
-
-The role is separate from the EKS cluster service role.
-
-This keeps the GitHub Actions trust relationship and permissions separate from the EKS control-plane IAM role.
-
----
-
-## 22.3 Restricted OIDC trust
-
-The IAM trust policy validates:
-
-```text
-Audience:
-sts.amazonaws.com
-```
-
-and the immutable GitHub subject:
-
-```text
-repo:Jefferson-ohis1@280539875/end-to-end-node-ci-cd-devsecops@1316644659:ref:refs/heads/main
-```
-
-The role is therefore not configured for arbitrary GitHub repositories or arbitrary branches.
-
----
-
-## 22.4 Immutable repository identity
-
-The OIDC subject uses GitHub owner and repository IDs in addition to the repository identity.
-
-This creates a stronger repository-specific trust condition than relying only on mutable repository naming.
-
----
-
-## 22.5 Separation of AWS and Kubernetes authorization
-
-Phase 10 separates:
-
-```text
-AWS IAM authorization
-```
-
-from:
-
-```text
-Kubernetes authorization
-```
-
-The IAM role has:
-
-```text
-eks:DescribeCluster
-```
-
-for AWS API-level cluster verification.
-
-Kubernetes authorization is separately configured through:
-
-```text
-EKS Access Entry
+AWS OIDC authentication
         ↓
-AmazonEKSEditPolicy
-        ↓
-default namespace
-```
-
-This distinction provides a clear foundation for the future EKS deployment stage.
-
----
-
-## 22.6 ECR repository scoping
-
-The ECR repository-specific actions are scoped to the Phase 10 repository rather than all ECR repositories.
-
-Only:
-
-```text
-ecr:GetAuthorizationToken
-```
-
-uses the wildcard resource required for ECR authentication.
-
-The remaining ECR repository operations reference the Phase 10 repository ARN.
-
----
-
-## 22.7 Least-purpose infrastructure
-
-The Phase 10 environment intentionally avoided unnecessary resources.
-
-No Jenkins EC2 instance, NAT Gateway, private subnet architecture, or EKS worker-node infrastructure was recreated for the initial OIDC verification.
-
-The initial infrastructure was limited to the components required to demonstrate:
-
-```text
-GitHub Actions
-      ↓
-OIDC
-      ↓
-IAM
-      ↓
-ECR / EKS
-```
-
----
-
-# 23. Cost-Conscious Teardown
-
-After all required evidence had been captured and the GitHub Actions → AWS integration had been successfully verified, the temporary Phase 10 AWS environment was destroyed.
-
-The teardown was first planned with:
-
-```bash
-terraform -chdir=infra-phase10 plan -destroy
-```
-
-The destroy plan reported:
-
-```text
-Plan: 0 to add, 0 to change, 20 to destroy.
-```
-
-The destroy plan was reviewed before the destructive operation was approved.
-
-The infrastructure was then destroyed with:
-
-```bash
-terraform -chdir=infra-phase10 apply -destroy
-```
-
-Terraform completed with:
-
-```text
-Apply complete! Resources: 0 added, 0 changed, 20 destroyed.
-```
-
-The 20 destroyed resources covered the isolated Phase 10 environment, including:
-
-* EKS cluster
-* ECR repository
-* GitHub Actions IAM role
-* GitHub OIDC provider
-* EKS access entry
-* EKS access policy association
-* EKS cluster IAM role
-* EKS security group
-* VPC
-* Two public subnets
-* Internet Gateway
-* Route table
-* Route associations
-* Internet route
-* Required IAM policies and attachments
-
-This teardown was intentional and forms part of the Phase 10 lifecycle.
-
-The AWS infrastructure was not left running after evidence collection.
-
----
-
-# 24. Phase 10 Result
-
-Phase 10 successfully established and verified the foundation for GitHub Actions CI/CD with AWS.
-
-The completed verification flow was:
-
-```text
-GitHub push
-      ↓
-GitHub Actions
-      ↓
-Checkout
-      ↓
-Node.js setup
-      ↓
-npm ci
-      ↓
-Jest tests
-      ↓
-Docker image build
-      ↓
-GitHub OIDC token
-      ↓
-AWS IAM role assumption
-      ↓
 AWS identity verification
-      ↓
-ECR repository verification
-      ↓
-EKS cluster verification
-```
-
-The security model was:
-
-```text
-GitHub Actions
-      │
-      ▼
-GitHub OIDC
-      │
-      ▼
-AWS IAM trust policy
-      │
-      ▼
-Dedicated GitHub Actions IAM role
-      │
-      ├── ECR repository permissions
-      │
-      ├── eks:DescribeCluster
-      │
-      └── EKS access entry
-                │
-                ▼
-       AmazonEKSEditPolicy
-                │
-                ▼
-          default namespace
-```
-
-The most important security result is that GitHub Actions successfully authenticated to AWS using **OIDC and temporary credentials**, without requiring long-lived AWS access keys.
-
-The Phase 10 AWS environment was subsequently destroyed after successful verification.
-
----
-
-# 25. Next Phase 10 Extension
-
-The next implementation step will extend the verified foundation into a complete GitHub Actions deployment pipeline.
-
-The planned flow is:
-
-```text
-Build
-   ↓
-Test
-   ↓
-Docker Build
-   ↓
-AWS OIDC Authentication
-   ↓
-ECR Login
-   ↓
-Docker Tag
-   ↓
-ECR Push
-   ↓
-EKS Authentication
-   ↓
-Deploy to EKS
-   ↓
-Rollout Verification
-   ↓
-Application Verification
-```
-
-The Git commit SHA will provide image traceability:
-
-```text
-Git commit
-    ↓
-GitHub Actions run
-    ↓
-Docker image
-    ↓
-ECR image tag
-    ↓
-EKS deployment
-```
-
-For example:
-
-```text
-${GITHUB_SHA}
-```
-
-will identify the Docker image associated with the source commit that triggered the workflow.
-
-The future deployment stage will build on the already verified:
-
-* GitHub OIDC provider
-* immutable GitHub subject
-* IAM trust relationship
-* GitHub Actions IAM role
-* ECR repository
-* EKS cluster
-* EKS access entry
-* Kubernetes authorization configuration
-
-rather than duplicating the foundation work.
-
----
-
-# 26. Phase 10 Completion Summary
-
-| Area                            | Status                |
-| ------------------------------- | --------------------- |
-| GitHub Actions workflow         | ✅ Verified            |
-| Node.js CI                      | ✅ Verified            |
-| Jest tests                      | ✅ Verified            |
-| Docker image build              | ✅ Verified            |
-| GitHub OIDC provider            | ✅ Verified            |
-| Immutable OIDC subject          | ✅ Verified            |
-| IAM trust relationship          | ✅ Verified            |
-| GitHub repository secret        | ✅ Configured          |
-| AWS role assumption             | ✅ Verified            |
-| AWS identity                    | ✅ Verified            |
-| ECR repository access           | ✅ Verified            |
-| ECR push permissions configured | ✅ Ready for extension |
-| EKS cluster access              | ✅ Verified            |
-| EKS access entry                | ✅ Configured          |
-| EKS Kubernetes authorization    | ✅ Configured          |
-| Application deployment          | ⏳ Next extension      |
-| ECR image push                  | ⏳ Next extension      |
-| Rollout verification            | ⏳ Next extension      |
-| Application verification        | ⏳ Next extension      |
-| Evidence screenshots            | ✅ Captured            |
-| AWS teardown                    | ✅ Completed           |
-
----
-
-## Phase 10 Takeaway
-
-This phase establishes a secure GitHub Actions-to-AWS authentication foundation using **OIDC federation instead of long-lived AWS credentials**.
-
-The implementation demonstrates that GitHub Actions can:
-
-* authenticate to AWS through OIDC;
-* satisfy a narrowly scoped immutable repository/branch trust relationship;
-* assume a dedicated IAM role;
-* obtain temporary AWS credentials;
-* access the intended ECR repository;
-* verify the intended EKS cluster;
-* and establish a separate EKS access-entry authorization path for future Kubernetes deployment.
-
-The temporary AWS infrastructure was destroyed after verification to avoid unnecessary ongoing costs.
-
-The next extension will convert this verified foundation into an end-to-end GitHub Actions deployment pipeline by adding:
-
-```text
-ECR image publishing
         ↓
-EKS authentication
+ECR verification
+        ↓
+EKS cluster verification
+        ↓
+Docker build
+        ↓
+ECR login
+        ↓
+ECR image push
+        ↓
+EKS kubeconfig
+        ↓
+Kubernetes authorization checks
         ↓
 Kubernetes deployment
+        ↓
+Service deployment
+        ↓
+HPA deployment
         ↓
 Rollout verification
         ↓
 Application verification
 ```
 
-This will complete the transition from **CI + AWS access verification** to an actual **GitHub Actions CI/CD deployment workflow**.
+![AWS Deployment successful](../screenshots/10-github-actions-ci-cd/04-aws-deployment-successful-job.png)
 
 ---
+
+# 20. Successful End-to-End GitHub Actions Run
+
+The completed ECR/EKS application deployment was successfully executed from GitHub Actions.
+
+The verified workflow run used commit:
+
+```text
+c97535309874695d6a8de6cb2b5c4d32bff55648
+```
+
+Short SHA:
+
+```text
+c975353
+```
+
+The workflow completed successfully for the application deployment path.
+
+The successful deployment evidence is captured in:
+
+![GitHub Actions ECR and EKS success](../screenshots/10-github-actions-ci-cd/05-github-actions-ecr-eks-success.png)
+
+This evidence demonstrates the transition from the Phase 10 OIDC foundation into actual container image publishing and Kubernetes application deployment.
+
+---
+
+# 21. ECR Image Push
+
+The workflow authenticated to Amazon ECR and pushed the Docker image using the GitHub commit SHA as the image tag.
+
+The image was pushed to:
+
+```text
+615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-phase10-repository
+```
+
+The image tag was:
+
+```text
+c97535309874695d6a8de6cb2b5c4d32bff55648
+```
+
+The verified image digest was:
+
+```text
+sha256:4a3f65caaea7e2b9012e162368684e6d254a30f93061f928fe76d1544ba02941
+```
+
+The ECR evidence was captured in:
+
+![ECR SHA-tagged image](../screenshots/10-github-actions-ci-cd/06-ecr-sha-tagged-image.png)
+
+The repository was configured with:
+
+```text
+Scan on push: true
+Encryption: AES256
+Image tag mutability: MUTABLE
+```
+
+---
+
+# 22. ECR Image Traceability
+
+The completed image traceability model is:
+
+```text
+Git commit
+     ↓
+GitHub Actions run
+     ↓
+Docker image
+     ↓
+ECR image tag
+     ↓
+EKS Deployment
+```
+
+Using:
+
+```text
+${GITHUB_SHA}
+```
+
+as the image tag associates the deployed container with the source commit that triggered the workflow.
+
+This provides a direct deployment reference rather than relying only on a generic tag such as:
+
+```text
+latest
+```
+
+---
+
+# 23. EKS Authentication and Kubernetes Authorization
+
+GitHub Actions configures `kubectl` using:
+
+```bash
+aws eks update-kubeconfig \
+  --region "${AWS_REGION}" \
+  --name "${EKS_CLUSTER_NAME}"
+```
+
+The workflow then verifies the Kubernetes permissions required for application deployment.
+
+The relevant checks are:
+
+```text
+create deployments -n default
+create services -n default
+create horizontalpodautoscalers -n default
+```
+
+The checks returned:
+
+```text
+yes
+```
+
+This verifies the application deployment authorization boundary.
+
+## Cluster-scoped node permissions
+
+The GitHub Actions role was also explicitly tested against the cluster-scoped node resource:
+
+```bash
+kubectl auth can-i list nodes
+```
+
+The result was:
+
+```text
+no
+```
+
+This result is expected under the intended authorization model.
+
+Kubernetes `nodes` are cluster-scoped resources, while the GitHub Actions EKS access policy is intentionally restricted to:
+
+```text
+default
+```
+
+Therefore:
+
+```text
+GitHub Actions role
+        ↓
+default namespace
+        ↓
+application resources
+```
+
+does not imply:
+
+```text
+GitHub Actions role
+        ↓
+cluster-wide resources
+        ↓
+nodes
+```
+
+Node listing is not required for the application CI/CD workflow.
+
+The workflow therefore does **not** perform:
+
+```bash
+kubectl get nodes
+```
+
+as an application deployment requirement.
+
+This avoids broadening the GitHub Actions role simply to obtain cluster-wide read access that the deployment workflow does not need.
+
+---
+
+# 24. Kubernetes Deployment
+
+The application was deployed using the rendered image:
+
+```text
+615300991839.dkr.ecr.us-east-1.amazonaws.com/node-devsecops-phase10-repository:c97535309874695d6a8de6cb2b5c4d32bff55648
+```
+
+The workflow rendered the Kubernetes deployment manifest by replacing:
+
+```text
+IMAGE_PLACEHOLDER
+```
+
+with the ECR image reference.
+
+The deployment was then applied with:
+
+```bash
+kubectl apply -f /tmp/deployment-rendered.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/hpa.yaml
+```
+
+---
+
+# 25. Deployment Rollout Verification
+
+The workflow waited for the deployment to become ready using:
+
+```bash
+kubectl rollout status \
+  deployment/node-monitoring-app \
+  --timeout=180s
+```
+
+The rollout completed successfully.
+
+The deployment reached:
+
+```text
+2/2 available
+```
+
+The pods were verified as:
+
+```text
+Running
+```
+
+with zero restarts during the verification.
+
+![EKS deployment and pods](../screenshots/10-github-actions-ci-cd/07-eks-deployment-and-pods.png)
+
+---
+
+# 26. Kubernetes LoadBalancer Service
+
+The application was exposed using:
+
+```yaml
+type: LoadBalancer
+```
+
+The service was:
+
+```text
+node-monitoring-app
+```
+
+The AWS LoadBalancer was provisioned successfully and exposed the application externally.
+
+The verified service evidence is:
+
+![EKS LoadBalancer service](../screenshots/10-github-actions-ci-cd/08-eks-loadbalancer-service.png)
+
+The LoadBalancer endpoint was used for external application verification.
+
+---
+
+# 27. Application Health Verification
+
+The GitHub Actions workflow included an application health verification loop.
+
+It waited for the LoadBalancer endpoint to become available and then requested:
+
+```text
+/health
+```
+
+The endpoint returned:
+
+```text
+ok
+```
+
+The workflow therefore reported:
+
+```text
+Application health check passed.
+```
+
+![Application health verification](../screenshots/10-github-actions-ci-cd/09-application-health.png)
+
+The verified request path was:
+
+```text
+Internet
+   ↓
+AWS LoadBalancer
+   ↓
+Kubernetes Service
+   ↓
+Pod
+   ↓
+Node.js application
+   ↓
+/health
+```
+
+---
+
+# 28. Browser Application Verification
+
+The application was also verified through the externally accessible LoadBalancer endpoint in a browser.
+
+The application rendered successfully and displayed:
+
+```text
+🚀 DevOps Monitoring App
+```
+
+The application also exposed links to:
+
+```text
+/health
+/metrics
+```
+
+The browser verification evidence is:
+
+![Application browser rendering](../screenshots/10-github-actions-ci-cd/10-application-health-browser-render.png)
+
+This provides a second verification layer beyond the command-line health check.
+
+---
+
+# 29. Kubernetes HPA
+
+The Kubernetes deployment includes:
+
+```text
+k8s/hpa.yaml
+```
+
+The HPA configuration specifies:
+
+```text
+Minimum replicas: 2
+Maximum replicas: 5
+CPU target: 70%
+```
+
+The HPA was successfully created.
+
+The initial verification showed:
+
+```text
+cpu: <unknown>/70%
+```
+
+The HPA object therefore existed successfully, but CPU utilization was not available through the Kubernetes Metrics API at that point.
+
+![HPA created but metrics unavailable](../screenshots/10-github-actions-ci-cd/11-hpa-created-metrics-unavailable.png)
+
+---
+
+# 30. HPA Verification Boundary
+
+The HPA result verified:
+
+```text
+HPA resource created
+        ↓
+Deployment referenced
+        ↓
+CPU target configured
+        ↓
+minReplicas = 2
+        ↓
+maxReplicas = 5
+```
+
+At the time of screenshot 11, the following was not yet available:
+
+```text
+Metrics Server
+        ↓
+Metrics API
+        ↓
+CPU utilization
+        ↓
+HPA metric evaluation
+```
+
+The Kubernetes commands:
+
+```bash
+kubectl top pods
+kubectl top nodes
+```
+
+reported:
+
+```text
+error: Metrics API not available
+```
+
+Therefore screenshot 11 is historical evidence of the HPA resource existing **before the metrics platform dependency was available**.
+
+It should not be interpreted as proof of functional CPU-based autoscaling.
+
+---
+
+# 31. Cluster Platform Layer — Metrics Server
+
+Metrics Server is managed separately from the GitHub Actions application workflow.
+
+The platform Terraform root is:
+
+```text
+infra-phase10-platform/
+```
+
+Its purpose is to manage Kubernetes platform infrastructure associated with the existing Phase 10 EKS cluster.
+
+The platform layer contains:
+
+```text
+infra-phase10-platform/
+├── provider.tf
+├── variables.tf
+├── metrics-server.tf
+└── .terraform.lock.hcl
+```
+
+The platform layer uses:
+
+```text
+Terraform
+   ↓
+AWS EKS data sources
+   ↓
+Helm provider
+   ↓
+Metrics Server Helm chart
+```
+
+The EKS cluster must exist before this platform layer can be applied.
+
+> **Implementation status:** Screenshots 12 and 13 document Metrics Server verification from the earlier live EKS environment, where Metrics Server was installed and verified independently. The current `infra-phase10-platform/` Terraform configuration is the reproducible codification of that platform responsibility. It has been formatted, initialized, and validated locally, but it has not yet been applied to a live EKS cluster because the Phase 10 AWS infrastructure has subsequently been destroyed.
+
+---
+
+# 32. Platform Terraform Providers
+
+The platform Terraform configuration requires:
+
+```hcl
+terraform {
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 3.0"
+    }
+  }
+}
+```
+
+The validated provider selections for the current platform configuration were:
+
+```text
+hashicorp/aws v6.66.0
+hashicorp/helm v3.3.0
+```
+
+The configuration was successfully initialized and validated with:
+
+```bash
+terraform -chdir=infra-phase10-platform init
+terraform -chdir=infra-phase10-platform validate
+```
+
+Terraform validation returned:
+
+```text
+Success! The configuration is valid.
+```
+
+---
+
+# 33. Platform Terraform Variables
+
+The platform layer defines:
+
+```text
+AWS Region:
+us-east-1
+```
+
+Existing EKS cluster:
+
+```text
+node-devsecops-phase10-cluster
+```
+
+Pinned Metrics Server Helm chart version:
+
+```text
+3.13.0
+```
+
+The relevant variables are:
+
+```hcl
+variable "aws_region" {
+  description = "AWS region containing the Phase 10 EKS cluster."
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "eks_cluster_name" {
+  description = "Name of the existing Phase 10 EKS cluster."
+  type        = string
+  default     = "node-devsecops-phase10-cluster"
+}
+
+variable "metrics_server_chart_version" {
+  description = "Pinned Metrics Server Helm chart version."
+  type        = string
+  default     = "3.13.0"
+}
+```
+
+Pinning the chart version provides reproducibility instead of implicitly deploying whatever chart version happens to be current.
+
+---
+
+# 34. Metrics Server Helm Release
+
+The platform layer manages Metrics Server using the Helm provider.
+
+The Helm release is configured with:
+
+```text
+Release:
+metrics-server
+
+Repository:
+https://kubernetes-sigs.github.io/metrics-server/
+
+Chart:
+metrics-server
+
+Namespace:
+kube-system
+
+Chart version:
+3.13.0
+```
+
+The configuration also specifies:
+
+```text
+replicas = 2
+apiService.create = true
+podDisruptionBudget.enabled = true
+```
+
+The intended platform flow is:
+
+```text
+EKS cluster
+     ↓
+Terraform platform root
+     ↓
+Helm provider
+     ↓
+Metrics Server
+     ↓
+Metrics API
+```
+
+Metrics Server installation is therefore no longer part of:
+
+```text
+.github/workflows/github-actions.yml
+```
+
+---
+
+# 35. Why Metrics Server Is Outside GitHub Actions
+
+Metrics Server is a cluster-level component rather than an application-specific deployment artifact.
+
+Installing it from the application pipeline would require the application CI/CD identity to perform cluster-level platform administration.
+
+That would create an unnecessary authorization requirement.
+
+The chosen design instead separates:
+
+```text
+Application lifecycle
+```
+
+from:
+
+```text
+Cluster platform lifecycle
+```
+
+The application pipeline needs to deploy:
+
+```text
+Deployment
+Service
+HPA
+```
+
+The platform layer manages:
+
+```text
+Metrics Server
+Metrics API
+```
+
+This allows the GitHub Actions IAM/EKS authorization boundary to remain limited to the application namespace.
+
+---
+
+# 36. Metrics Server and Metrics API Verification
+
+The Metrics Server platform verification was subsequently completed independently of the GitHub Actions application deployment workflow.
+
+The evidence is:
+
+![Metrics Server and Metrics API success](../screenshots/10-github-actions-ci-cd/12-metrics-server-and-api-success.png)
+
+This evidence demonstrates the successful Metrics Server/API state captured after the initial HPA verification boundary.
+
+The corresponding pod-level metrics evidence is:
+
+![Metrics Server pod metrics](../screenshots/10-github-actions-ci-cd/13-metrics-server-pod-metrics.png)
+
+Together, screenshots 12 and 13 establish that the Kubernetes metrics platform was subsequently available.
+
+They should be interpreted as **platform verification evidence**, not evidence that GitHub Actions installed Metrics Server.
+
+---
+
+# 37. Metrics Architecture
+
+The Metrics Server dependency is:
+
+```text
+Kubernetes Nodes
+      ↓
+Metrics Server
+      ↓
+Metrics API
+      ↓
+HPA Controller
+      ↓
+CPU utilization
+      ↓
+Replica decision
+```
+
+This is separate from the application deployment path:
+
+```text
+GitHub Actions
+      ↓
+EKS authorization
+      ↓
+Deployment
+      ↓
+Service
+      ↓
+HPA
+```
+
+The HPA depends on the Metrics API for resource utilization data.
+
+Therefore the logical dependency is:
+
+```text
+                    EKS
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+          ▼                     ▼
+ Application resources      Platform metrics
+          │                     │
+          ├── Deployment        └── Metrics Server
+          ├── Service                 ↓
+          └── HPA                 Metrics API
+                                     │
+                                     └── HPA metrics
+```
+
+---
+
+# 38. Functional HPA Verification Boundary
+
+The presence of Metrics Server and available metrics does not by itself prove that HPA scaling has occurred.
+
+Functional HPA verification requires observing actual replica changes.
+
+The intended verification flow is:
+
+```text
+Baseline
+   ↓
+2 replicas
+   ↓
+Generate controlled CPU load
+   ↓
+CPU utilization exceeds target
+   ↓
+HPA increases replicas
+   ↓
+Verify additional pods
+   ↓
+Stop load
+   ↓
+Observe stabilization period
+   ↓
+HPA reduces replicas
+   ↓
+Return to baseline
+```
+
+Therefore:
+
+```text
+HPA resource created
+```
+
+and:
+
+```text
+Metrics API available
+```
+
+are separate verification milestones from:
+
+```text
+HPA scale-up observed
+```
+
+and:
+
+```text
+HPA scale-down observed
+```
+
+The latter will only be marked complete after the actual scaling behavior has been observed and captured.
+
+---
+
+# 39. Security Model
+
+Phase 10 uses multiple security boundaries.
+
+## GitHub authentication
+
+GitHub Actions authenticates using OIDC rather than long-lived AWS keys.
+
+## AWS authorization
+
+The GitHub Actions role provides the AWS permissions required by the application workflow.
+
+## Kubernetes authorization
+
+EKS Access Entry provides Kubernetes authorization independently from AWS IAM API permissions.
+
+## EKS namespace scope
+
+The GitHub Actions Kubernetes access policy is scoped to:
+
+```text
+default
+```
+
+rather than the entire cluster.
+
+## ECR scope
+
+Repository-specific ECR operations are restricted to the Phase 10 ECR repository.
+
+## Platform administration
+
+Metrics Server is managed separately through the platform Terraform/Helm layer rather than by the application deployment identity.
+
+The resulting security model is:
+
+```text
+GitHub Actions
+      ↓
+OIDC
+      ↓
+IAM Trust Policy
+      ↓
+Dedicated IAM Role
+      │
+      ├──────────────► ECR
+      │
+      └──────────────► EKS API
+                           │
+                           ▼
+                    EKS Access Entry
+                           │
+                           ▼
+                  AmazonEKSEditPolicy
+                           │
+                           ▼
+                    default namespace
+
+
+Separate platform lifecycle
+           │
+           ▼
+infra-phase10-platform
+           │
+           ▼
+       Helm
+           │
+           ▼
+    Metrics Server
+```
+
+---
+
+# 40. Why OIDC Was Used
+
+Using GitHub OIDC avoids the need to create and store long-lived AWS access keys in GitHub.
+
+Instead:
+
+```text
+GitHub Actions
+      ↓
+OIDC token
+      ↓
+AWS validates token
+      ↓
+IAM trust policy
+      ↓
+Temporary credentials
+```
+
+The credentials are issued for the workflow session rather than being stored permanently in the repository.
+
+The trust policy further restricts the role to the intended repository and `main` branch.
+
+---
+
+# 41. Why Cluster-Scoped Node Access Was Not Added
+
+During troubleshooting, the actual GitHub Actions OIDC-assumed role was tested.
+
+The identity was:
+
+```text
+arn:aws:sts::615300991839:assumed-role/node-devsecops-phase10-github-actions-role/GitHubActions-35809314216
+```
+
+The Kubernetes identity was associated with:
+
+```text
+system:authenticated
+```
+
+The cluster-scoped permission test:
+
+```bash
+kubectl auth can-i list nodes
+```
+
+returned:
+
+```text
+no
+```
+
+This result was retained as an authorization boundary rather than treated as a reason to broaden the role.
+
+The application deployment workflow does not require:
+
+```text
+list nodes
+```
+
+because its required Kubernetes resources are namespace-scoped application resources.
+
+The relevant permissions are:
+
+```text
+create deployments -n default
+create services -n default
+create horizontalpodautoscalers -n default
+```
+
+which were verified as:
+
+```text
+yes
+```
+
+The final authorization model therefore deliberately avoids granting the application CI/CD identity unnecessary cluster-wide permissions.
+
+---
+
+# 42. Application CI/CD vs Platform Responsibilities
+
+The final responsibility boundary is:
+
+| Responsibility                    | Application CI/CD | Platform Layer |
+| --------------------------------- | ----------------: | -------------: |
+| Git checkout                      |                 ✅ |                |
+| Node.js setup                     |                 ✅ |                |
+| npm install                       |                 ✅ |                |
+| Jest tests                        |                 ✅ |                |
+| Docker build                      |                 ✅ |                |
+| ECR login/push                    |                 ✅ |                |
+| EKS authentication                |                 ✅ |                |
+| Application Deployment            |                 ✅ |                |
+| Application Service               |                 ✅ |                |
+| Application HPA                   |                 ✅ |                |
+| Metrics Server                    |                   |              ✅ |
+| Metrics API                       |                   |              ✅ |
+| Cluster-level platform components |                   |              ✅ |
+| EKS infrastructure                |                   |              ✅ |
+| VPC/networking                    |                   |              ✅ |
+| IAM/OIDC infrastructure           |                   |              ✅ |
+
+This separation is the central architectural improvement to the final Phase 10 design.
+
+---
+
+# 43. Cost-Conscious Infrastructure Lifecycle
+
+Phase 10 infrastructure was temporary.
+
+The environment was provisioned specifically for:
+
+```text
+Implementation
+      ↓
+Verification
+      ↓
+Evidence capture
+      ↓
+Teardown
+```
+
+After the ECR/EKS deployment verification was completed, the AWS infrastructure was destroyed.
+
+The final Terraform state for the AWS infrastructure root was verified to be empty:
+
+```bash
+terraform -chdir=infra-phase10 state list
+```
+
+The command returned no resources.
+
+The VPC was also verified to no longer exist through AWS.
+
+The temporary AWS environment was therefore removed after the implementation and verification activities.
+
+The separate `infra-phase10-platform/` directory remains a **reproducible configuration layer** for Metrics Server when the Phase 10 EKS environment is recreated. It does not imply that the destroyed EKS cluster currently exists.
+
+---
+
+# 44. Phase 10 Teardown Lessons
+
+The Phase 10 teardown exposed several AWS dependency relationships.
+
+The initial destroy encountered:
+
+```text
+ECR RepositoryNotEmptyException
+```
+
+because the ECR repository still contained deployment images.
+
+The repository images were removed before the repository was deleted.
+
+The VPC teardown also encountered dependencies from the Kubernetes LoadBalancer.
+
+The LoadBalancer was identified from its AWS-managed ENIs and deleted.
+
+An orphaned Kubernetes ELB security group also remained after the LoadBalancer deletion and was removed before the VPC could be deleted.
+
+The final teardown sequence was:
+
+```text
+ECR
+  ↓
+deleted
+
+LoadBalancer
+  ↓
+deleted
+
+ELB ENIs
+  ↓
+deleted
+
+ELB security group
+  ↓
+deleted
+
+Subnets
+  ↓
+deleted
+
+Internet Gateway
+  ↓
+deleted
+
+VPC
+  ↓
+deleted
+```
+
+This demonstrates why AWS infrastructure teardown should be verified rather than assuming that deleting the primary Kubernetes resources immediately removes every dependent AWS resource.
+
+---
+
+# 45. Evidence Index
+
+All Phase 10 evidence is stored under:
+
+```text
+screenshots/10-github-actions-ci-cd/
+```
+
+| Evidence                               | Screenshot                                 |
+| -------------------------------------- | ------------------------------------------ |
+| Terraform Phase 10 plan                | `01-github-actions-terraform-plan.png`     |
+| GitHub repository secret               | `02-github-repository-secret-config.png`   |
+| Initial GitHub Actions success         | `03-github-actions-success.png`            |
+| Initial AWS Deployment job             | `04-aws-deployment-successful-job.png`     |
+| ECR + EKS successful deployment        | `05-github-actions-ecr-eks-success.png`    |
+| ECR SHA-tagged image                   | `06-ecr-sha-tagged-image.png`              |
+| EKS deployment and pods                | `07-eks-deployment-and-pods.png`           |
+| EKS LoadBalancer service               | `08-eks-loadbalancer-service.png`          |
+| Application `/health` verification     | `09-application-health.png`                |
+| Browser application verification       | `10-application-health-browser-render.png` |
+| HPA creation / Metrics API unavailable | `11-hpa-created-metrics-unavailable.png`   |
+| Metrics Server and Metrics API success | `12-metrics-server-and-api-success.png`    |
+| Metrics Server pod metrics             | `13-metrics-server-pod-metrics.png`        |
+
+---
+
+# 46. Phase 10 Verification Matrix
+
+| Area                                 | Status                               |
+| ------------------------------------ | ------------------------------------ |
+| GitHub Actions workflow              | ✅ Verified                           |
+| Node.js CI                           | ✅ Verified                           |
+| npm dependency installation          | ✅ Verified                           |
+| Jest tests                           | ✅ Verified                           |
+| Docker image build                   | ✅ Verified                           |
+| GitHub OIDC provider                 | ✅ Verified                           |
+| Immutable OIDC subject               | ✅ Verified                           |
+| IAM trust relationship               | ✅ Verified                           |
+| GitHub repository secret             | ✅ Configured                         |
+| AWS role assumption                  | ✅ Verified                           |
+| AWS identity                         | ✅ Verified                           |
+| ECR repository access                | ✅ Verified                           |
+| ECR authentication                   | ✅ Verified                           |
+| ECR image push                       | ✅ Verified                           |
+| Commit SHA image tagging             | ✅ Verified                           |
+| EKS API cluster discovery            | ✅ Verified                           |
+| EKS Access Entry                     | ✅ Verified                           |
+| Namespace application authorization  | ✅ Verified                           |
+| Cluster-scoped node listing          | Not granted / not required           |
+| EKS application deployment           | ✅ Verified                           |
+| Deployment rollout                   | ✅ Verified                           |
+| Pods running                         | ✅ Verified                           |
+| LoadBalancer service                 | ✅ Verified                           |
+| `/health` endpoint                   | ✅ Verified                           |
+| Browser application rendering        | ✅ Verified                           |
+| HPA resource creation                | ✅ Verified                           |
+| Metrics Server platform verification | ✅ Evidenced                          |
+| Metrics API availability             | ✅ Evidenced                          |
+| Pod metrics                          | ✅ Evidenced                          |
+| Functional HPA scale-up              | ⏳ Requires observed scaling evidence |
+| Functional HPA scale-down            | ⏳ Requires observed scaling evidence |
+| AWS teardown                         | ✅ Verified                           |
+
+---
+
+# 47. Phase 10 Evidence Interpretation
+
+The evidence should be interpreted chronologically.
+
+## Application deployment evidence
+
+Screenshots 01–10 document the progression from Terraform planning and GitHub Actions configuration through:
+
+```text
+CI
+ ↓
+OIDC
+ ↓
+AWS
+ ↓
+ECR
+ ↓
+EKS
+ ↓
+Kubernetes
+ ↓
+LoadBalancer
+ ↓
+Application
+```
+
+## HPA boundary evidence
+
+Screenshot 11 documents:
+
+```text
+HPA created
++
+Metrics unavailable
+```
+
+It therefore establishes the initial HPA state without overstating autoscaling functionality.
+
+## Platform verification evidence
+
+Screenshots 12 and 13 document the subsequent Metrics Server and Metrics API state:
+
+```text
+Metrics Server
+      ↓
+Metrics API
+      ↓
+Pod/node metrics
+```
+
+These screenshots belong to the cluster-platform verification layer.
+
+They do not imply that the GitHub Actions application role installed Metrics Server.
+
+---
+
+# 48. Phase 10 Completion Boundary
+
+The completed application deployment work established:
+
+```text
+GitHub
+   ↓
+GitHub Actions
+   ↓
+OIDC
+   ↓
+AWS IAM
+   ↓
+ECR
+   ↓
+EKS
+   ↓
+Kubernetes
+   ↓
+LoadBalancer
+   ↓
+Node.js application
+```
+
+The cluster platform extension established:
+
+```text
+EKS
+   ↓
+Metrics Server
+   ↓
+Metrics API
+   ↓
+Resource metrics
+```
+
+The HPA resource exists and can depend on the Metrics API.
+
+However, functional autoscaling should remain a separate completion criterion until actual scale-up and scale-down behavior is observed and captured.
+
+This distinction prevents the documentation from treating:
+
+```text
+HPA object exists
+```
+
+as equivalent to:
+
+```text
+HPA has demonstrably scaled the application.
+```
+
+---
+
+# 49. Final Target Architecture
+
+The final Phase 10 architecture separates application delivery from cluster platform management.
+
+```text
+                         GitHub Repository
+                                │
+                                │ push to main
+                                ▼
+                    ┌─────────────────────────┐
+                    │     GitHub Actions      │
+                    │                         │
+                    │ Checkout                │
+                    │ Node.js 24              │
+                    │ npm ci                  │
+                    │ Jest                    │
+                    │ Docker build            │
+                    └───────────┬─────────────┘
+                                │
+                                ▼
+                         GitHub OIDC
+                                │
+                                ▼
+                        AWS IAM Role
+                         │          │
+                         │          │
+                         ▼          ▼
+                       ECR         EKS
+                        │           │
+                        │           ▼
+                        │    EKS Access Entry
+                        │           │
+                        │           ▼
+                        │    AmazonEKSEditPolicy
+                        │           │
+                        │           ▼
+                        │      default namespace
+                        │           │
+                        │      ┌────┴─────┐
+                        │      │          │
+                        │      ▼          ▼
+                        │ Deployment   Service
+                        │                 │
+                        │                 ▼
+                        │                HPA
+                        │                 │
+                        │                 │
+                        └─────────────────┘
+
+                              EKS Cluster
+                                  │
+                                  │ separate platform lifecycle
+                                  ▼
+                       infra-phase10-platform/
+                                  │
+                                  ▼
+                                Helm
+                                  │
+                                  ▼
+                          Metrics Server
+                                  │
+                                  ▼
+                           Metrics API
+                                  │
+                                  ▼
+                         HPA resource metrics
+```
+
+The important security boundary is:
+
+```text
+GitHub Actions
+      │
+      └── application deployment
+               │
+               └── default namespace
+
+Platform layer
+      │
+      └── cluster platform
+               │
+               └── Metrics Server
+```
+
+---
+
+# 50. Phase 10 Takeaway
+
+Phase 10 demonstrates the transition from the previously established Jenkins-based DevSecOps pipeline to a GitHub Actions-based CI/CD implementation.
+
+The implementation demonstrates that GitHub Actions can:
+
+* execute Node.js CI;
+* run Jest tests;
+* build the Docker image;
+* authenticate to AWS through OIDC;
+* assume a dedicated IAM role;
+* use temporary AWS credentials;
+* authenticate to Amazon ECR;
+* push a commit-SHA-tagged image;
+* authenticate to Amazon EKS;
+* use EKS Access Entry authorization;
+* deploy Kubernetes application resources;
+* wait for deployment rollout;
+* expose the application through a LoadBalancer;
+* verify the application externally; and
+* create and verify an HPA resource.
+
+The platform architecture separately demonstrates how Metrics Server can be managed as cluster infrastructure rather than being installed by the application CI/CD identity.
+
+This results in a cleaner responsibility boundary:
+
+```text
+Application CI/CD
+        +
+Cluster Platform
+```
+
+rather than requiring the GitHub Actions deployment identity to administer cluster-level platform components.
+
+The temporary AWS environment was destroyed after verification to prevent unnecessary ongoing AWS costs.
+
+---
+
+# 51. Final Phase 10 Objective
+
+The final Phase 10 objective is:
+
+```text
+Secure GitHub Actions CI/CD
+          +
+AWS OIDC federation
+          +
+ECR image publishing
+          +
+EKS application deployment
+          +
+Kubernetes service exposure
+          +
+HPA resource
+          +
+Separate Metrics Server platform management
+          +
+Metrics API verification
+          +
+Reproducible cluster-platform configuration
+```
+
+Functional HPA scale-up and scale-down remain an explicit verification boundary and will only be marked complete after actual scaling behavior has been observed and captured.
+
+The resulting Phase 10 architecture demonstrates a complete, security-conscious separation between:
+
+```text
+Source-code delivery
+        ↓
+Application CI/CD
+        ↓
+Container publishing
+        ↓
+Kubernetes application deployment
+```
+
+and:
+
+```text
+Cluster infrastructure
+        ↓
+Platform components
+        ↓
+Metrics API
+        ↓
+Autoscaling dependency
+```
+
+This establishes a reproducible GitHub Actions CI/CD architecture while avoiding unnecessary cluster-wide permissions for the application deployment identity.
