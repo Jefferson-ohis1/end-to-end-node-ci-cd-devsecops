@@ -13,5 +13,5 @@ variable "eks_cluster_name" {
 variable "metrics_server_chart_version" {
   description = "Pinned Metrics Server Helm chart version."
   type        = string
-  default     = "3.13.0"
+  default     = "3.13.1"
 }
