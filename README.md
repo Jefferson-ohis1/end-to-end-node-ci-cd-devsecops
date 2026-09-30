@@ -1,4 +1,4 @@
-# End-to-End Node.js CI/CD & DevSecOps Pipeline on AWS
+# End-to-End Node.js CI/CD & DevSecOps Platform on AWS
 
 ![AWS](https://img.shields.io/badge/AWS-Cloud-orange?logo=amazonaws)
 ![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?logo=terraform)
@@ -15,7 +15,7 @@
 ![Grafana](https://img.shields.io/badge/Grafana-Visualization-F46800?logo=grafana)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-> A comprehensive portfolio project demonstrating modern DevOps and DevSecOps practices across application development, Infrastructure as Code, CI/CD automation, security validation, containerization, Kubernetes deployment, runtime security, observability, repository governance, and cloud-native CI/CD.
+> A hands-on portfolio project demonstrating an end-to-end Node.js CI/CD and DevSecOps platform using AWS, Terraform, Jenkins, GitHub Actions, Docker, Kubernetes, security automation, repository governance, observability, and infrastructure lifecycle management.
 
 ---
 
@@ -23,102 +23,78 @@
 
 1. [Project Overview](#project-overview)
 2. [Project Vision](#project-vision)
-3. [Why the Project Is Built in Phases](#why-the-project-is-built-in-phases)
-4. [Current Project Status](#current-project-status)
-5. [Project Progress](#project-progress)
-6. [Key Capabilities](#key-capabilities)
-7. [Project Objectives](#project-objectives)
-8. [Solution Architecture](#solution-architecture)
-9. [DevSecOps Lifecycle](#devsecops-lifecycle)
-10. [Technology Stack](#technology-stack)
-11. [AWS Infrastructure](#aws-infrastructure)
-12. [Repository Structure](#repository-structure)
-13. [Project Workflow](#project-workflow)
-14. [Implementation Phases](#implementation-phases)
-15. [Phase 8 — Jenkins CI/CD & DevSecOps](#phase-8--jenkins-cicd--devsecops)
-16. [Phase 9 — DevSecOps Governance & Security Hardening](#phase-9--devsecops-governance--security-hardening)
-17. [Phase 9 Governance Model](#phase-9-governance-model)
-18. [Security Controls](#security-controls)
-19. [Jenkins Pipeline Model](#jenkins-pipeline-model)
-20. [Pull Request Validation Flow](#pull-request-validation-flow)
-21. [Branch Protection Strategy](#branch-protection-strategy)
-22. [GitHub Webhook Integration](#github-webhook-integration)
-23. [Phase 9 Evidence](#phase-9-evidence)
-24. [Phase 10 — GitHub Actions CI/CD](#phase-10--github-actions-cicd)
-25. [Phase 10 Architecture](#phase-10-architecture)
-26. [GitHub Actions Workflow](#github-actions-workflow)
-27. [GitHub OIDC Authentication](#github-oidc-authentication)
-28. [ECR Image Traceability](#ecr-image-traceability)
-29. [EKS Authorization Model](#eks-authorization-model)
-30. [Cluster Platform Layer](#cluster-platform-layer)
-31. [Phase 10 Verification Boundary](#phase-10-verification-boundary)
-32. [Phase 10 Evidence](#phase-10-evidence)
-33. [Documentation](#documentation)
-34. [Screenshots](#screenshots)
-35. [Running the Application Locally](#running-the-application-locally)
-36. [Docker](#docker)
-37. [CI/CD Architecture](#cicd-architecture)
-38. [Infrastructure Lifecycle](#infrastructure-lifecycle)
-39. [Phase 10 Completion](#phase-10-completion)
-40. [Phase 11 — Complete DevSecOps Platform](#phase-11--complete-devsecops-platform)
-41. [Phase 11 Roadmap](#phase-11-roadmap)
-42. [Jenkins vs GitHub Actions](#jenkins-vs-github-actions)
-43. [Final Project Architecture](#final-project-architecture)
-44. [Project Status](#project-status)
-45. [Author](#author)
+3. [Current Project Status](#current-project-status)
+4. [Project Progress](#project-progress)
+5. [Key Capabilities](#key-capabilities)
+6. [Solution Architecture](#solution-architecture)
+7. [DevSecOps Lifecycle](#devsecops-lifecycle)
+8. [Technology Stack](#technology-stack)
+9. [AWS Infrastructure](#aws-infrastructure)
+10. [Repository Structure](#repository-structure)
+11. [Project Workflow](#project-workflow)
+12. [Implementation Phases](#implementation-phases)
+13. [Phase 8 — Jenkins CI/CD & DevSecOps](#phase-8--jenkins-cicd--devsecops)
+14. [Phase 9 — DevSecOps Governance & Security Hardening](#phase-9--devsecops-governance--security-hardening)
+15. [Phase 10 — GitHub Actions CI/CD](#phase-10--github-actions-cicd)
+16. [Phase 11 — Complete DevSecOps Platform](#phase-11--complete-devsecops-platform)
+17. [Jenkins vs GitHub Actions](#jenkins-vs-github-actions)
+18. [Security Model](#security-model)
+19. [Running the Application Locally](#running-the-application-locally)
+20. [Docker](#docker)
+21. [Infrastructure Lifecycle](#infrastructure-lifecycle)
+22. [Documentation](#documentation)
+23. [Evidence](#evidence)
+24. [Author](#author)
 
 ---
 
 # Project Overview
 
-This repository demonstrates the design, implementation, validation, and documentation of an end-to-end **Node.js CI/CD and DevSecOps platform** using AWS, Jenkins, GitHub, GitHub Actions, Docker, Kubernetes, Terraform, and multiple security and observability technologies.
+This repository demonstrates the design, implementation, validation, and documentation of an end-to-end Node.js CI/CD and DevSecOps platform on AWS.
 
-The project uses a Node.js monitoring application as the workload and progressively builds the delivery platform around it.
+The project progressively builds a complete software delivery platform around a Node.js monitoring application.
 
-The implementation covers:
+The implementation includes:
 
-* Application development and refactoring
-* Automated unit testing
-* Docker containerization
-* Infrastructure as Code with Terraform
-* AWS networking and IAM
+* Node.js and Express.js
+* Jest and Supertest
+* Docker
+* Terraform
+* Amazon VPC
+* IAM
 * Amazon ECR
 * Amazon EKS
-* Jenkins CI/CD
-* GitHub Actions CI/CD
-* SonarCloud SAST
-* Snyk SCA
-* Trivy container vulnerability scanning
-* OWASP ZAP DAST
-* Prometheus monitoring
-* Grafana visualization
+* Kubernetes
+* Jenkins
+* GitHub Actions
+* GitHub OIDC
+* SonarCloud
+* Snyk
+* Trivy
+* Gitleaks
+* OWASP ZAP
+* Prometheus-compatible application metrics
+* Grafana
 * Kubernetes Metrics Server
 * Horizontal Pod Autoscaler
 * GitHub Pull Request validation
-* Gitleaks secrets detection
-* Jenkins Multibranch Pipeline
-* GitHub/Jenkins webhook integration
-* GitHub commit status reporting
-* `main` branch protection
+* Branch protection
 * Required CI status checks
-* Controlled merge workflow
-* AWS OIDC authentication for GitHub Actions
-* EKS Access Entry authorization
+* EKS Access Entry
 * Namespace-scoped Kubernetes authorization
 * Infrastructure lifecycle management
-* Evidence-driven technical documentation
 
-Rather than implementing all capabilities simultaneously, the project is developed incrementally.
+The project is intentionally developed in phases.
 
-Each phase establishes and validates a specific engineering layer before the next layer is introduced.
+Each layer is implemented, built, tested, verified, evidenced, documented, committed, and integrated before the next layer is introduced.
 
 ---
 
 # Project Vision
 
-The objective of this project is not simply to demonstrate a collection of DevOps tools.
+The project is designed to demonstrate more than individual DevOps tools.
 
-The broader objective is to demonstrate how the individual technologies work together to support the complete software delivery lifecycle:
+It demonstrates how the tools work together across the software delivery lifecycle:
 
 ```text
 Developer
@@ -127,119 +103,54 @@ Developer
 Application Code
     │
     ▼
-Version Control
+GitHub
     │
     ▼
-Pull Request
+Pull Request / Main
     │
     ▼
-Automated Validation
+CI/CD
     │
     ▼
-Security Controls
+Security Validation
     │
     ▼
-Build
+Container Build
     │
     ▼
-Container Security
+Amazon ECR
     │
     ▼
-Container Registry
+Amazon EKS
     │
     ▼
-Kubernetes Deployment
+Kubernetes
     │
     ▼
-Runtime Security
+Application Runtime
     │
     ▼
-Monitoring
+Monitoring / Metrics
+    │
+    ▼
+Autoscaling
     │
     ▼
 Governance
     │
     ▼
-Controlled Software Delivery
+Infrastructure Lifecycle
 ```
 
-The project therefore demonstrates both sides of DevSecOps:
-
-**Software delivery automation**
-
-and
-
-**Security and governance of the changes entering that delivery process.**
-
-The project additionally demonstrates that these principles can be implemented through more than one CI/CD platform:
+The project also demonstrates two CI/CD implementations:
 
 ```text
-Jenkins CI/CD
-      +
-GitHub Actions CI/CD
+Jenkins
+   +
+GitHub Actions
 ```
 
-The purpose is to demonstrate transferable DevOps engineering principles rather than dependence on a single CI/CD product.
-
----
-
-# Why the Project Is Built in Phases
-
-The project follows an incremental engineering strategy.
-
-Each phase is:
-
-1. Designed
-2. Implemented
-3. Built
-4. Tested
-5. Verified
-6. Evidenced with screenshots
-7. Documented
-8. Committed
-9. Integrated into the repository
-
-This approach intentionally avoids introducing every technology at the beginning.
-
-The objective is to establish a working foundation first and then progressively introduce additional engineering concerns.
-
-The overall progression is:
-
-```text
-Application Foundation
-        │
-        ▼
-Application Quality
-        │
-        ▼
-Containerization
-        │
-        ▼
-Cloud Infrastructure
-        │
-        ▼
-CI/CD Platform
-        │
-        ▼
-DevSecOps Security
-        │
-        ▼
-Cloud Deployment
-        │
-        ▼
-Runtime Security & Observability
-        │
-        ▼
-Repository Governance
-        │
-        ▼
-Alternative CI/CD
-        │
-        ▼
-Complete DevSecOps Platform
-```
-
-This phased structure also makes troubleshooting easier because each layer can be validated independently before the next layer is introduced.
+The objective is to demonstrate transferable DevOps and DevSecOps engineering principles rather than dependence on a single CI/CD platform.
 
 ---
 
@@ -247,137 +158,60 @@ This phased structure also makes troubleshooting easier because each layer can b
 
 ## Overall Status
 
-**Phase 9 — DevSecOps Governance & Security Hardening: ✅ Completed**
+**Phase 11 — Complete DevSecOps Platform: ✅ Completed**
 
-The project completed the Jenkins-based end-to-end DevSecOps implementation and the repository governance layer surrounding it.
+The project's planned implementation and validation phases have been completed.
 
----
+The final Phase 11 implementation included:
 
-**Phase 10 — GitHub Actions CI/CD: ✅ Completed**
-
-Phase 10 introduced GitHub Actions as a second CI/CD implementation alongside Jenkins and established a complete GitHub Actions application delivery path using AWS OIDC, Amazon ECR, Amazon EKS, and Kubernetes.
-
-The completed Phase 10 implementation includes:
-
-* GitHub Actions workflow execution
-* Node.js dependency installation and Jest testing
-* Docker image build and verification
-* GitHub OIDC authentication
-* Dedicated AWS IAM role assumption
-* Immutable GitHub repository and branch identity in the OIDC trust policy
-* Least-privilege AWS permissions
-* Amazon ECR repository integration
-* Commit-SHA-tagged container image publishing
-* Amazon EKS authentication
-* EKS Access Entry authorization
-* Namespace-scoped Kubernetes application authorization
-* Kubernetes Deployment
-* Kubernetes LoadBalancer Service
-* Horizontal Pod Autoscaler resource
-* Deployment rollout verification
+* Recreated AWS infrastructure
+* Amazon EKS verification
+* GitHub OIDC verification
+* EKS Access Entry verification
+* Terraform-managed Metrics Server
+* Kubernetes Metrics API verification
+* GitHub Actions application deployment
+* Amazon ECR image publishing
+* Amazon EKS application deployment
 * Application health verification
-* External browser verification
-* Separate Metrics Server platform configuration
-* Metrics Server and Metrics API verification evidence
-* Phase 10 infrastructure teardown
-* Phase 10 implementation and verification documentation
+* Application metrics verification
+* Functional HPA scale-up
+* Functional HPA scale-down
+* Evidence capture
+* Terraform teardown
+* Independent AWS resource verification
 
-The Phase 10 architecture deliberately separates application CI/CD responsibilities from cluster-platform responsibilities.
-
-```text
-Application CI/CD
-        │
-        └── GitHub Actions
-                │
-                ├── OIDC
-                ├── ECR
-                └── EKS application deployment
-
-Cluster Platform
-        │
-        └── infra-phase10-platform/
-                │
-                └── Metrics Server
-```
-
-The GitHub Actions application identity is therefore not responsible for installing cluster-level platform components.
-
----
-
-## Phase 10 Verification Boundary
-
-The HPA resource was successfully created and the Kubernetes Metrics API was subsequently verified through the separate platform layer.
-
-However, actual CPU-based HPA scale-up and scale-down behavior was not marked as complete because observed scaling evidence has not yet been captured.
-
-The Phase 10 completion boundary is therefore:
+The final HPA experiment demonstrated:
 
 ```text
-GitHub Actions
-      ↓
-AWS OIDC
-      ↓
-IAM
-      ↓
-ECR
-      ↓
-EKS
-      ↓
-Kubernetes Deployment
-      ↓
-LoadBalancer
-      ↓
-Application Health
-      ↓
-HPA Resource
-      ↓
-Metrics Server Configuration
-      ↓
-Metrics API Evidence
+2 replicas
+    ↓
+4 replicas
+    ↓
+5 replicas
+    ↓
+2 replicas
 ```
 
-Functional autoscaling validation is reserved for Phase 11.
-
-The temporary Phase 10 AWS environment was destroyed after implementation and evidence collection to control ongoing cloud costs.
-
----
-
-**Phase 11 — Complete DevSecOps Platform: 🟡 In Progress**
-
-Phase 11 is the final integration and validation phase.
-
-It will:
-
-* Recreate the required AWS environment
-* Validate infrastructure reproducibility
-* Validate the cluster-platform layer
-* Deploy the application through GitHub Actions
-* Validate runtime behavior
-* Demonstrate functional HPA scale-up
-* Demonstrate functional HPA scale-down
-* Validate integrated observability
-* Review the complete security model
-* Compare Jenkins and GitHub Actions objectively
-* Validate the complete infrastructure lifecycle
-* Produce the final architecture and engineering conclusion
+The temporary AWS environment was subsequently destroyed and independently verified as absent.
 
 ---
 
 # Project Progress
 
-| Phase    | Area                                      |     Status     |
-| -------- | ----------------------------------------- | :------------: |
-| Phase 1  | Project Initialization                    |   ✅ Completed  |
-| Phase 2  | Application Refactoring                   |   ✅ Completed  |
-| Phase 3  | Unit Testing                              |   ✅ Completed  |
-| Phase 4  | Docker Containerization                   |   ✅ Completed  |
-| Phase 5  | AWS Infrastructure with Terraform         |   ✅ Completed  |
-| Phase 6  | Jenkins Server Setup                      |   ✅ Completed  |
-| Phase 7  | Jenkins Installation & Configuration      |   ✅ Completed  |
-| Phase 8  | Jenkins CI/CD & DevSecOps Integration     |   ✅ Completed  |
-| Phase 9  | DevSecOps Governance & Security Hardening |   ✅ Completed  |
-| Phase 10 | GitHub Actions CI/CD                      |   ✅ Completed  |
-| Phase 11 | Complete DevSecOps Platform               | 🟡 In Progress |
+| Phase    | Area                                      |          Status         |
+| -------- | ----------------------------------------- | :---------------------: |
+| Phase 1  | Project Initialization                    |       ✅ Completed       |
+| Phase 2  | Application Refactoring                   |       ✅ Completed       |
+| Phase 3  | Unit Testing                              |       ✅ Completed       |
+| Phase 4  | Docker Containerization                   |       ✅ Completed       |
+| Phase 5  | AWS Infrastructure with Terraform         |       ✅ Completed       |
+| Phase 6  | Jenkins Server Setup                      |       ✅ Completed       |
+| Phase 7  | Jenkins Installation & Configuration      |       ✅ Completed       |
+| Phase 8  | Jenkins CI/CD & DevSecOps Integration     |       ✅ Completed       |
+| Phase 9  | DevSecOps Governance & Security Hardening |       ✅ Completed       |
+| Phase 10 | GitHub Actions CI/CD                      |       ✅ Completed       |
+| Phase 11 | Complete DevSecOps Platform               |       ✅ Completed       |
 
 ---
 
@@ -387,398 +221,322 @@ It will:
 
 * Node.js
 * Express.js
-* Prometheus metrics
-* `/health` endpoint
-* `/metrics` endpoint
-* Automated Jest/Supertest testing
+* Prometheus-compatible metrics
+* `/health`
+* `/metrics`
+* Jest
+* Supertest
 
 ## Infrastructure
 
 * Terraform
 * Amazon VPC
-* Public and private subnets
-* Internet Gateway
-* NAT Gateway
-* Route tables
-* Security groups
-* IAM roles
-* IAM instance profiles
+* IAM
 * Amazon ECR
 * Amazon EKS
-* Jenkins EC2 infrastructure
-* GitHub Actions OIDC infrastructure
+* Kubernetes
+* GitHub OIDC
+* EKS Access Entry
 
 ## CI/CD
 
-* GitHub
 * Jenkins
 * Jenkins Multibranch Pipeline
 * Declarative Jenkins Pipeline
-* Pull Request-aware pipeline execution
-* Automated deployment pipeline
-* Pipeline-as-code
-* GitHub Actions workflow-as-code
+* GitHub Actions
+* Workflow-as-code
 * AWS OIDC authentication
 * ECR image publishing
 * EKS application deployment
+* Kubernetes rollout verification
 
 ## Security
 
 * SonarCloud SAST
 * SonarCloud Quality Gate
 * Snyk SCA
-* Trivy container scanning
-* Gitleaks secrets detection
-* OWASP ZAP DAST
-* Security quality gates
+* Gitleaks
+* Trivy
+* OWASP ZAP
 * GitHub branch protection
-* Required Jenkins status check
+* Required CI status checks
+* IAM least-privilege design
 * GitHub OIDC
-* IAM least-privilege permissions
 * EKS Access Entry
 * Namespace-scoped Kubernetes authorization
-
-## Containerization
-
-* Docker
-* Multi-stage Docker build
-* Non-root container execution
-* Amazon ECR
-* Commit-SHA image traceability
-* Container image verification
 
 ## Kubernetes
 
 * Amazon EKS
-* Kubernetes Deployments
-* Kubernetes Services
-* LoadBalancer Service
+* Deployments
+* Services
+* LoadBalancer
 * Horizontal Pod Autoscaler
-* ServiceMonitor
 * Metrics Server
 * Metrics API
+* ServiceMonitor
 * Rollout verification
 * Application health verification
 
 ## Observability
 
+* Prometheus-compatible application metrics
 * Prometheus
 * Grafana
-* Application metrics
-* Kubernetes monitoring
-* Metrics Server
-* Metrics API
-
-## Governance
-
-* Pull Request validation
-* Secrets detection before merge
-* Jenkins status reporting
-* Protected `main` branch
-* Required CI status check
-* Controlled merge workflow
-* Separation of PR validation and deployment workflows
-
----
-
-# Project Objectives
-
-The project aims to demonstrate the ability to:
-
-* Build and maintain a Node.js application suitable for automated delivery.
-* Implement automated application testing.
-* Containerize applications using Docker.
-* Provision cloud infrastructure using Terraform.
-* Configure a dedicated Jenkins CI/CD environment.
-* Integrate security throughout the software delivery lifecycle.
-* Implement SAST and SCA controls.
-* Scan container images for vulnerabilities.
-* Detect accidentally committed secrets.
-* Deploy containerized workloads to Amazon EKS.
-* Verify Kubernetes deployments automatically.
-* Implement runtime security testing with OWASP ZAP.
-* Monitor application and Kubernetes metrics.
-* Implement repository-level governance.
-* Automate Pull Request validation.
-* Protect the `main` branch using CI status requirements.
-* Implement GitHub OIDC authentication without long-lived AWS credentials.
-* Use EKS Access Entry for Kubernetes authorization.
-* Demonstrate both Jenkins and GitHub Actions CI/CD approaches.
-* Separate application CI/CD permissions from cluster-platform responsibilities.
-* Document an end-to-end DevSecOps engineering lifecycle.
-* Demonstrate infrastructure provisioning, validation, teardown, and reproducibility.
+* Kubernetes Metrics Server
+* Kubernetes Metrics API
+* `kubectl top`
+* HPA resource metrics
 
 ---
 
 # Solution Architecture
 
-The project has evolved into a layered DevSecOps architecture.
+The final project contains two complementary CI/CD implementations.
+
+## Jenkins Architecture
 
 ```text
-                         Developer
-                             │
-                             ▼
-                    GitHub Repository
-                             │
-              ┌──────────────┴──────────────┐
-              │                             │
-              ▼                             ▼
-        Pull Request                  Push / Merge
-              │                             │
-              ▼                             ▼
-      Jenkins PR Validation            Jenkins
-              │                             │
-      ┌───────┼────────┐                    │
-      │       │        │                    ▼
-      ▼       ▼        ▼               Full CI/CD
-   Gitleaks  Jest  SonarCloud               │
-                       │                    │
-                       ▼                    │
-                     Snyk                   │
-              │                             ▼
-              ▼                           Docker
-        GitHub Status                       │
-              │                             ▼
-              ▼                           Trivy
-      Branch Protection                     │
-              │                             ▼
-              ▼                           ECR
-        Merge to main                       │
-                                            ▼
-                                           EKS
-                                            │
-                          ┌─────────────────┼────────────────┐
-                          │                 │                │
-                          ▼                 ▼                ▼
-                     Kubernetes        Prometheus        OWASP ZAP
-                     Verification           │
-                          │                 ▼
-                          │              Grafana
-                          │
-                          ▼
-                  Running Application
+GitHub
+   │
+   ▼
+Pull Request
+   │
+   ▼
+Jenkins Multibranch
+   │
+   ▼
+PR Validation
+   │
+   ├── Gitleaks
+   ├── Jest
+   ├── SonarCloud
+   └── Snyk
+   │
+   ▼
+GitHub Status
+   │
+   ▼
+Branch Protection
+   │
+   ▼
+Merge to main
+   │
+   ▼
+Jenkins CI/CD
+   │
+   ├── Test
+   ├── Security
+   ├── Docker
+   ├── Trivy
+   ├── ECR
+   ├── EKS
+   ├── Kubernetes Verification
+   ├── Application Health
+   └── OWASP ZAP
+```
 
-Additional CI/CD implementation:
+## GitHub Actions Architecture
 
+```text
 GitHub
    │
    ▼
 GitHub Actions
    │
-   ├── Node.js CI
+   ├── Node.js
+   ├── npm ci
    ├── Jest
    ├── Docker Build
-   ├── OIDC
-   ├── ECR
-   └── EKS
+   └── Docker Verification
+          │
+          ▼
+      GitHub OIDC
+          │
+          ▼
+       AWS IAM
+          │
+       ┌──┴──┐
+       ▼     ▼
+      ECR   EKS
+             │
+             ▼
+        Kubernetes
+             │
+        ┌────┼────┐
+        ▼    ▼    ▼
+   Deployment Service HPA
+             │
+             ▼
+        Application
 ```
 
-The Phase 10 architecture additionally introduces a separate platform layer:
+## Cluster Platform Architecture
 
 ```text
-                    Existing EKS Cluster
-                            │
-                            ▼
-                 infra-phase10-platform/
-                            │
-                            ▼
-                     Terraform
-                            │
-                            ▼
-                         Helm
-                            │
-                            ▼
-                    Metrics Server
-                            │
-                            ▼
-                      Metrics API
-                            │
-                            ▼
-                         HPA
+Amazon EKS
+     │
+     ▼
+Terraform
+     │
+     ▼
+Helm
+     │
+     ▼
+Metrics Server
+     │
+     ▼
+Metrics API
+     │
+     ▼
+HPA
+```
+
+The application CI/CD identity does not install Metrics Server.
+
+The cluster-platform layer is managed separately through:
+
+```text
+infra-phase10-platform/
 ```
 
 ---
 
 # DevSecOps Lifecycle
 
-The completed Jenkins-based lifecycle is:
+The completed project demonstrates:
 
 ```text
-GitHub
-   │
-   ▼
-Pull Request / Main
-   │
-   ▼
-Jenkins
-   │
-   ├── PR Validation
-   │     ├── Gitleaks
-   │     ├── Dependency Validation
-   │     ├── Jest
-   │     ├── SonarCloud
-   │     └── Snyk
-   │
-   └── Main / Normal Build
-         ├── Dependency Installation
-         ├── Unit Tests
-         ├── SonarCloud
-         ├── Snyk
-         ├── Docker Build
-         ├── Trivy
-         ├── ECR
-         ├── EKS
-         ├── Kubernetes Verification
-         ├── Application Health
-         ├── HPA / Metrics Verification
-         ├── Prometheus Verification
-         └── OWASP ZAP
+Source Control
+      ↓
+Pull Request
+      ↓
+Automated Validation
+      ↓
+Security Controls
+      ↓
+Unit Testing
+      ↓
+Container Build
+      ↓
+Container Security
+      ↓
+Amazon ECR
+      ↓
+Amazon EKS
+      ↓
+Kubernetes
+      ↓
+Application Health
+      ↓
+Metrics
+      ↓
+Autoscaling
+      ↓
+Governance
+      ↓
+Infrastructure Teardown
+      ↓
+Resource Verification
 ```
 
-The GitHub Actions lifecycle is:
+The lifecycle also demonstrates separation of:
 
 ```text
-GitHub
-   │
-   ▼
-GitHub Actions
-   │
-   ├── Checkout
-   ├── Node.js 24
-   ├── npm ci
-   ├── Jest
-   ├── Docker Build
-   ├── Docker Verification
-   │
-   ▼
-GitHub OIDC
-   │
-   ▼
-AWS IAM Role
-   │
-   ├── ECR
-   │
-   └── EKS
-          │
-          ▼
-   Kubernetes Deployment
-          │
-          ├── Service
-          └── HPA
-          │
-          ▼
-   Rollout Verification
-          │
-          ▼
-   Application Health
+Application Delivery
+        │
+        ├── Jenkins
+        └── GitHub Actions
+
+Cluster Platform
+        │
+        └── Terraform + Helm
 ```
 
 ---
 
 # Technology Stack
 
-| Layer               | Technology                   | Purpose                          |
-| ------------------- | ---------------------------- | -------------------------------- |
-| Application         | Node.js                      | Application runtime              |
-| Framework           | Express.js                   | HTTP application framework       |
-| Metrics             | `prom-client`                | Prometheus metrics               |
-| Testing             | Jest                         | Unit testing                     |
-| API Testing         | Supertest                    | HTTP endpoint testing            |
-| Version Control     | Git                          | Source control                   |
-| Repository          | GitHub                       | Source hosting and collaboration |
-| IaC                 | Terraform                    | AWS infrastructure provisioning  |
-| Cloud               | AWS                          | Cloud infrastructure             |
-| CI/CD               | Jenkins                      | Pipeline automation              |
-| PR Automation       | Jenkins Multibranch Pipeline | PR-aware CI                      |
-| Code Security       | SonarCloud                   | SAST                             |
-| Dependency Security | Snyk                         | SCA                              |
-| Secrets Detection   | Gitleaks                     | Secret detection                 |
-| Containerization    | Docker                       | Application packaging            |
-| Container Security  | Trivy                        | Image vulnerability scanning     |
-| Registry            | Amazon ECR                   | Container image registry         |
-| Orchestration       | Amazon EKS                   | Kubernetes platform              |
-| Deployment          | Kubernetes                   | Application deployment           |
-| Runtime Security    | OWASP ZAP                    | DAST                             |
-| Monitoring          | Prometheus                   | Metrics collection               |
-| Visualization       | Grafana                      | Monitoring dashboards            |
-| Alternative CI/CD   | GitHub Actions               | GitHub-native automation         |
-| AWS Authentication  | GitHub OIDC                  | Short-lived AWS authentication   |
-| Kubernetes Metrics  | Metrics Server               | Resource metrics API             |
+| Layer              | Technology       | Purpose                           |
+| ------------------ | ---------------- | --------------------------------- |
+| Application        | Node.js          | Application runtime               |
+| Framework          | Express.js       | HTTP application framework        |
+| Testing            | Jest / Supertest | Automated testing                 |
+| Containerization   | Docker           | Application packaging             |
+| IaC                | Terraform        | Infrastructure automation         |
+| CI/CD              | Jenkins          | CI/CD automation                  |
+| CI/CD              | GitHub Actions   | GitHub-native CI/CD               |
+| Authentication     | GitHub OIDC      | Short-lived AWS authentication    |
+| Registry           | Amazon ECR       | Container image registry          |
+| Orchestration      | Amazon EKS       | Kubernetes platform               |
+| Security           | SonarCloud       | SAST                              |
+| Security           | Snyk             | SCA                               |
+| Security           | Trivy            | Container vulnerability scanning  |
+| Security           | Gitleaks         | Secret detection                  |
+| Runtime Security   | OWASP ZAP        | DAST                              |
+| Monitoring         | Prometheus       | Metrics collection                |
+| Visualization      | Grafana          | Metrics visualization             |
+| Kubernetes Metrics | Metrics Server   | Resource metrics API              |
+| Autoscaling        | HPA              | CPU-based workload scaling        |
+| Governance         | GitHub           | Pull Requests and branch controls |
 
 ---
 
 # AWS Infrastructure
 
-Terraform was used to provision the cloud infrastructure required by the project.
-
-The original infrastructure included:
+The original project infrastructure included:
 
 ```text
 AWS
 │
 ├── VPC
-│
-├── Public Subnets
-│
-├── Private Subnets
-│
+├── Public / Private Networking
 ├── Internet Gateway
-│
 ├── NAT Gateway
-│
 ├── Route Tables
-│
 ├── Security Groups
-│
-├── IAM Roles
-│
-├── IAM Instance Profiles
-│
+├── IAM
 ├── Amazon ECR
-│
 ├── Amazon EKS
-│
 └── Jenkins EC2 Infrastructure
 ```
 
-The isolated Phase 10 application infrastructure is represented separately under:
+The isolated Phase 10 infrastructure was managed separately:
 
 ```text
 infra-phase10/
 ```
 
-Its responsibilities include the Phase 10 AWS environment required for:
+Its responsibilities included:
 
-* VPC networking
-* Amazon ECR
-* Amazon EKS
-* IAM
-* GitHub Actions OIDC
-* GitHub Actions IAM role
-* EKS Access Entry
-* EKS authorization
+```text
+VPC
+ECR
+EKS
+IAM
+GitHub OIDC
+GitHub Actions IAM Role
+EKS Access Entry
+Kubernetes authorization
+```
 
-The Phase 10 cluster-platform layer is isolated under:
+The cluster-platform layer was separated under:
 
 ```text
 infra-phase10-platform/
 ```
 
-Its responsibility is to manage cluster-level platform components such as Metrics Server.
-
-The primary AWS region used during implementation was:
+Its responsibility was:
 
 ```text
-us-east-1
+Terraform
+   ↓
+Helm
+   ↓
+Metrics Server
 ```
 
-## Important Infrastructure Lifecycle Note
-
-The AWS environments were intentionally used as temporary implementation and validation environments.
-
-After implementation, validation, evidence collection, and documentation, the AWS infrastructure was destroyed to avoid unnecessary ongoing cloud costs.
-
-The Terraform configurations remain in the repository so the environments can be reproduced when required.
+Temporary AWS infrastructure was destroyed after validation.
 
 ---
 
@@ -786,6 +544,7 @@ The Terraform configurations remain in the repository so the environments can be
 
 ```text
 end-to-end-node-ci-cd-devsecops/
+
 │
 ├── app/
 │   ├── app.js
@@ -809,8 +568,8 @@ end-to-end-node-ci-cd-devsecops/
 │   └── 11-complete-devsecops-platform.md
 │
 ├── infra/
-│   ├── versions.tf
 │   ├── provider.tf
+│   ├── versions.tf
 │   ├── variables.tf
 │   ├── terraform.tfvars
 │   ├── vpc.tf
@@ -824,7 +583,6 @@ end-to-end-node-ci-cd-devsecops/
 ├── infra-phase10/
 │   ├── provider.tf
 │   ├── variables.tf
-│   ├── terraform.tfvars
 │   ├── vpc.tf
 │   ├── security-groups.tf
 │   ├── iam.tf
@@ -854,7 +612,8 @@ end-to-end-node-ci-cd-devsecops/
 │   ├── 07-jenkins-installation/
 │   ├── 08-jenkins-ci-cd-devsecops-pipeline/
 │   ├── 09-devsecops-governance-and-security-hardening/
-│   └── 10-github-actions-ci-cd/
+│   ├── 10-github-actions-ci-cd/
+│   └── 11-complete-devsecops-platform/
 │
 ├── .github/
 │   └── workflows/
@@ -865,868 +624,349 @@ end-to-end-node-ci-cd-devsecops/
 └── README.md
 ```
 
-Terraform plan files are excluded from version control through:
+### Infrastructure Directory Roles
+
+The Terraform configuration is organized into three infrastructure layers:
+
+* **`infra/`** — Terraform configuration used for the earlier AWS and Jenkins infrastructure phases, including VPC, security groups, IAM, ECR, EKS, Jenkins, and associated outputs.
+* **`infra-phase10/`** — Isolated Phase 10 AWS foundation for GitHub Actions CI/CD, including AWS networking, ECR, EKS, IAM/OIDC, and GitHub Actions integration.
+* **`infra-phase10-platform/`** — Phase 11 Kubernetes platform layer that uses Terraform and Helm to manage cluster-level platform components such as Metrics Server.
+
+The AWS environments represented by these Terraform configurations were deployed and validated during the project and subsequently destroyed after evidence was captured.
+
+Terraform state files and generated plan artifacts are not included in the repository structure because they are runtime/generated artifacts rather than Terraform configuration files.
+
+Terraform plan artifacts are excluded from version control:
 
 ```gitignore
 *.tfplan
 ```
 
-This prevents generated Terraform plan artifacts from being accidentally committed to the repository.
-
 ---
 
 # Project Workflow
 
-The project follows a controlled implementation workflow:
+The project follows an evidence-driven implementation workflow:
 
 ```text
 Implement
-    │
-    ▼
+    ↓
 Build
-    │
-    ▼
+    ↓
 Verify
-    │
-    ▼
+    ↓
 Capture Evidence
-    │
-    ▼
+    ↓
 Document
-    │
-    ▼
+    ↓
 Update README
-    │
-    ▼
+    ↓
 Commit
-    │
-    ▼
+    ↓
 Push
-    │
-    ▼
+    ↓
 Verify Repository
 ```
 
-This workflow ensures that project documentation reflects functionality that has actually been implemented and validated.
+This prevents documentation from claiming functionality that has not actually been implemented and verified.
 
 ---
 
 # Implementation Phases
 
-| Phase                                                   | Description                                                                                                            | Status |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | :----: |
-| **Phase 1 — Project Initialization**                    | Established repository, application baseline, development environment, and project roadmap.                            |    ✅   |
-| **Phase 2 — Application Refactoring**                   | Refactored the Node.js application for maintainability and production-oriented operation.                              |    ✅   |
-| **Phase 3 — Unit Testing**                              | Implemented Jest and Supertest automated tests.                                                                        |    ✅   |
-| **Phase 4 — Docker Containerization**                   | Containerized the Node.js application using Docker.                                                                    |    ✅   |
-| **Phase 5 — AWS Infrastructure with Terraform**         | Provisioned networking, IAM, ECR, EKS, and supporting AWS resources.                                                   |    ✅   |
-| **Phase 6 — Jenkins Server Setup**                      | Provisioned Jenkins EC2 infrastructure using Terraform.                                                                |    ✅   |
-| **Phase 7 — Jenkins Installation & Configuration**      | Installed Jenkins and configured Docker, AWS CLI, kubectl, Helm, Trivy, credentials, and supporting tools.             |    ✅   |
-| **Phase 8 — Jenkins CI/CD & DevSecOps**                 | Implemented the end-to-end Jenkins CI/CD and DevSecOps workflow.                                                       |    ✅   |
-| **Phase 9 — DevSecOps Governance & Security Hardening** | Added PR validation, secrets detection, GitHub integration, status reporting, branch protection, and merge governance. |    ✅   |
-| **Phase 10 — GitHub Actions CI/CD**                     | Implemented GitHub Actions CI/CD using OIDC, ECR, EKS, Kubernetes, and a separate Metrics Server platform layer.       |    ✅   |
-| **Phase 11 — Complete DevSecOps Platform**              | Final integration, comparison, validation, architecture, lifecycle verification, and project conclusion.               |   🟡   |
+| Phase    | Description                          | Status |
+| -------- | ------------------------------------ | :----: |
+| Phase 1  | Project Initialization               |    ✅   |
+| Phase 2  | Application Refactoring              |    ✅   |
+| Phase 3  | Unit Testing                         |    ✅   |
+| Phase 4  | Docker Containerization              |    ✅   |
+| Phase 5  | AWS Infrastructure with Terraform    |    ✅   |
+| Phase 6  | Jenkins Server Setup                 |    ✅   |
+| Phase 7  | Jenkins Installation & Configuration |    ✅   |
+| Phase 8  | Jenkins CI/CD & DevSecOps            |    ✅   |
+| Phase 9  | Governance & Security Hardening      |    ✅   |
+| Phase 10 | GitHub Actions CI/CD                 |    ✅   |
+| Phase 11 | Complete DevSecOps Platform          |    ✅   |
 
 ---
 
 # Phase 8 — Jenkins CI/CD & DevSecOps
 
-Phase 8 transformed the Jenkins environment established in Phase 7 into an end-to-end CI/CD and DevSecOps platform.
+Phase 8 established the core Jenkins-based delivery platform.
 
-The completed workflow included:
+The workflow included:
 
 ```text
 GitHub
-   │
-   ▼
+   ↓
 Jenkins
-   │
-   ▼
-Dependency Installation
-   │
-   ▼
+   ↓
+Dependencies
+   ↓
 Jest
-   │
-   ▼
-SonarCloud SAST
-   │
-   ▼
-Quality Gate
-   │
-   ▼
-Snyk SCA
-   │
-   ▼
-Docker Build
-   │
-   ▼
+   ↓
+SonarCloud
+   ↓
+Snyk
+   ↓
+Docker
+   ↓
 Trivy
-   │
-   ▼
+   ↓
 Amazon ECR
-   │
-   ▼
+   ↓
 Amazon EKS
-   │
-   ▼
+   ↓
 Kubernetes Verification
-   │
-   ▼
+   ↓
 Application Health
-   │
-   ▼
+   ↓
 Prometheus / Grafana
-   │
-   ▼
+   ↓
 OWASP ZAP
 ```
 
 Security was integrated throughout the delivery process rather than treated as a final checkpoint.
 
-Phase 8 established the **core delivery platform**.
-
 ---
 
 # Phase 9 — DevSecOps Governance & Security Hardening
 
-Phase 9 introduced repository-level governance and security controls around the already-established Jenkins delivery platform.
+Phase 9 added governance around the Jenkins delivery platform.
 
-## Why Phase 9 Was Introduced at This Point
-
-The project deliberately did not introduce Pull Request governance and secrets detection at the beginning.
-
-Phases 1–8 first established and validated the core platform:
-
-```text
-Application
-    ↓
-Testing
-    ↓
-CI/CD
-    ↓
-SAST
-    ↓
-SCA
-    ↓
-Container Security
-    ↓
-ECR
-    ↓
-EKS
-    ↓
-Runtime Security
-    ↓
-Observability
-```
-
-Once the delivery system was operational, the next engineering question became:
-
-> **How do I govern and secure the changes entering the delivery pipeline?**
-
-This is the purpose of Phase 9.
-
----
-
-# Phase 9 Governance Model
-
-The Phase 9 model is:
+The governance flow is:
 
 ```text
 Developer
-    │
-    ▼
+    ↓
 Feature Branch
-    │
-    ▼
-GitHub Pull Request
-    │
-    ▼
-Jenkins Multibranch Pipeline
-    │
-    ▼
-PR Validation
-    │
-    ├── Gitleaks
-    ├── Dependency Validation
-    ├── Jest
-    ├── SonarCloud
-    └── Snyk
-    │
-    ▼
-GitHub Status
-    │
-    ▼
-Branch Protection
-    │
-    ▼
-Merge to main
-    │
-    ▼
-Post-Merge CI/CD
-```
-
-Phase 9 therefore establishes a governance gate between developer changes and the deployment-oriented CI/CD workflow.
-
----
-
-# Security Controls
-
-The project includes security controls at multiple layers.
-
-| Security Layer           | Control                           | Tool        |
-| ------------------------ | --------------------------------- | ----------- |
-| Source Code              | Static analysis                   | SonarCloud  |
-| Source Code              | Quality Gate                      | SonarCloud  |
-| Dependencies             | Dependency vulnerability analysis | Snyk        |
-| Secrets                  | Secret detection                  | Gitleaks    |
-| Container                | Image vulnerability scanning      | Trivy       |
-| Runtime                  | Dynamic security testing          | OWASP ZAP   |
-| Repository               | Pull Request validation           | Jenkins     |
-| Repository               | Required CI status                | GitHub      |
-| Repository               | Protected `main` branch           | GitHub      |
-| AWS Authentication       | Short-lived OIDC authentication   | GitHub OIDC |
-| AWS Authorization        | Dedicated IAM role                | AWS IAM     |
-| Kubernetes Authorization | EKS Access Entry                  | Amazon EKS  |
-
-### Security Model
-
-```text
-Source Code
-    │
-    ├── SonarCloud
-    │
-    └── Gitleaks
-         │
-         ▼
-Dependencies
-    │
-    └── Snyk
-         │
-         ▼
-Docker Image
-    │
-    └── Trivy
-         │
-         ▼
-Running Application
-    │
-    └── OWASP ZAP
-         │
-         ▼
-Repository Governance
-    │
-    ├── Pull Request
-    ├── Jenkins Status
-    └── Branch Protection
-```
-
----
-
-# Jenkins Pipeline Model
-
-Phase 9 consolidated Pull Request validation into the unified `Jenkinsfile`.
-
-The pipeline uses Jenkins Declarative Pipeline conditions to distinguish Pull Request builds from normal/mainline builds.
-
-## Pull Request Path
-
-```text
+    ↓
 Pull Request
-    │
-    ▼
-changeRequest()
-    │
-    ├── Gitleaks
-    ├── npm / Dependency Validation
-    ├── Jest
-    ├── SonarCloud
-    └── Snyk
-```
-
-## Main / Normal Build Path
-
-```text
-Normal Build
-    │
-    ▼
-not changeRequest()
-    │
-    ├── Docker
-    ├── Trivy
-    ├── ECR
-    ├── EKS
-    ├── Kubernetes Verification
-    ├── Application Health
-    ├── Monitoring Verification
-    └── OWASP ZAP
-```
-
-This separation prevents a Pull Request validation build from unnecessarily performing deployment-oriented activities.
-
----
-
-# Pull Request Validation Flow
-
-The completed Pull Request workflow is:
-
-```text
-Developer
-    │
-    ▼
-Feature Branch
-    │
-    ▼
-Pull Request → main
-    │
-    ▼
-GitHub
-    │
-    ▼
-Jenkins Multibranch Pipeline
-    │
-    ▼
-PR Validation
-    │
-    ├── Gitleaks
-    ├── npm / Dependencies
-    ├── Jest
-    ├── SonarCloud
-    └── Snyk
-    │
-    ▼
+    ↓
+Jenkins Multibranch
+    ↓
+Gitleaks
+    ↓
+Jest
+    ↓
+SonarCloud
+    ↓
+Snyk
+    ↓
 GitHub Status
-    │
-    ▼
+    ↓
 Branch Protection
-    │
-    ▼
+    ↓
 Merge
 ```
 
-A successful PR validation does not automatically mean that every deployment stage is executed.
+Phase 9 introduced:
 
-Phase 9 intentionally separates:
-
-**pre-merge validation**
-
-from
-
-**post-merge/deployment-oriented CI/CD**.
-
----
-
-# Branch Protection Strategy
-
-The `main` branch was protected as part of Phase 9 governance.
-
-The implemented controls include:
-
-* Pull Request-based changes
-* Required status checks
-* Jenkins status validation
-* Branch synchronization requirement
-* Controlled merge workflow
-
-The required Jenkins status check is:
-
-```text
-continuous-integration/jenkins/branch
-```
-
-## Human Review
-
-Required review approval was **not enabled**.
-
-This was an intentional project-level decision because this is a single-developer portfolio project.
-
-The governance demonstration therefore focuses on automated validation and merge controls rather than requiring a second human reviewer.
-
----
-
-# GitHub Webhook Integration
-
-GitHub/Jenkins integration was configured to allow repository events to trigger and update the Jenkins Multibranch Pipeline workflow.
-
-The Jenkins webhook endpoint used during live implementation was:
-
-```text
-http://JENKINS-PUBLIC-IP:8080/github-webhook/
-```
-
-The webhook delivery was successfully verified during live implementation.
-
-> **Production consideration:** the live project environment used a temporary public Jenkins endpoint for portfolio validation. A production implementation should use HTTPS, appropriate authentication/secrets, network restrictions, and hardened Jenkins exposure.
-
----
-
-# Phase 9 Evidence
-
-Phase 9 implementation and validation evidence is stored under:
-
-```text
-screenshots/09-devsecops-governance-and-security-hardening/
-```
-
-Evidence includes screenshots covering:
-
-* GitHub Pull Request
-* Jenkins Multibranch Pipeline
-* PR validation stages
-* Successful validation
-* GitHub status checks
+* Pull Request validation
+* Gitleaks
+* Jenkins/GitHub status integration
 * Branch protection
-* Merge state
-* Repository workflow
-
-Representative evidence includes:
-
-```text
-jenkins-multi-branch-pipeline.png
-github-webhook.png
-github-commit-verification.png
-branch-protection-rule.png
-github-pull-request-validation.png
-github-pr-ready-to-merge.png
-github-pr-1-merged.png
-github-main-merged-phase9.png
-jenkins-pr-validation-stage-view.png
-jenkins-pr-validation-build-2-stage-view.png
-jenkins-pr-validation-build-2-success.png
-```
+* Required CI status checks
+* Controlled merge workflow
+* Separation of PR validation and deployment-oriented CI/CD
 
 ---
 
 # Phase 10 — GitHub Actions CI/CD
 
-Phase 10 introduced GitHub Actions as a second CI/CD implementation alongside the completed Jenkins platform.
+Phase 10 introduced GitHub Actions as a second CI/CD implementation.
 
-The objective was not to replace Jenkins.
-
-Instead, Phase 10 demonstrates that the project's application delivery objectives can also be implemented using GitHub-native CI/CD and AWS OIDC authentication.
-
-The completed workflow is:
+The application delivery path was:
 
 ```text
 GitHub
-   │
-   ▼
+   ↓
 GitHub Actions
-   │
-   ├── Checkout
-   ├── Node.js 24
-   ├── npm ci
-   ├── Jest
-   ├── Docker Build
-   └── Docker Verification
-   │
-   ▼
+   ↓
+Node.js 24
+   ↓
+npm ci
+   ↓
+Jest
+   ↓
+Docker Build
+   ↓
 GitHub OIDC
-   │
-   ▼
-AWS IAM Role
-   │
-   ├── Amazon ECR
-   │
-   └── Amazon EKS
-          │
-          ▼
-   Kubernetes Deployment
-          │
-          ├── Service
-          └── HPA
-          │
-          ▼
-   Rollout Verification
-          │
-          ▼
-   Application Health
+   ↓
+AWS IAM
+   ↓
+Amazon ECR
+   ↓
+Amazon EKS
+   ↓
+Kubernetes
 ```
+
+Phase 10 established:
+
+* GitHub Actions workflow execution
+* Node.js CI
+* Jest testing
+* Docker build verification
+* GitHub OIDC
+* AWS IAM role assumption
+* ECR integration
+* SHA-tagged image publishing
+* EKS authentication
+* EKS Access Entry
+* Namespace-scoped application authorization
+* Kubernetes Deployment
+* LoadBalancer Service
+* HPA resource
+* Rollout verification
+* Application health verification
+
+Metrics Server was deliberately separated from the application workflow.
 
 ---
 
-# Phase 10 Architecture
+# Phase 11 — Complete DevSecOps Platform
 
-Phase 10 is intentionally divided into two responsibilities.
+Phase 11 completed the final integration and validation scope.
 
-## Application CI/CD
+## Platform Layer
 
-```text
-GitHub
-   │
-   ▼
-GitHub Actions
-   │
-   ▼
-AWS OIDC
-   │
-   ▼
-IAM Role
-   │
-   ├── ECR
-   │
-   └── EKS
-          │
-          ▼
-   Kubernetes Application
-```
-
-## Cluster Platform
+Terraform managed Metrics Server through Helm:
 
 ```text
-Existing EKS Cluster
-        │
-        ▼
-infra-phase10-platform/
-        │
-        ▼
 Terraform
-        │
-        ▼
+   ↓
 Helm
-        │
-        ▼
-Metrics Server
-        │
-        ▼
+   ↓
+Metrics Server 0.8.1
+   ↓
 Metrics API
-        │
-        ▼
-HPA Metrics Dependency
 ```
 
-The application CI/CD workflow does **not** install Metrics Server.
-
-This separation prevents the GitHub Actions application identity from requiring cluster-administrator permissions merely to deploy the application.
-
----
-
-# GitHub Actions Workflow
-
-The Phase 10 workflow performs the following application-delivery responsibilities:
+The Helm chart was pinned to:
 
 ```text
-Build and Test
-      │
-      ├── Checkout
-      ├── Node.js 24
-      ├── npm ci
-      ├── Jest
-      ├── Docker Build
-      └── Docker Verification
-              │
-              ▼
-       AWS Deployment Job
-              │
-              ├── AWS OIDC Authentication
-              ├── AWS Identity Verification
-              ├── ECR Verification
-              ├── ECR Image Push
-              ├── EKS Authentication
-              ├── Kubernetes Authorization
-              ├── Deployment
-              ├── Service
-              ├── HPA
-              ├── Rollout Verification
-              └── Application Health
+3.13.1
 ```
 
-The workflow uses the Git commit SHA as the container image identifier.
+The platform was successfully applied and verified.
 
-```text
-Git Commit SHA
-      │
-      ▼
-Docker Image Tag
-      │
-      ▼
-Amazon ECR
-      │
-      ▼
-Amazon EKS
-```
+## Application Delivery
 
-This provides a direct relationship between:
-
-```text
-Git Commit
-     ↓
-Container Image
-     ↓
-Kubernetes Deployment
-```
-
----
-
-# GitHub OIDC Authentication
-
-Phase 10 uses GitHub's OIDC federation model rather than long-lived AWS access keys.
-
-The authentication model is:
+GitHub Actions successfully delivered the application through:
 
 ```text
 GitHub Actions
-      │
-      │ OIDC token
-      ▼
-AWS IAM OIDC Provider
-      │
-      ▼
-Dedicated GitHub Actions IAM Role
-      │
-      ▼
-Temporary AWS Credentials
-      │
-      ▼
-ECR / EKS
+   ↓
+OIDC
+   ↓
+AWS IAM
+   ↓
+ECR
+   ↓
+EKS
+   ↓
+Kubernetes
 ```
 
-The trust policy is restricted using the GitHub repository and branch identity.
+## Runtime
 
-The Phase 10 configuration also uses immutable GitHub repository identity information in the OIDC trust policy.
+The application was verified through:
 
-The workflow therefore avoids storing permanent AWS access keys as GitHub Actions credentials.
+```text
+/health
+/metrics
+```
+
+## HPA
+
+Functional CPU-based autoscaling was demonstrated:
+
+```text
+2
+↓
+4
+↓
+5
+↓
+2
+```
+
+This establishes both scale-up and scale-down behavior rather than merely proving that an HPA object exists.
+
+## Teardown
+
+The temporary environment was destroyed after validation.
+
+Independent AWS checks confirmed:
+
+```text
+Terraform State → Clean
+VPC             → Removed
+EKS             → Removed
+ECR             → Removed
+Metrics Server  → Removed
+```
 
 ---
 
-# ECR Image Traceability
+# Jenkins vs GitHub Actions
 
-The application image is tagged using the Git commit SHA.
+The project demonstrates both platforms without treating either as universally superior.
 
-Conceptually:
+| Area                   | Jenkins                          | GitHub Actions                    |
+| ---------------------- | -------------------------------- | --------------------------------- |
+| Pipeline definition    | `Jenkinsfile`                    | Workflow YAML                     |
+| Repository integration | GitHub integration / Multibranch | Native GitHub                     |
+| PR validation          | Multibranch Pipeline             | Workflow-based                    |
+| Testing                | Jest                             | Jest                              |
+| Container build        | Docker                           | Docker                            |
+| Registry               | Amazon ECR                       | Amazon ECR                        |
+| Kubernetes             | Amazon EKS                       | Amazon EKS                        |
+| AWS authentication     | Jenkins credential / role model  | GitHub OIDC                       |
+| Infrastructure         | Jenkins server                   | GitHub-hosted runners             |
+| Application deployment | EKS                              | EKS                               |
+| Platform dependency    | Separate platform controls       | Separate Terraform platform layer |
 
-```text
-GitHub Commit
-     │
-     ▼
-c975353...
-     │
-     ▼
-node-monitoring-app:c975353...
-     │
-     ▼
-Amazon ECR
-     │
-     ▼
-Amazon EKS
-```
-
-A previously verified Phase 10 deployment used commit:
-
-```text
-c97535309874695d6a8de6cb2b5c4d32bff55648
-```
-
-with the corresponding ECR image digest:
-
-```text
-sha256:4a3f65caaea7e2b9012e162368684e6d254a30f93061f928fe76d1544ba02941
-```
-
-This establishes immutable traceability between source code, container image, and deployment.
+The project demonstrates that the same application delivery objectives can be implemented through different CI/CD execution models.
 
 ---
 
-# EKS Authorization Model
+# Security Model
 
-Phase 10 uses Amazon EKS Access Entry for the GitHub Actions identity.
+Security controls were implemented at multiple layers.
 
-The model is:
+| Layer        | Control                 | Technology       |
+| ------------ | ----------------------- | ---------------- |
+| Source Code  | SAST                    | SonarCloud       |
+| Source Code  | Secrets Detection       | Gitleaks         |
+| Dependencies | SCA                     | Snyk             |
+| Container    | Vulnerability Scanning  | Trivy            |
+| Runtime      | DAST                    | OWASP ZAP        |
+| Repository   | PR Validation           | Jenkins / GitHub |
+| Repository   | Branch Protection       | GitHub           |
+| AWS          | OIDC Authentication     | GitHub OIDC      |
+| AWS          | Least-Privilege Role    | IAM              |
+| Kubernetes   | Access Entry            | Amazon EKS       |
+| Kubernetes   | Namespace Authorization | EKS/Kubernetes   |
 
-```text
-GitHub Actions
-      │
-      ▼
-AWS OIDC
-      │
-      ▼
-IAM Role
-      │
-      ▼
-EKS Access Entry
-      │
-      ▼
-Amazon EKS Policy Association
-      │
-      ▼
-Namespace-Scoped Application Access
-```
-
-The GitHub Actions role was intentionally scoped to the Kubernetes application deployment responsibilities required by the workflow.
-
-Cluster-wide node administration was not added merely for convenience.
-
-For example, the workflow does not depend on cluster-scoped node listing.
-
-This follows the principle that the CI/CD identity should receive the permissions required to deploy the application rather than broad cluster-administrator access.
-
----
-
-# Cluster Platform Layer
-
-Metrics Server is treated as a cluster-platform component rather than an application CI/CD component.
-
-The platform configuration is isolated under:
+The security model therefore spans:
 
 ```text
-infra-phase10-platform/
+Source
+  ↓
+Dependencies
+  ↓
+Container
+  ↓
+AWS
+  ↓
+Kubernetes
+  ↓
+Runtime
+  ↓
+Repository Governance
 ```
-
-The platform layer contains:
-
-```text
-provider.tf
-variables.tf
-metrics-server.tf
-.terraform.lock.hcl
-```
-
-Terraform manages the Helm release.
-
-The Metrics Server chart is pinned to:
-
-```text
-3.13.0
-```
-
-The intended architecture is:
-
-```text
-EKS Cluster
-    │
-    ▼
-Terraform Platform Root
-    │
-    ▼
-Helm Provider
-    │
-    ▼
-Metrics Server Helm Release
-    │
-    ▼
-Metrics API
-    │
-    ▼
-HPA
-```
-
-The platform Terraform configuration was validated locally.
-
-Live Terraform plan/apply against an existing EKS cluster is intentionally part of Phase 11 because the Phase 10 AWS environment was destroyed after evidence collection.
-
----
-
-# Phase 10 Verification Boundary
-
-Phase 10 established and verified:
-
-| Capability                                 | Phase 10 Status |
-| ------------------------------------------ | :-------------: |
-| GitHub Actions workflow                    |        ✅        |
-| Node.js dependency installation            |        ✅        |
-| Jest testing                               |        ✅        |
-| Docker build                               |        ✅        |
-| Docker verification                        |        ✅        |
-| GitHub OIDC authentication                 |        ✅        |
-| IAM role assumption                        |        ✅        |
-| ECR integration                            |        ✅        |
-| SHA-tagged image                           |        ✅        |
-| EKS authentication                         |        ✅        |
-| EKS Access Entry                           |        ✅        |
-| Namespace-scoped application authorization |        ✅        |
-| Kubernetes Deployment                      |        ✅        |
-| Kubernetes Service                         |        ✅        |
-| LoadBalancer exposure                      |        ✅        |
-| Rollout verification                       |        ✅        |
-| Application health verification            |        ✅        |
-| Browser verification                       |        ✅        |
-| HPA resource creation                      |        ✅        |
-| Metrics Server configuration               |        ✅        |
-| Metrics API evidence                       |        ✅        |
-| Functional HPA scale-up                    |     Phase 11    |
-| Functional HPA scale-down                  |     Phase 11    |
-| Final integrated observability validation  |     Phase 11    |
-| Final infrastructure lifecycle validation  |     Phase 11    |
-
-The distinction is important:
-
-**HPA resource creation is not the same as demonstrating functional autoscaling.**
-
-Phase 11 will provide the controlled runtime experiment required to demonstrate actual scale-up and scale-down behavior.
-
----
-
-# Phase 10 Evidence
-
-Phase 10 evidence is stored under:
-
-```text
-screenshots/10-github-actions-ci-cd/
-```
-
-The captured evidence includes:
-
-```text
-01-github-actions-terraform-plan.png
-02-github-repository-secret-config.png
-03-github-actions-success.png
-04-aws-deployment-successful-job.png
-05-github-actions-ecr-eks-success.png
-06-ecr-sha-tagged-image.png
-07-eks-deployment-and-pods.png
-08-eks-loadbalancer-service.png
-09-application-health.png
-10-application-health-browser-render.png
-11-hpa-created-metrics-unavailable.png
-12-metrics-server-and-api-success.png
-13-metrics-server-pod-metrics.png
-```
-
-The evidence demonstrates the progression from GitHub Actions execution through AWS authentication, ECR/EKS deployment, Kubernetes runtime verification, and the separate Metrics Server platform verification.
-
-The Metrics Server evidence does **not** imply that the GitHub Actions application workflow installed Metrics Server.
-
----
-
-# Documentation
-
-Detailed implementation documentation is available in the `docs/` directory.
-
-| Document                                            | Description                                                                                                               |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `01-project-initialization.md`                      | Project foundation, repository, environment, and initial roadmap                                                          |
-| `02-application-refactoring.md`                     | Node.js application restructuring and production-oriented improvements                                                    |
-| `03-unit-testing.md`                                | Jest and Supertest automated testing                                                                                      |
-| `04-containerization.md`                            | Docker containerization                                                                                                   |
-| `05-terraform-infrastructure.md`                    | AWS infrastructure provisioning with Terraform                                                                            |
-| `06-jenkins-server-setup.md`                        | Jenkins EC2 infrastructure provisioning                                                                                   |
-| `07-jenkins-installation.md`                        | Jenkins installation and DevOps toolchain configuration                                                                   |
-| `08-jenkins-ci-cd-devsecops-pipeline.md`            | End-to-end Jenkins CI/CD and DevSecOps implementation                                                                     |
-| `09-devsecops-governance-and-security-hardening.md` | Pull Request validation, Gitleaks, GitHub/Jenkins integration, branch protection, governance, and Phase 10 transition     |
-| `10-github-actions-ci-cd.md`                        | GitHub Actions CI/CD, AWS OIDC, ECR, EKS, Kubernetes deployment, HPA boundary, and separate Metrics Server platform layer |
-| `11-complete-devsecops-platform.md`                 | Final Phase 11 integration, validation, comparison, architecture, lifecycle, and project conclusion                       |
-
----
-
-# Screenshots
-
-Screenshots are organized by implementation phase:
-
-```text
-screenshots/
-│
-├── 01-project-initialization/
-├── 02-application-refactoring/
-├── 03-unit-testing/
-├── 04-containerization/
-├── 05-terraform-infrastructure/
-├── 06-jenkins-server-setup/
-├── 07-jenkins-installation/
-├── 08-jenkins-ci-cd-devsecops-pipeline/
-├── 09-devsecops-governance-and-security-hardening/
-└── 10-github-actions-ci-cd/
-```
-
-Each phase's evidence is captured after implementation and verification.
 
 ---
 
@@ -1742,7 +982,7 @@ Install:
 * Docker Desktop
 * Visual Studio Code
 
-Optional cloud/deployment tooling:
+Optional deployment tooling:
 
 * AWS CLI
 * Terraform
@@ -1813,23 +1053,13 @@ ok
 GET /metrics
 ```
 
-The metrics endpoint exposes Prometheus-compatible application metrics.
-
----
-
-## Run Tests
-
-```bash
-npm test
-```
-
-The project uses Jest and Supertest for automated testing.
+The endpoint exposes Prometheus-compatible application metrics.
 
 ---
 
 # Docker
 
-## Build the Image
+## Build
 
 From the `app/` directory:
 
@@ -1837,7 +1067,7 @@ From the `app/` directory:
 docker build -t node-monitoring-app:v1 .
 ```
 
-## Run the Container
+## Run
 
 ```bash
 docker run -d \
@@ -1846,358 +1076,15 @@ docker run -d \
   node-monitoring-app:v1
 ```
 
-The application can then be accessed through:
-
-```text
-http://localhost:3000
-```
-
-The production-oriented Dockerfile uses a multi-stage build and runs the application as the non-root `node` user.
-
----
-
-# CI/CD Architecture
-
-The project demonstrates two CI/CD implementations.
-
-## Jenkins
-
-```text
-                    GitHub
-                       │
-                       ▼
-                  Jenkins
-                       │
-             ┌─────────┴─────────┐
-             │                   │
-             ▼                   ▼
-        Pull Request        Main / Merge
-             │                   │
-             ▼                   ▼
-      PR Validation          Full CI/CD
-             │                   │
-             ├── Gitleaks        ├── Test
-             ├── Jest            ├── SonarCloud
-             ├── SonarCloud      ├── Snyk
-             └── Snyk            ├── Docker
-                                 ├── Trivy
-                                 ├── ECR
-                                 ├── EKS
-                                 ├── Verification
-                                 └── OWASP ZAP
-```
-
-## GitHub Actions
-
-```text
-                    GitHub
-                       │
-                       ▼
-                GitHub Actions
-                       │
-             ┌─────────┴─────────┐
-             │                   │
-             ▼                   ▼
-       Build / Test         AWS Deployment
-             │                   │
-             ├── Node.js         ├── OIDC
-             ├── npm ci          ├── IAM
-             ├── Jest            ├── ECR
-             └── Docker          └── EKS
-                                      │
-                                      ▼
-                                 Kubernetes
-                                      │
-                                      ├── Deployment
-                                      ├── Service
-                                      └── HPA
-```
-
-The two implementations use the same application and target the same broader software-delivery objectives while using different CI/CD execution models.
+The Dockerfile uses a multi-stage build and runs the application as the non-root `node` user.
 
 ---
 
 # Infrastructure Lifecycle
 
-The project uses Terraform to make infrastructure reproducible.
+Terraform is used to make the infrastructure reproducible.
 
-The Phase 11 target lifecycle is:
-
-```text
-Terraform Plan
-      │
-      ▼
-Terraform Apply
-      │
-      ▼
-Platform Configuration
-      │
-      ▼
-Application Deployment
-      │
-      ▼
-Runtime Verification
-      │
-      ▼
-Evidence Capture
-      │
-      ▼
-Documentation
-      │
-      ▼
-Terraform Destroy
-      │
-      ▼
-AWS Resource Verification
-```
-
-For temporary portfolio environments, the infrastructure is intentionally destroyed after validation.
-
-This provides two benefits:
-
-1. Avoids unnecessary ongoing AWS costs.
-2. Demonstrates that the environment can be recreated from Infrastructure as Code rather than depending on manually configured resources.
-
----
-
-# Phase 10 Completion
-
-Phase 10 is considered complete based on its defined implementation scope and captured verification evidence.
-
-The completed Phase 10 path is:
-
-```text
-GitHub Actions
-      ↓
-Node.js CI
-      ↓
-Docker Build
-      ↓
-AWS OIDC
-      ↓
-IAM
-      ↓
-ECR
-      ↓
-EKS
-      ↓
-Kubernetes Deployment
-      ↓
-LoadBalancer
-      ↓
-Application Health
-      ↓
-HPA Resource
-      ↓
-Metrics Server Platform Configuration
-      ↓
-Metrics API Evidence
-```
-
-The following items are intentionally deferred to Phase 11:
-
-* Live recreation of the complete environment
-* Live Terraform plan/apply against the recreated EKS cluster
-* Functional HPA scale-up
-* Functional HPA scale-down
-* Final integrated observability validation
-* Final security integration review
-* Final Jenkins vs GitHub Actions comparison
-* Complete infrastructure lifecycle validation
-* Final project documentation
-
-Therefore, the Phase 10 completion boundary does not claim that functional autoscaling has already been demonstrated.
-
----
-
-# Phase 11 — Complete DevSecOps Platform
-
-Phase 11 is the final integration, validation, and conclusion phase defined by the project roadmap.
-
-The objective is to bring the previously completed layers together into one final end-to-end validation.
-
----
-
-# Phase 11 Roadmap
-
-## 11.1 — Recreate the Phase 10 Environment
-
-The Phase 10 AWS environment will be recreated using:
-
-```text
-infra-phase10/
-        │
-        ▼
-AWS VPC
-        │
-        ▼
-ECR
-        │
-        ▼
-EKS
-        │
-        ▼
-IAM / OIDC
-        │
-        ▼
-EKS Access Entry
-```
-
-The objective is to validate that the Phase 10 infrastructure remains reproducible after the previous environment was destroyed.
-
----
-
-## 11.2 — Validate the Cluster Platform Layer
-
-The cluster-platform configuration will be validated against the recreated EKS cluster:
-
-```text
-infra-phase10-platform/
-        │
-        ▼
-Terraform Plan
-        │
-        ▼
-Terraform Apply
-        │
-        ▼
-Helm
-        │
-        ▼
-Metrics Server
-        │
-        ▼
-Metrics API
-```
-
-This will provide live validation of the previously established platform configuration.
-
----
-
-## 11.3 — Validate GitHub Actions Application Delivery
-
-The GitHub Actions application workflow will then deploy the application:
-
-```text
-GitHub
-   ↓
-GitHub Actions
-   ↓
-OIDC
-   ↓
-IAM
-   ↓
-ECR
-   ↓
-EKS
-   ↓
-Kubernetes
-   ↓
-Application
-```
-
-The application workflow remains separate from the cluster-platform installation.
-
----
-
-## 11.4 — Validate Runtime Behavior
-
-The final runtime validation will include:
-
-* Kubernetes pods
-* Kubernetes Deployment
-* LoadBalancer Service
-* `/health`
-* `/metrics`
-* Prometheus
-* Grafana
-* Metrics Server
-* Metrics API
-* HPA
-
----
-
-## 11.5 — Functional HPA Validation
-
-The HPA will be tested using controlled application load.
-
-The intended experiment is:
-
-```text
-Normal Load
-    ↓
-2 replicas
-
-Controlled CPU Load
-    ↓
-CPU utilization increases
-    ↓
-HPA detects target breach
-    ↓
-Replica count increases
-
-Load Stops
-    ↓
-CPU utilization decreases
-    ↓
-HPA stabilization
-    ↓
-Replica count decreases
-```
-
-Both scale-up and scale-down will be supported by captured runtime evidence.
-
-This is deliberately separate from merely creating the HPA object.
-
----
-
-## 11.6 — Security Integration Review
-
-The final security review will cover:
-
-* Gitleaks
-* Jest
-* SonarCloud
-* Snyk
-* Trivy
-* OWASP ZAP
-* AWS IAM
-* GitHub OIDC
-* EKS Access Entry
-* Kubernetes namespace authorization
-* Repository governance
-* Branch protection
-* Required CI status checks
-
-The purpose is to document how the individual controls form a complete DevSecOps security model.
-
----
-
-## 11.7 — Jenkins vs GitHub Actions
-
-The final project will objectively compare the two CI/CD implementations.
-
-The comparison will cover:
-
-| Area                       | Jenkins                            | GitHub Actions                        |
-| -------------------------- | ---------------------------------- | ------------------------------------- |
-| Execution model            | Jenkins pipeline                   | GitHub workflow                       |
-| Configuration              | `Jenkinsfile`                      | Workflow YAML                         |
-| Repository integration     | GitHub integration/webhook         | Native GitHub integration             |
-| AWS authentication         | Jenkins AWS credentials/role model | GitHub OIDC                           |
-| Application deployment     | ECR/EKS                            | ECR/EKS                               |
-| PR validation              | Jenkins Multibranch                | GitHub Actions workflow capabilities  |
-| Infrastructure requirement | Jenkins server                     | GitHub-hosted workflow execution      |
-| Operational considerations | Jenkins administration             | GitHub Actions configuration          |
-| Security model             | Jenkins credentials and controls   | OIDC and repository/workflow controls |
-
-The comparison is intended to describe documented engineering differences rather than declare one platform universally superior.
-
----
-
-## 11.8 — Infrastructure Lifecycle Validation
-
-The complete lifecycle will be demonstrated:
+The validated lifecycle is:
 
 ```text
 Terraform Plan
@@ -2212,157 +1099,106 @@ Runtime Verification
       ↓
 HPA Experiment
       ↓
-Observability Validation
-      ↓
 Evidence Capture
       ↓
-Final Documentation
+Documentation
       ↓
 Terraform Destroy
       ↓
 AWS Resource Verification
 ```
 
+Temporary portfolio environments are destroyed after validation to avoid unnecessary ongoing AWS costs.
+
+The Phase 11 teardown was independently verified using AWS CLI commands in addition to Terraform's destroy output.
+
 ---
 
-## 11.9 — Final Documentation
+# Documentation
 
-The final Phase 11 document will be:
+Detailed implementation documentation is available under `docs/`.
+
+| Document                                            | Description                                                                  |
+| --------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `01-project-initialization.md`                      | Project foundation and initial roadmap                                       |
+| `02-application-refactoring.md`                     | Node.js application restructuring                                            |
+| `03-unit-testing.md`                                | Jest and Supertest testing                                                   |
+| `04-containerization.md`                            | Docker containerization                                                      |
+| `05-terraform-infrastructure.md`                    | AWS infrastructure with Terraform                                            |
+| `06-jenkins-server-setup.md`                        | Jenkins EC2 infrastructure                                                   |
+| `07-jenkins-installation.md`                        | Jenkins installation and toolchain                                           |
+| `08-jenkins-ci-cd-devsecops-pipeline.md`            | Jenkins CI/CD and DevSecOps                                                  |
+| `09-devsecops-governance-and-security-hardening.md` | PR governance and security hardening                                         |
+| `10-github-actions-ci-cd.md`                        | GitHub Actions, OIDC, ECR, EKS, Kubernetes                                   |
+| `11-complete-devsecops-platform.md`                 | Final Phase 11 integration, runtime validation, HPA, lifecycle, and teardown |
+
+---
+
+# Evidence
+
+Evidence is organized by implementation phase:
 
 ```text
-docs/11-complete-devsecops-platform.md
+screenshots/
+├── 01-project-initialization/
+├── 02-application-refactoring/
+├── 03-unit-testing/
+├── 04-containerization/
+├── 05-terraform-infrastructure/
+├── 06-jenkins-server-setup/
+├── 07-jenkins-installation/
+├── 08-jenkins-ci-cd-devsecops-pipeline/
+├── 09-devsecops-governance-and-security-hardening/
+├── 10-github-actions-ci-cd/
+└── 11-complete-devsecops-platform/
 ```
 
-It will contain:
-
-* Final architecture
-* Complete DevSecOps lifecycle
-* Jenkins implementation
-* GitHub Actions implementation
-* PR governance
-* Security controls
-* Container security
-* Amazon ECR
-* Amazon EKS
-* Kubernetes
-* Prometheus
-* Grafana
-* Metrics Server
-* HPA
-* OWASP ZAP
-* Infrastructure lifecycle
-* Jenkins vs GitHub Actions comparison
-* Lessons learned
-* Final project outcome
-
----
-
-# Final Project Architecture
-
-The intended final architecture is:
+## Phase 11 Evidence
 
 ```text
-                           Developer
-                               │
-                               ▼
-                        GitHub Repository
-                               │
-                ┌──────────────┴──────────────┐
-                │                             │
-                ▼                             ▼
-          Pull Request                  Push / Merge
-                │                             │
-                ▼                             ▼
-        Jenkins PR Validation             Jenkins
-                │                             │
-        ┌───────┼────────┐                    │
-        │       │        │                    ▼
-        ▼       ▼        ▼              Full CI/CD
-     Gitleaks  Jest  SonarCloud               │
-                       │                      │
-                       ▼                      ▼
-                      Snyk                  Docker
-                │                             │
-                ▼                             ▼
-         GitHub Status                       Trivy
-                │                             │
-                ▼                             ▼
-       Branch Protection                     ECR
-                │                             │
-                ▼                             ▼
-          Merge to main                     EKS
-                                              │
-                         ┌────────────────────┼───────────────────┐
-                         │                    │                   │
-                         ▼                    ▼                   ▼
-                   Kubernetes             Prometheus          OWASP ZAP
-                   Application                │
-                         │                    ▼
-                         │                 Grafana
-                         │
-                         ▼
-                       HPA
-                         │
-                         ▼
-                  Metrics Server
-                         │
-                         ▼
-                    Metrics API
+screenshots/11-complete-devsecops-platform/
+│
+├── 01-terraform-apply-success.png
+├── 02-metrics-server-deployment-pods.png
+├── 03-metrics-api.png
+├── 04-live-metrics.png
+├── 05-github-actions-complete-success.png
+├── 06-github-actions-aws-deployment-success.png
+├── 07-ecr-commit-image.png
+├── 08-eks-application-deployment.png
+├── 09-eks-service-and-hpa.png
+├── 10-live-application-health-and-metrics.png
+├── 11-hpa-scale-up-verification.png
+└── 12-hpa-scale-down-verification.png
+```
 
+The evidence demonstrates the complete Phase 11 progression:
 
-Additional CI/CD implementation:
-
-GitHub
-   │
-   ▼
+```text
+Terraform Platform
+      ↓
+Metrics Server
+      ↓
+Metrics API
+      ↓
 GitHub Actions
-   │
-   ├── Node.js CI
-   ├── Jest
-   ├── Docker
-   ├── OIDC
-   ├── ECR
-   └── EKS
-          │
-          ▼
-   Kubernetes Application
+      ↓
+ECR
+      ↓
+EKS
+      ↓
+Application
+      ↓
+Health / Metrics
+      ↓
+HPA Scale-Up
+      ↓
+HPA Scale-Down
 ```
-
-The architecture intentionally separates:
-
-```text
-Application Delivery
-        │
-        └── GitHub Actions / Jenkins
-                │
-                └── Application Deployment
-
-Cluster Platform
-        │
-        └── Terraform + Helm
-                │
-                └── Metrics Server
-```
-
-This separation provides a clearer security boundary between application deployment permissions and cluster-platform administration.
 
 ---
 
-# Future Project Roadmap
-
-The current roadmap is:
-
-| Phase        | Documentation                                       | Scope                                                                                                            |     Status     |
-| ------------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | :------------: |
-| **Phase 9**  | `09-devsecops-governance-and-security-hardening.md` | PR validation, Gitleaks, GitHub/Jenkins integration, branch protection, governance                               |   ✅ Complete   |
-| **Phase 10** | `10-github-actions-ci-cd.md`                        | GitHub Actions CI/CD, OIDC, ECR, EKS, Kubernetes deployment, HPA boundary, Metrics Server platform configuration |   ✅ Complete   |
-| **Phase 11** | `11-complete-devsecops-platform.md`                 | Final integration, architecture, validation, comparison, lifecycle verification, and project conclusion          | 🟡 In Progress |
-
----
-
-# Project Status
-
-## Completed Phases
+# Final Project Status
 
 ```text
 Phase 1  → Complete
@@ -2375,63 +1211,35 @@ Phase 7  → Complete
 Phase 8  → Complete
 Phase 9  → Complete
 Phase 10 → Complete
-Phase 11 → In Progress
+Phase 11 → Complete
 ```
 
-## Phase 10 Completion Boundary
+The completed technical lifecycle is:
 
 ```text
-GitHub Actions
-      ↓
-AWS OIDC
-      ↓
-IAM
-      ↓
-ECR
-      ↓
-EKS
-      ↓
-Kubernetes Deployment
-      ↓
-LoadBalancer
-      ↓
-Application Health
-      ↓
-HPA Resource
-      ↓
-Metrics Server Configuration
-      ↓
-Metrics API Evidence
-```
-
-## Phase 11 Completion Target
-
-```text
-Infrastructure Recreation
-      ↓
-Platform Deployment
-      ↓
-Application Deployment
-      ↓
-Runtime Verification
-      ↓
-Functional HPA Scale-Up
-      ↓
-Functional HPA Scale-Down
-      ↓
-Observability Validation
-      ↓
-Security Integration Review
-      ↓
-Jenkins vs GitHub Actions
-      ↓
-Infrastructure Lifecycle Validation
-      ↓
-Final Documentation
-      ↓
-Teardown Verification
-      ↓
-Phase 11 Complete
+Build
+  ↓
+Test
+  ↓
+Secure
+  ↓
+Containerize
+  ↓
+Publish
+  ↓
+Deploy
+  ↓
+Verify
+  ↓
+Monitor
+  ↓
+Scale
+  ↓
+Govern
+  ↓
+Destroy
+  ↓
+Verify Cleanup
 ```
 
 ---
@@ -2442,10 +1250,7 @@ Phase 11 Complete
 
 DevOps & Cloud Engineer | AWS Certified Cloud Practitioner
 
-Passionate about building secure, automated, scalable, and cloud-native infrastructure using DevOps and DevSecOps practices.
-
-* GitHub: `Jefferson-ohis1`
-* LinkedIn: `Jefferson Ohis`
+Focused on building secure, automated, scalable, and cloud-native infrastructure using DevOps and DevSecOps practices.
 
 ---
 
