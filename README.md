@@ -13,9 +13,9 @@
 ![OWASP ZAP](https://img.shields.io/badge/OWASP_ZAP-DAST-000000?logo=owasp)
 ![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?logo=prometheus)
 ![Grafana](https://img.shields.io/badge/Grafana-Visualization-F46800?logo=grafana)
-![License](https://img.shields.io/badge/License-MIT-green)
 
-> A hands-on portfolio project demonstrating an end-to-end Node.js CI/CD and DevSecOps platform using AWS, Terraform, Jenkins, GitHub Actions, Docker, Kubernetes, security automation, repository governance, observability, and infrastructure lifecycle management.
+
+> A hands-on portfolio project demonstrating an end-to-end Node.js CI/CD and DevSecOps platform using AWS, Terraform, Jenkins, GitHub Actions, Docker, Kubernetes, security automation, repository governance, observability, autoscaling, and infrastructure lifecycle management.
 
 ---
 
@@ -28,23 +28,25 @@
 5. [Key Capabilities](#key-capabilities)
 6. [Solution Architecture](#solution-architecture)
 7. [DevSecOps Lifecycle](#devsecops-lifecycle)
-8. [Technology Stack](#technology-stack)
-9. [AWS Infrastructure](#aws-infrastructure)
-10. [Repository Structure](#repository-structure)
-11. [Project Workflow](#project-workflow)
-12. [Implementation Phases](#implementation-phases)
-13. [Phase 8 — Jenkins CI/CD & DevSecOps](#phase-8--jenkins-cicd--devsecops)
-14. [Phase 9 — DevSecOps Governance & Security Hardening](#phase-9--devsecops-governance--security-hardening)
-15. [Phase 10 — GitHub Actions CI/CD](#phase-10--github-actions-cicd)
-16. [Phase 11 — Complete DevSecOps Platform](#phase-11--complete-devsecops-platform)
-17. [Jenkins vs GitHub Actions](#jenkins-vs-github-actions)
-18. [Security Model](#security-model)
-19. [Running the Application Locally](#running-the-application-locally)
-20. [Docker](#docker)
-21. [Infrastructure Lifecycle](#infrastructure-lifecycle)
-22. [Documentation](#documentation)
-23. [Evidence](#evidence)
-24. [Author](#author)
+8. [Observability Evolution](#observability-evolution)
+9. [Technology Stack](#technology-stack)
+10. [AWS Infrastructure](#aws-infrastructure)
+11. [Repository Structure](#repository-structure)
+12. [Project Workflow](#project-workflow)
+13. [Implementation Phases](#implementation-phases)
+14. [Phase 8 — Jenkins CI/CD & DevSecOps](#phase-8--jenkins-cicd--devsecops)
+15. [Phase 9 — DevSecOps Governance & Security Hardening](#phase-9--devsecops-governance--security-hardening)
+16. [Phase 10 — GitHub Actions CI/CD](#phase-10--github-actions-cicd)
+17. [Phase 11 — Complete DevSecOps Platform](#phase-11--complete-devsecops-platform)
+18. [Jenkins vs GitHub Actions](#jenkins-vs-github-actions)
+19. [Security Model](#security-model)
+20. [Running the Application Locally](#running-the-application-locally)
+21. [Docker](#docker)
+22. [Infrastructure Lifecycle](#infrastructure-lifecycle)
+23. [Documentation](#documentation)
+24. [Evidence](#evidence)
+25. [Final Project Status](#final-project-status)
+26. [Author](#author)
 
 ---
 
@@ -74,6 +76,7 @@ The implementation includes:
 * Gitleaks
 * OWASP ZAP
 * Prometheus-compatible application metrics
+* Prometheus
 * Grafana
 * Kubernetes Metrics Server
 * Horizontal Pod Autoscaler
@@ -88,11 +91,13 @@ The project is intentionally developed in phases.
 
 Each layer is implemented, built, tested, verified, evidenced, documented, committed, and integrated before the next layer is introduced.
 
+The architecture also evolved during the project. The original Jenkins implementation combined application delivery and observability within the Jenkins-hosted environment. When GitHub Actions was introduced in Phase 10, the architecture was refined to separate **application delivery responsibilities** from **Kubernetes cluster-platform responsibilities**.
+
 ---
 
 # Project Vision
 
-The project is designed to demonstrate more than individual DevOps tools.
+The project is designed to demonstrate more than individual DevOps and DevSecOps tools.
 
 It demonstrates how the tools work together across the software delivery lifecycle:
 
@@ -130,7 +135,7 @@ Kubernetes
 Application Runtime
     │
     ▼
-Monitoring / Metrics
+Observability / Metrics
     │
     ▼
 Autoscaling
@@ -142,15 +147,40 @@ Governance
 Infrastructure Lifecycle
 ```
 
-The project also demonstrates two CI/CD implementations:
+The project demonstrates two CI/CD implementations:
 
 ```text
-Jenkins
-   +
-GitHub Actions
+                 Application Delivery
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+              ▼                     ▼
+           Jenkins           GitHub Actions
 ```
 
 The objective is to demonstrate transferable DevOps and DevSecOps engineering principles rather than dependence on a single CI/CD platform.
+
+The project also demonstrates how the architecture can evolve as requirements change:
+
+```text
+Jenkins-based platform
+        │
+        ├── CI/CD
+        ├── Security
+        ├── AWS deployment
+        └── Prometheus + Grafana observability
+                │
+                ▼
+      GitHub Actions introduced
+                │
+                ├── Application CI/CD
+                │
+                └── Separate cluster-platform layer
+                         │
+                         └── Terraform + Helm
+                                  │
+                                  └── Metrics Server
+```
 
 ---
 
@@ -160,9 +190,14 @@ The objective is to demonstrate transferable DevOps and DevSecOps engineering pr
 
 **Phase 11 — Complete DevSecOps Platform: ✅ Completed**
 
+**Final release:** `v0.11.0`
+**Primary branch:** `main`
+
+The final release represents the completed implementation checkpoint for the project.q
+
 The project's planned implementation and validation phases have been completed.
 
-The final Phase 11 implementation included:
+The final implementation included:
 
 * Recreated AWS infrastructure
 * Amazon EKS verification
@@ -193,25 +228,27 @@ The final HPA experiment demonstrated:
 2 replicas
 ```
 
-The temporary AWS environment was subsequently destroyed and independently verified as absent.
+This provided evidence of both workload-driven scale-up and scale-down behavior.
+
+The temporary AWS environment was subsequently destroyed after validation and evidence collection.
 
 ---
 
 # Project Progress
 
-| Phase    | Area                                      |          Status         |
-| -------- | ----------------------------------------- | :---------------------: |
-| Phase 1  | Project Initialization                    |       ✅ Completed       |
-| Phase 2  | Application Refactoring                   |       ✅ Completed       |
-| Phase 3  | Unit Testing                              |       ✅ Completed       |
-| Phase 4  | Docker Containerization                   |       ✅ Completed       |
-| Phase 5  | AWS Infrastructure with Terraform         |       ✅ Completed       |
-| Phase 6  | Jenkins Server Setup                      |       ✅ Completed       |
-| Phase 7  | Jenkins Installation & Configuration      |       ✅ Completed       |
-| Phase 8  | Jenkins CI/CD & DevSecOps Integration     |       ✅ Completed       |
-| Phase 9  | DevSecOps Governance & Security Hardening |       ✅ Completed       |
-| Phase 10 | GitHub Actions CI/CD                      |       ✅ Completed       |
-| Phase 11 | Complete DevSecOps Platform               |       ✅ Completed       |
+| Phase    | Area                                 | Status |
+| -------- | ------------------------------------ | :----: |
+| Phase 1  | Project Initialization               |    ✅   |
+| Phase 2  | Application Refactoring              |    ✅   |
+| Phase 3  | Unit Testing                         |    ✅   |
+| Phase 4  | Docker Containerization              |    ✅   |
+| Phase 5  | AWS Infrastructure with Terraform    |    ✅   |
+| Phase 6  | Jenkins Server Setup                 |    ✅   |
+| Phase 7  | Jenkins Installation & Configuration |    ✅   |
+| Phase 8  | Jenkins CI/CD & DevSecOps            |    ✅   |
+| Phase 9  | Governance & Security Hardening      |    ✅   |
+| Phase 10 | GitHub Actions CI/CD                 |    ✅   |
+| Phase 11 | Complete DevSecOps Platform          |    ✅   |
 
 ---
 
@@ -221,7 +258,7 @@ The temporary AWS environment was subsequently destroyed and independently verif
 
 * Node.js
 * Express.js
-* Prometheus-compatible metrics
+* Prometheus-compatible application metrics
 * `/health`
 * `/metrics`
 * Jest
@@ -237,6 +274,7 @@ The temporary AWS environment was subsequently destroyed and independently verif
 * Kubernetes
 * GitHub OIDC
 * EKS Access Entry
+* Namespace-scoped Kubernetes authorization
 
 ## CI/CD
 
@@ -268,9 +306,9 @@ The temporary AWS environment was subsequently destroyed and independently verif
 ## Kubernetes
 
 * Amazon EKS
-* Deployments
-* Services
-* LoadBalancer
+* Kubernetes Deployments
+* Kubernetes Services
+* LoadBalancer Service
 * Horizontal Pod Autoscaler
 * Metrics Server
 * Metrics API
@@ -287,14 +325,19 @@ The temporary AWS environment was subsequently destroyed and independently verif
 * Kubernetes Metrics API
 * `kubectl top`
 * HPA resource metrics
+* Application health verification
 
 ---
 
 # Solution Architecture
 
-The final project contains two complementary CI/CD implementations.
+The final project contains two complementary CI/CD implementations and an evolved observability/platform architecture.
 
 ## Jenkins Architecture
+
+The Jenkins implementation was the original end-to-end CI/CD platform.
+
+It combined application delivery, security validation, Kubernetes deployment, runtime verification, and observability within the Jenkins-hosted environment.
 
 ```text
 GitHub
@@ -333,10 +376,50 @@ Jenkins CI/CD
    ├── EKS
    ├── Kubernetes Verification
    ├── Application Health
+   ├── Prometheus
+   ├── Grafana
    └── OWASP ZAP
 ```
 
+### Jenkins Observability
+
+During the Jenkins implementation, the Jenkins server was also used as the host for the project's monitoring stack.
+
+The Node.js application exposed Prometheus-compatible metrics through:
+
+```text
+/metrics
+```
+
+Prometheus was configured as the metrics collection component, while Grafana provided visualization of the collected metrics.
+
+The observability flow was therefore:
+
+```text
+Node.js Application
+        │
+        │ /metrics
+        ▼
+   Prometheus
+        │
+        ▼
+     Grafana
+        │
+        ▼
+Monitoring Dashboard
+```
+
+This formed the project's original application observability implementation.
+
+The Jenkins-based environment therefore demonstrated not only CI/CD and security automation, but also the integration of application monitoring into the delivery platform.
+
+---
+
 ## GitHub Actions Architecture
+
+Phase 10 introduced GitHub Actions as a second CI/CD implementation.
+
+The application delivery path became:
 
 ```text
 GitHub
@@ -344,7 +427,7 @@ GitHub
    ▼
 GitHub Actions
    │
-   ├── Node.js
+   ├── Node.js 24
    ├── npm ci
    ├── Jest
    ├── Docker Build
@@ -371,7 +454,17 @@ GitHub Actions
         Application
 ```
 
+Unlike the original Jenkins implementation, Phase 10 deliberately separated application delivery from cluster-platform management.
+
+GitHub Actions became responsible for delivering the application.
+
+Cluster-level dependencies became the responsibility of a separate platform layer.
+
+---
+
 ## Cluster Platform Architecture
+
+The Phase 10/11 Kubernetes platform layer was managed separately from the application deployment workflow.
 
 ```text
 Amazon EKS
@@ -392,13 +485,33 @@ Metrics API
 HPA
 ```
 
-The application CI/CD identity does not install Metrics Server.
-
-The cluster-platform layer is managed separately through:
+The platform configuration is represented by:
 
 ```text
 infra-phase10-platform/
 ```
+
+The application CI/CD identity does not install Metrics Server.
+
+Instead:
+
+```text
+Application Delivery
+        │
+        └── GitHub Actions
+                │
+                └── Deploy application
+
+Cluster Platform
+        │
+        └── Terraform + Helm
+                │
+                └── Manage Metrics Server
+```
+
+This separation was introduced when GitHub Actions CI/CD was implemented.
+
+It was not the architecture used by the original Jenkins observability implementation.
 
 ---
 
@@ -429,7 +542,7 @@ Kubernetes
       ↓
 Application Health
       ↓
-Metrics
+Observability / Metrics
       ↓
 Autoscaling
       ↓
@@ -440,18 +553,170 @@ Infrastructure Teardown
 Resource Verification
 ```
 
-The lifecycle also demonstrates separation of:
+The architecture evolved across the lifecycle.
+
+### Original Jenkins Model
 
 ```text
-Application Delivery
-        │
-        ├── Jenkins
-        └── GitHub Actions
-
-Cluster Platform
-        │
-        └── Terraform + Helm
+Jenkins Server
+     │
+     ├── CI/CD
+     ├── Security Validation
+     ├── AWS Deployment
+     ├── Kubernetes Verification
+     ├── Prometheus
+     └── Grafana
 ```
+
+### GitHub Actions Model
+
+```text
+GitHub Actions
+     │
+     └── Application CI/CD
+              │
+              ├── ECR
+              ├── EKS
+              └── Kubernetes Application Resources
+
+Separate Platform Layer
+     │
+     └── Terraform + Helm
+              │
+              └── Metrics Server
+```
+
+This evolution demonstrates the difference between:
+
+* **Application delivery**
+* **Application observability**
+* **Cluster resource metrics**
+* **Cluster-platform management**
+
+---
+
+# Observability Evolution
+
+Observability is an important part of the project's architectural history.
+
+The project did not use a single monitoring mechanism throughout all phases. The monitoring architecture evolved as the CI/CD platform evolved.
+
+## Stage 1 — Jenkins-Based Observability
+
+During the Jenkins implementation, Prometheus and Grafana were installed as part of the Jenkins-hosted environment.
+
+The Node.js application exposed Prometheus-compatible metrics:
+
+```text
+Node.js Application
+       │
+       ▼
+    /metrics
+       │
+       ▼
+   Prometheus
+       │
+       ▼
+    Grafana
+```
+
+### Prometheus
+
+Prometheus was responsible for collecting application metrics.
+
+### Grafana
+
+Grafana was used to visualize the collected metrics through monitoring dashboards.
+
+This provided application-level observability alongside the Jenkins CI/CD platform.
+
+The Jenkins architecture therefore combined:
+
+```text
+CI/CD
+Security
+Deployment
+Monitoring
+Visualization
+```
+
+within the same overall Jenkins-hosted environment.
+
+---
+
+## Stage 2 — GitHub Actions and Platform Separation
+
+When GitHub Actions was introduced in Phase 10, the project architecture was deliberately refined.
+
+Application CI/CD became the responsibility of GitHub Actions:
+
+```text
+GitHub
+   ↓
+GitHub Actions
+   ↓
+ECR
+   ↓
+EKS
+   ↓
+Kubernetes Application
+```
+
+Cluster-level platform management became a separate responsibility:
+
+```text
+Terraform
+   ↓
+Helm
+   ↓
+Metrics Server
+   ↓
+Metrics API
+```
+
+This separation prevents the application deployment workflow from also needing to administer cluster-level platform components.
+
+---
+
+## Prometheus/Grafana vs Metrics Server
+
+These components serve different purposes.
+
+| Component      | Primary Purpose                 | Project Role                            |
+| -------------- | ------------------------------- | --------------------------------------- |
+| Prometheus     | Metrics collection and querying | Application observability               |
+| Grafana        | Metrics visualization           | Monitoring dashboards                   |
+| `/metrics`     | Application metrics endpoint    | Exposes application metrics             |
+| Metrics Server | Kubernetes resource metrics     | Supplies resource metrics to Kubernetes |
+| Metrics API    | Kubernetes resource metrics API | Provides node/pod resource metrics      |
+| HPA            | Workload autoscaling            | Uses resource metrics for scaling       |
+
+The distinction is important:
+
+```text
+Application Observability
+        │
+        ├── /metrics
+        │
+        ├── Prometheus
+        │
+        └── Grafana
+
+
+Kubernetes Resource Metrics
+        │
+        ├── Metrics Server
+        │
+        ├── Metrics API
+        │
+        └── HPA
+```
+
+Prometheus and Grafana were part of the original Jenkins-based monitoring architecture.
+
+Metrics Server was introduced later as part of the separately managed Kubernetes platform layer for the GitHub Actions/EKS architecture.
+
+The presence of Metrics Server therefore does not mean that it replaced Prometheus and Grafana. The components address different monitoring and platform requirements.
 
 ---
 
@@ -474,9 +739,9 @@ Cluster Platform
 | Security           | Trivy            | Container vulnerability scanning  |
 | Security           | Gitleaks         | Secret detection                  |
 | Runtime Security   | OWASP ZAP        | DAST                              |
-| Monitoring         | Prometheus       | Metrics collection                |
+| Monitoring         | Prometheus       | Application metrics collection    |
 | Visualization      | Grafana          | Metrics visualization             |
-| Kubernetes Metrics | Metrics Server   | Resource metrics API              |
+| Kubernetes Metrics | Metrics Server   | Kubernetes resource metrics API   |
 | Autoscaling        | HPA              | CPU-based workload scaling        |
 | Governance         | GitHub           | Pull Requests and branch controls |
 
@@ -535,6 +800,8 @@ Helm
    ↓
 Metrics Server
 ```
+
+The Phase 10/11 platform layer therefore introduced a more explicit distinction between AWS/application infrastructure and Kubernetes cluster-platform components.
 
 Temporary AWS infrastructure was destroyed after validation.
 
@@ -624,7 +891,7 @@ end-to-end-node-ci-cd-devsecops/
 └── README.md
 ```
 
-### Infrastructure Directory Roles
+## Infrastructure Directory Roles
 
 The Terraform configuration is organized into three infrastructure layers:
 
@@ -690,9 +957,151 @@ This prevents documentation from claiming functionality that has not actually be
 
 ---
 
+# Phase-by-Phase Summary
+
+## Phase 01 — Project Initialization
+
+Established the project repository, application baseline, initial structure, implementation roadmap, and documentation approach.
+
+**Focus:**
+
+* Repository initialization
+* Application baseline
+* Project structure
+* Initial documentation
+* Implementation roadmap
+
+Documentation:
+
+```text
+docs/01-project-initialization.md
+```
+
+---
+
+## Phase 02 — Application Refactoring
+
+Refactored the Node.js application into the structure used by the subsequent testing, containerization, CI/CD, and monitoring phases.
+
+**Focus:**
+
+* Node.js application structure
+* Express.js application
+* Health endpoint
+* Metrics endpoint
+* Application organization
+
+Documentation:
+
+```text
+docs/02-application-refactoring.md
+```
+
+---
+
+## Phase 03 — Unit Testing
+
+Introduced automated application testing using Jest and Supertest.
+
+**Focus:**
+
+* Automated unit/API testing
+* Application behavior verification
+* Test coverage
+* CI-ready test execution
+
+Documentation:
+
+```text
+docs/03-unit-testing.md
+```
+
+---
+
+## Phase 04 — Containerization
+
+Containerized the application using Docker.
+
+**Focus:**
+
+* Dockerfile
+* Multi-stage image build
+* Application packaging
+* Container runtime validation
+* Non-root execution
+
+Documentation:
+
+```text
+docs/04-containerization.md
+```
+
+---
+
+## Phase 05 — Terraform Infrastructure
+
+Introduced AWS Infrastructure as Code using Terraform.
+
+**Focus:**
+
+* VPC
+* Networking
+* Security Groups
+* IAM
+* Amazon ECR
+* Amazon EKS
+* Jenkins infrastructure
+* Reproducible infrastructure configuration
+
+Documentation:
+
+```text
+docs/05-terraform-infrastructure.md
+```
+
+---
+
+## Phase 06 — Jenkins Server Setup
+
+Established the AWS-hosted Jenkins server infrastructure.
+
+**Focus:**
+
+* Jenkins EC2 infrastructure
+* AWS networking
+* Security configuration
+* Jenkins server foundation
+
+Documentation:
+
+```text
+docs/06-jenkins-server-setup.md
+```
+
+---
+
+## Phase 07 — Jenkins Installation
+
+Installed and configured Jenkins and its supporting toolchain.
+
+**Focus:**
+
+* Jenkins installation
+* Jenkins configuration
+* Build tooling
+* Pipeline prerequisites
+
+Documentation:
+
+```text
+docs/07-jenkins-installation.md
+```
+
+---
+
 # Phase 8 — Jenkins CI/CD & DevSecOps
 
-Phase 8 established the core Jenkins-based delivery platform.
+Phase 8 established the project's original end-to-end Jenkins-based CI/CD and DevSecOps delivery implementation.
 
 The workflow included:
 
@@ -728,13 +1137,63 @@ OWASP ZAP
 
 Security was integrated throughout the delivery process rather than treated as a final checkpoint.
 
+## Jenkins Observability Stack
+
+As part of the Jenkins implementation, the Jenkins server hosted the project's observability tooling.
+
+The application exposed Prometheus-compatible metrics through:
+
+```text
+/metrics
+```
+
+Prometheus collected the application metrics.
+
+Grafana provided visualization of those metrics.
+
+The monitoring flow was:
+
+```text
+Node.js Application
+        │
+        ▼
+     /metrics
+        │
+        ▼
+    Prometheus
+        │
+        ▼
+     Grafana
+        │
+        ▼
+Monitoring Visualization
+```
+
+This allowed the Jenkins-based platform to demonstrate:
+
+* Application delivery
+* Application monitoring
+* Metrics collection
+* Metrics visualization
+* Security validation
+* Kubernetes deployment
+* Runtime verification
+
+The Prometheus/Grafana implementation therefore belongs specifically to the Jenkins-based observability architecture established during the earlier phases.
+
+Documentation:
+
+```text
+docs/08-jenkins-ci-cd-devsecops-pipeline.md
+```
+
 ---
 
 # Phase 9 — DevSecOps Governance & Security Hardening
 
-Phase 9 added governance around the Jenkins delivery platform.
+Phase 9 Added repository governance and Pull Request security controls around the Jenkins platform.
 
-The governance flow is:
+The governance flow was:
 
 ```text
 Developer
@@ -769,6 +1228,14 @@ Phase 9 introduced:
 * Required CI status checks
 * Controlled merge workflow
 * Separation of PR validation and deployment-oriented CI/CD
+
+The Jenkins platform remained the primary CI/CD implementation at this stage.
+
+Documentation:
+
+```text
+docs/09-devsecops-governance-and-security-hardening.md
+```
 
 ---
 
@@ -821,13 +1288,98 @@ Phase 10 established:
 * Rollout verification
 * Application health verification
 
-Metrics Server was deliberately separated from the application workflow.
+## Architectural Change Introduced in Phase 10
 
+A significant architectural refinement occurred when GitHub Actions was introduced.
+
+The project deliberately separated:
+
+```text
+Application Delivery
+```
+
+from:
+
+```text
+Cluster Platform Management
+```
+
+GitHub Actions was responsible for application delivery:
+
+```text
+GitHub Actions
+      ↓
+     ECR
+      ↓
+     EKS
+      ↓
+Kubernetes Application
+```
+
+Cluster-level platform components were managed separately:
+
+```text
+Terraform
+    ↓
+   Helm
+    ↓
+Metrics Server
+```
+
+This was a deliberate Phase 10/11 architectural decision.
+
+It should not be interpreted as describing the architecture of the earlier Jenkins implementation, where Prometheus and Grafana were installed within the Jenkins-hosted environment as part of the project's monitoring stack.
+
+## Metrics Server Boundary
+
+Metrics Server was deliberately kept outside the GitHub Actions application workflow.
+
+The GitHub Actions workflow does not install Metrics Server.
+
+Instead:
+
+```text
+GitHub Actions
+      │
+      └── Application CI/CD
+
+Terraform + Helm
+      │
+      └── Kubernetes Platform
+              │
+              └── Metrics Server
+```
+
+This creates a clearer responsibility boundary between application deployment and cluster administration.
+
+Documentation:
+
+```text
+docs/10-github-actions-ci-cd.md
+```
 ---
 
 # Phase 11 — Complete DevSecOps Platform
 
 Phase 11 completed the final integration and validation scope.
+
+The phase brought together:
+
+* GitHub Actions CI/CD
+* AWS OIDC
+* IAM
+* Amazon ECR
+* Amazon EKS
+* Kubernetes
+* Terraform
+* Helm
+* Metrics Server
+* Metrics API
+* Application metrics
+* HPA
+* Runtime validation
+* Infrastructure teardown
+* Evidence-driven documentation
 
 ## Platform Layer
 
@@ -838,18 +1390,64 @@ Terraform
    ↓
 Helm
    ↓
-Metrics Server 0.8.1
+Metrics Server
    ↓
 Metrics API
 ```
 
-The Helm chart was pinned to:
+The Metrics Server Helm chart was pinned to:
 
 ```text
 3.13.1
 ```
 
+The packaged Metrics Server version was:
+
+```text
+0.8.1
+```
+
+The platform configuration included:
+
+* Metrics Server
+* Kubernetes Metrics API
+* Two Metrics Server replicas
+* APIService configuration
+* Pod disruption budget
+* Terraform-managed Helm release
+* Reproducible platform configuration
+
 The platform was successfully applied and verified.
+
+## Why Metrics Server Was Required
+
+Metrics Server provides Kubernetes resource metrics used by Kubernetes components such as the Horizontal Pod Autoscaler.
+
+The relationship is:
+
+```text
+Kubernetes Nodes / Pods
+          │
+          ▼
+    Metrics Server
+          │
+          ▼
+     Metrics API
+          │
+          ▼
+         HPA
+          │
+          ▼
+Application Replica Scaling
+```
+
+This is different from the Prometheus/Grafana monitoring architecture used earlier with Jenkins.
+
+Prometheus and Grafana provided application observability and visualization.
+
+Metrics Server provided the Kubernetes resource metrics required for the HPA validation.
+
+---
 
 ## Application Delivery
 
@@ -869,44 +1467,159 @@ EKS
 Kubernetes
 ```
 
-## Runtime
+The deployment included:
+
+* Container image publishing
+* Commit-SHA traceability
+* EKS authentication
+* Kubernetes authorization
+* Deployment
+* Service
+* HPA
+* Rollout verification
+* Application health verification
+
+---
+
+## Runtime Verification
 
 The application was verified through:
 
 ```text
-/health
-/metrics
+/
+ /health
+ /metrics
 ```
 
-## HPA
+The `/health` endpoint provided application health verification.
+
+The `/metrics` endpoint exposed Prometheus-compatible application metrics.
+
+The application therefore retained the observability capability established earlier with the Jenkins/Prometheus/Grafana implementation even though the Phase 10/11 platform introduced a separate Metrics Server layer for Kubernetes resource metrics.
+
+---
+
+## HPA Verification
 
 Functional CPU-based autoscaling was demonstrated:
 
 ```text
-2
-↓
-4
-↓
-5
-↓
-2
+2 replicas
+    ↓
+4 replicas
+    ↓
+5 replicas
+    ↓
+2 replicas
 ```
 
-This establishes both scale-up and scale-down behavior rather than merely proving that an HPA object exists.
+This demonstrated:
+
+* Initial workload state
+* HPA scale-up
+* Continued scaling under increased workload
+* HPA scale-down after workload reduction
+
+The experiment therefore went beyond proving that an HPA object existed.
+
+It demonstrated observed workload-driven scaling behavior.
+
+Documentation:
+
+```text
+docs/11-complete-devsecops-platform.md
+```
+
+---
+
+## Final Architecture
+
+The final architecture can be represented as:
+
+```text
+                         GitHub
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+             ▼                           ▼
+        Pull Requests              Main Branch
+             │                           │
+             ▼                           ▼
+        Jenkins PR                 GitHub Actions
+        Validation                      │
+             │                          │
+             ├── Gitleaks               ├── Jest
+             ├── Jest                   ├── Docker
+             ├── SonarCloud             ├── OIDC
+             └── Snyk                   ├── ECR
+                                        └── EKS
+                                            │
+                                            ▼
+                                      Kubernetes
+                                            │
+                              ┌─────────────┼─────────────┐
+                              │             │             │
+                              ▼             ▼             ▼
+                         Deployment      Service         HPA
+                              │                           │
+                              ▼                           │
+                         Application                     │
+                              │                           │
+                         ┌────┴────┐                      │
+                         │         │                      │
+                         ▼         ▼                      │
+                      /health   /metrics                  │
+                                  │                       │
+                                  ▼                       │
+                              Prometheus                  │
+                                  │                       │
+                                  ▼                       │
+                               Grafana                    │
+                                                          │
+                              Separate Platform Layer     │
+                                      │                   │
+                              Terraform + Helm            │
+                                      │                   │
+                                      ▼                   │
+                               Metrics Server ────────────┘
+                                      │
+                                      ▼
+                                 Metrics API
+```
+
+The architecture intentionally distinguishes:
+
+```text
+Application Observability
+        │
+        ├── /metrics
+        ├── Prometheus
+        └── Grafana
+
+Kubernetes Resource Metrics
+        │
+        ├── Metrics Server
+        └── Metrics API
+
+Application Delivery
+        │
+        ├── Jenkins
+        └── GitHub Actions
+
+Cluster Platform Management
+        │
+        └── Terraform + Helm
+```
+
+---
 
 ## Teardown
 
 The temporary environment was destroyed after validation.
 
-Independent AWS checks confirmed:
+Independent AWS checks confirmed the expected infrastructure cleanup.
 
-```text
-Terraform State → Clean
-VPC             → Removed
-EKS             → Removed
-ECR             → Removed
-Metrics Server  → Removed
-```
+The project therefore demonstrated not only provisioning and deployment, but also controlled infrastructure lifecycle management.
 
 ---
 
@@ -914,21 +1627,24 @@ Metrics Server  → Removed
 
 The project demonstrates both platforms without treating either as universally superior.
 
-| Area                   | Jenkins                          | GitHub Actions                    |
-| ---------------------- | -------------------------------- | --------------------------------- |
-| Pipeline definition    | `Jenkinsfile`                    | Workflow YAML                     |
-| Repository integration | GitHub integration / Multibranch | Native GitHub                     |
-| PR validation          | Multibranch Pipeline             | Workflow-based                    |
-| Testing                | Jest                             | Jest                              |
-| Container build        | Docker                           | Docker                            |
-| Registry               | Amazon ECR                       | Amazon ECR                        |
-| Kubernetes             | Amazon EKS                       | Amazon EKS                        |
-| AWS authentication     | Jenkins credential / role model  | GitHub OIDC                       |
-| Infrastructure         | Jenkins server                   | GitHub-hosted runners             |
-| Application deployment | EKS                              | EKS                               |
-| Platform dependency    | Separate platform controls       | Separate Terraform platform layer |
+| Area                   | Jenkins                                    | GitHub Actions                                                               |
+| ---------------------- | ------------------------------------------ | ---------------------------------------------------------------------------- |
+| Pipeline definition    | `Jenkinsfile`                              | Workflow YAML                                                                |
+| Repository integration | GitHub integration / Multibranch           | Native GitHub                                                                |
+| PR validation          | Multibranch Pipeline                       | Workflow-based                                                               |
+| Testing                | Jest                                       | Jest                                                                         |
+| Container build        | Docker                                     | Docker                                                                       |
+| Registry               | Amazon ECR                                 | Amazon ECR                                                                   |
+| Kubernetes             | Amazon EKS                                 | Amazon EKS                                                                   |
+| AWS authentication     | Jenkins credential / role model            | GitHub OIDC                                                                  |
+| Infrastructure         | Jenkins server                             | GitHub-hosted runners                                                        |
+| Application deployment | EKS                                        | EKS                                                                          |
+| Observability model    | Jenkins-hosted Prometheus/Grafana          | Application metrics retained; Kubernetes resource metrics managed separately |
+| Platform dependency    | Integrated with Jenkins-hosted environment | Separate Terraform/Helm platform layer                                       |
 
 The project demonstrates that the same application delivery objectives can be implemented through different CI/CD execution models.
+
+It also demonstrates how the architecture can be refined when moving from a self-hosted Jenkins environment to a GitHub-native CI/CD model.
 
 ---
 
@@ -995,11 +1711,10 @@ Optional deployment tooling:
 
 ## Clone the Repository
 
-```bash
-git clone https://github.com/Jefferson-ohis1/end-to-end-node-ci-cd-devsecops.git
-```
+Clone the repository from its GitHub remote and enter the project directory:
 
 ```bash
+git clone <repository-url>
 cd end-to-end-node-ci-cd-devsecops/app
 ```
 
@@ -1108,6 +1823,8 @@ Terraform Destroy
 AWS Resource Verification
 ```
 
+The project demonstrates both infrastructure creation and controlled teardown.
+
 Temporary portfolio environments are destroyed after validation to avoid unnecessary ongoing AWS costs.
 
 The Phase 11 teardown was independently verified using AWS CLI commands in addition to Terraform's destroy output.
@@ -1118,19 +1835,19 @@ The Phase 11 teardown was independently verified using AWS CLI commands in addit
 
 Detailed implementation documentation is available under `docs/`.
 
-| Document                                            | Description                                                                  |
-| --------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `01-project-initialization.md`                      | Project foundation and initial roadmap                                       |
-| `02-application-refactoring.md`                     | Node.js application restructuring                                            |
-| `03-unit-testing.md`                                | Jest and Supertest testing                                                   |
-| `04-containerization.md`                            | Docker containerization                                                      |
-| `05-terraform-infrastructure.md`                    | AWS infrastructure with Terraform                                            |
-| `06-jenkins-server-setup.md`                        | Jenkins EC2 infrastructure                                                   |
-| `07-jenkins-installation.md`                        | Jenkins installation and toolchain                                           |
-| `08-jenkins-ci-cd-devsecops-pipeline.md`            | Jenkins CI/CD and DevSecOps                                                  |
-| `09-devsecops-governance-and-security-hardening.md` | PR governance and security hardening                                         |
-| `10-github-actions-ci-cd.md`                        | GitHub Actions, OIDC, ECR, EKS, Kubernetes                                   |
-| `11-complete-devsecops-platform.md`                 | Final Phase 11 integration, runtime validation, HPA, lifecycle, and teardown |
+| Document                                            | Description                                                                |
+| --------------------------------------------------- | -------------------------------------------------------------------------- |
+| `01-project-initialization.md`                      | Project foundation and initial roadmap                                     |
+| `02-application-refactoring.md`                     | Node.js application restructuring                                          |
+| `03-unit-testing.md`                                | Jest and Supertest testing                                                 |
+| `04-containerization.md`                            | Docker containerization                                                    |
+| `05-terraform-infrastructure.md`                    | AWS infrastructure with Terraform                                          |
+| `06-jenkins-server-setup.md`                        | Jenkins EC2 infrastructure                                                 |
+| `07-jenkins-installation.md`                        | Jenkins installation and toolchain                                         |
+| `08-jenkins-ci-cd-devsecops-pipeline.md`            | Jenkins CI/CD, security, deployment, and observability                     |
+| `09-devsecops-governance-and-security-hardening.md` | PR governance and security hardening                                       |
+| `10-github-actions-ci-cd.md`                        | GitHub Actions, OIDC, ECR, EKS, and Kubernetes                             |
+| `11-complete-devsecops-platform.md`                 | Final Phase 11 integration, platform metrics, HPA, lifecycle, and teardown |
 
 ---
 
@@ -1152,6 +1869,35 @@ screenshots/
 ├── 10-github-actions-ci-cd/
 └── 11-complete-devsecops-platform/
 ```
+
+## Observability Evidence
+
+The earlier Jenkins implementation contains evidence of the Prometheus/Grafana monitoring architecture.
+
+The Phase 11 evidence contains the later Kubernetes platform metrics validation.
+
+These represent different layers of the project's observability evolution:
+
+```text
+Jenkins Era
+    │
+    └── Prometheus + Grafana
+             │
+             └── Application monitoring / visualization
+
+
+GitHub Actions Era
+    │
+    └── Terraform + Helm
+             │
+             └── Metrics Server
+                     │
+                     └── Metrics API
+                             │
+                             └── HPA
+```
+
+---
 
 ## Phase 11 Evidence
 
@@ -1241,6 +1987,76 @@ Destroy
   ↓
 Verify Cleanup
 ```
+
+The project's architectural evolution can be summarized as:
+
+```text
+Phase 8–9
+Jenkins-Based DevSecOps Platform
+        │
+        ├── Jenkins CI/CD
+        ├── Security Automation
+        ├── ECR / EKS
+        └── Prometheus + Grafana
+                │
+                ▼
+Phase 10
+GitHub Actions CI/CD
+        │
+        ├── Application Delivery
+        ├── GitHub OIDC
+        ├── ECR
+        └── EKS
+                │
+                ▼
+Phase 10–11 Platform Layer
+        │
+        └── Terraform + Helm
+                │
+                └── Metrics Server
+                        │
+                        ▼
+                       HPA
+                        │
+                        ▼
+              Verified Scale-Up/Scale-Down
+```
+
+This final architecture demonstrates both the implementation of a complete DevSecOps platform and the ability to evolve that platform as CI/CD and infrastructure-management responsibilities become more clearly separated.
+
+---
+
+# Portfolio Value
+
+This project demonstrates practical experience across:
+
+```text
+Cloud Engineering
+      +
+DevOps
+      +
+DevSecOps
+      +
+Infrastructure as Code
+      +
+CI/CD
+      +
+Docker
+      +
+Kubernetes
+      +
+AWS
+      +
+Security Automation
+      +
+Observability
+      +
+Autoscaling
+      +
+Infrastructure Lifecycle Management
+```
+
+The repository provides both the implementation and the supporting evidence required to examine how each layer was built and validated.
 
 ---
 
